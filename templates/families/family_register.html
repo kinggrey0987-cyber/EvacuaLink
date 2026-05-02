@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Register Family - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-people-plus"></i> Register New Family
+        </h1>
+        <p class="text-muted">Add a new family to the system</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8 offset-lg-2">
+        <div class="card">
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <strong>Form Error:</strong>
+                        {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                        {% endfor %}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Family Information -->
+                    <fieldset class="mb-4">
+                        <legend class="mb-3">
+                            <i class="bi bi-info-circle"></i> Family Information
+                        </legend>
+
+                        <div class="mb-3">
+                            <label for="{{ form.family_code.id_for_label }}" class="form-label">
+                                Family Code <span class="text-danger">*</span>
+                            </label>
+                            {{ form.family_code }}
+                            {% if form.family_code.errors %}
+                                <div class="text-danger small mt-1">{{ form.family_code.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted">Unique identifier for this family (e.g., FAM-001)</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.family_name.id_for_label }}" class="form-label">
+                                Family Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.family_name }}
+                            {% if form.family_name.errors %}
+                                <div class="text-danger small mt-1">{{ form.family_name.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-9 mb-3">
+                                <label for="{{ form.contact_person.id_for_label }}" class="form-label">
+                                    Contact Person <span class="text-danger">*</span>
+                                </label>
+                                {{ form.contact_person }}
+                                {% if form.contact_person.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contact_person.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Primary contact for family coordination</small>
+                            </div>
+
+                            <div class="col-md-3 mb-3">
+                                <label for="{{ form.contact_number.id_for_label }}" class="form-label">
+                                    Contact Number
+                                </label>
+                                {{ form.contact_number }}
+                                {% if form.contact_number.errors %}
+                                    <div class="text-danger small mt-1">{{ form.contact_number.errors.0 }}</div>
+                                {% endif %}
+                                <small class="form-text text-muted">Optional</small>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Register Family
+                        </button>
+                        <a href="{% url 'family-list' %}" class="btn btn-secondary btn-lg">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Information Box -->
+        <div class="alert alert-info mt-4">
+            <strong><i class="bi bi-info-circle"></i> Information:</strong><br>
+            <small>
+                After registering the family, you can add family members and assign them to evacuation centers.
+                The system will automatically track all reunification details and member statuses.
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}

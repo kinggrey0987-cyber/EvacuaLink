@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ evacuee.full_name }} | EvacuaLink{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3">{{ evacuee.full_name }}</h1><div><a class="btn btn-outline-secondary" href="{% url 'evacuee-list' %}">Back</a> <a class="btn btn-primary" href="{% url 'evacuee-edit' evacuee.pk %}">Edit</a></div></div>
+<div class="card shadow-sm"><div class="card-body">
+    <p><strong>Age:</strong> {{ evacuee.age }}</p><p><strong>Gender:</strong> {{ evacuee.get_gender_display }}</p><p><strong>Family:</strong> {{ evacuee.family }}</p><p><strong>Assigned Center:</strong> {{ evacuee.evacuation_center|default:'Unassigned' }}</p><p><strong>Special Needs:</strong> {% if evacuee.special_needs %}Yes{% else %}No{% endif %}</p><p><strong>Special Needs Description:</strong> {{ evacuee.special_needs_description|default:'None' }}</p><p><strong>Medical Condition:</strong> {{ evacuee.medical_condition|default:'None' }}</p><p><strong>Status:</strong> {{ evacuee.get_status_display }}</p><p><strong>Registered At:</strong> {{ evacuee.registered_at }}</p>
+</div></div>
+{% endblock %}

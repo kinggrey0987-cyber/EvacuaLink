@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}Evacuee Management Dashboard - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title">
+            <i class="bi bi-people"></i> Evacuee Management Dashboard
+        </h1>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'evacuee-register' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Register Evacuee
+        </a>
+    </div>
+</div>
+
+<!-- Key Statistics -->
+<div class="row mb-4">
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-primary">{{ total_evacuees }}</h3>
+                <p class="text-muted mb-0 small">Total Evacuees</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-warning">{{ registered }}</h3>
+                <p class="text-muted mb-0 small">Registered</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-success">{{ checked_in }}</h3>
+                <p class="text-muted mb-0 small">Checked In</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-info">{{ transferred }}</h3>
+                <p class="text-muted mb-0 small">Transferred</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-danger">{{ missing }}</h3>
+                <p class="text-muted mb-0 small">Missing</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h3 class="text-secondary">{{ special_needs_count }}</h3>
+                <p class="text-muted mb-0 small">Special Needs</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Evacuees -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Recently Registered
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Family</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for evacuee in recent_evacuees %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'evacuee-detail' evacuee.pk %}">
+                                        <strong>{{ evacuee.full_name }}</strong>
+                                    </a>
+                                </td>
+                                <td>{{ evacuee.family.family_name }}</td>
+                                <td>
+                                    <span class="badge bg-info">{{ evacuee.get_status_display }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ evacuee.registered_at|date:"M d, H:i" }}</small>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted py-3">
+                                    <small>No evacuees yet</small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{% url 'evacuee-list' %}" class="btn btn-sm btn-primary">View All</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transfers -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-arrow-left-right"></i> Recent Transfers
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Evacuee</th>
+                            <th>From → To</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for transfer in recent_transfers %}
+                            <tr>
+                                <td>
+                                    <strong>{{ transfer.evacuee.full_name }}</strong>
+                                </td>
+                                <td>
+                                    <small>
+                                        {{ transfer.from_center.name }} →
+                                        <br>{{ transfer.to_center.name }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ transfer.transfer_date|date:"M d, H:i" }}</small>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center text-muted py-3">
+                                    <small>No transfers yet</small>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mt-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-lightning"></i> Quick Actions
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'evacuee-register' %}" class="btn btn-outline-primary btn-block w-100">
+                    <i class="bi bi-person-plus"></i> Register Evacuee
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'evacuee-list' %}" class="btn btn-outline-secondary btn-block w-100">
+                    <i class="bi bi-list-check"></i> View All Evacuees
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'family-list' %}" class="btn btn-outline-info btn-block w-100">
+                    <i class="bi bi-people"></i> Manage Families
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'evacuation-center-list' %}" class="btn btn-outline-warning btn-block w-100">
+                    <i class="bi bi-building"></i> View Centers
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

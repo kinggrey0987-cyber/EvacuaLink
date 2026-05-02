@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}Family Dashboard - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title">
+            <i class="bi bi-speedometer2"></i> Family Management Dashboard
+        </h1>
+        <p class="text-muted">Overview of families and reunification status</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'family-register' %}" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Register Family
+        </a>
+    </div>
+</div>
+
+<!-- Key Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-primary mb-2">{{ total_families }}</h2>
+                <p class="text-muted mb-0">Total Families</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-warning mb-2">{{ pending_families }}</h2>
+                <p class="text-muted mb-0">Pending Reunification</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-info mb-2">{{ partial_families }}</h2>
+                <p class="text-muted mb-0">Partially Reunified</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h2 class="text-success mb-2">{{ reunified_families }}</h2>
+                <p class="text-muted mb-0">Reunified</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-lightning-fill"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-2">
+                    <div class="col-md-3">
+                        <a href="{% url 'family-register' %}" class="btn btn-primary w-100">
+                            <i class="bi bi-plus-lg"></i> Register New Family
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'family-list' %}" class="btn btn-info w-100">
+                            <i class="bi bi-list-ul"></i> View All Families
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'evacuee-list' %}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-person-badge"></i> Manage Evacuees
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'evacuee-list' %}?status=MISSING" class="btn btn-danger w-100">
+                            <i class="bi bi-exclamation-triangle"></i> View Missing
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reunification Status Overview -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-pie-chart"></i> Reunification Status Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <canvas id="reunificationChart" height="80"></canvas>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="list-group">
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>Pending</span>
+                                    <span class="badge bg-warning">{{ pending_families }}</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>Partially Reunified</span>
+                                    <span class="badge bg-info">{{ partial_families }}</span>
+                                </div>
+                            </div>
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between">
+                                    <span>Reunified</span>
+                                    <span class="badge bg-success">{{ reunified_families }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Families Needing Attention -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-circle"></i> Families Needing Attention (With Missing Members)
+                </h5>
+            </div>
+            {% if families_with_missing %}
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Family Code</th>
+                                <th>Family Name</th>
+                                <th>Contact Person</th>
+                                <th>Total Members</th>
+                                <th>Missing Members</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for family in families_with_missing %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ family.family_code }}</strong>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'family-detail' family.pk %}">
+                                            {{ family.family_name }}
+                                        </a>
+                                    </td>
+                                    <td>{{ family.contact_person }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ family.member_count }}</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-danger">{{ family.missing_count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'family-detail' family.pk %}" class="btn btn-info" title="View">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'family-reunification' family.pk %}" class="btn btn-warning" title="Update Status">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="card-body text-center text-muted py-4">
+                    <i class="bi bi-check-circle"></i> All families are accounted for
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Chart Script -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('reunificationChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Pending', 'Partially Reunified', 'Reunified'],
+            datasets: [{
+                data: [{{ pending_families }}, {{ partial_families }}, {{ reunified_families }}],
+                backgroundColor: ['#ffc107', '#17a2b8', '#28a745'],
+                borderColor: ['#fff', '#fff', '#fff'],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

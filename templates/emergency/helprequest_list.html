@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}Help Requests - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title">
+            <i class="bi bi-exclamation-circle"></i> Emergency Help Requests
+        </h1>
+    </div>
+    <div class="col-md-4 text-end">
+        {% if pending_count > 0 %}
+            <span class="badge bg-danger fs-6">{{ pending_count }} Pending</span>
+        {% endif %}
+        {% if in_progress_count > 0 %}
+            <span class="badge bg-warning fs-6">{{ in_progress_count }} In Progress</span>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-funnel"></i> Filter by Status
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-2">
+            <div class="col-auto">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-list-ul"></i> Help Requests ({{ page_obj.paginator.count }})
+        </h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Requester</th>
+                    <th>Contact</th>
+                    <th>Location Description</th>
+                    <th>Status</th>
+                    <th>Submitted</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in help_requests %}
+                    <tr>
+                        <td>
+                            <strong>{{ request.requester_name }}</strong>
+                        </td>
+                        <td>
+                            <a href="tel:{{ request.contact_number }}" class="btn btn-sm btn-outline-secondary">
+                                <i class="bi bi-telephone"></i> {{ request.contact_number }}
+                            </a>
+                        </td>
+                        <td>
+                            <small>{{ request.location_description|truncatewords:10 }}</small>
+                        </td>
+                        <td>
+                            {% if request.status == 'PENDING' %}
+                                <span class="badge bg-danger">{{ request.get_status_display }}</span>
+                            {% elif request.status == 'IN_PROGRESS' %}
+                                <span class="badge bg-warning">{{ request.get_status_display }}</span>
+                            {% elif request.status == 'RESOLVED' %}
+                                <span class="badge bg-success">{{ request.get_status_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ request.get_status_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small class="text-muted">{{ request.created_at|date:"M d, H:i" }}</small>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'help-request-detail' request.pk %}" class="btn btn-info" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning" title="Update Status">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox"></i> No help requests found
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}Delete Family - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-exclamation-triangle"></i> Delete Family
+        </h1>
+        <p class="text-muted">This action cannot be undone</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 offset-lg-3">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-trash"></i> Confirm Deletion
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <strong><i class="bi bi-exclamation-circle"></i> Warning!</strong><br>
+                    You are about to permanently delete this family from the system. This action cannot be undone.
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <strong>Family Code:</strong> <span class="badge bg-secondary">{{ object.family_code }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Family Name:</strong> {{ object.family_name }}
+                        </p>
+                        <p class="mb-0">
+                            <strong>Contact Person:</strong> {{ object.contact_person }}
+                        </p>
+                    </div>
+                </div>
+
+                <p class="mb-4 text-danger">
+                    <strong>Are you sure you want to delete <strong>{{ object.family_name }}</strong>?</strong>
+                </p>
+
+                <form method="post" class="d-flex gap-2">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-lg">
+                        <i class="bi bi-trash"></i> Delete Family
+                    </button>
+                    <a href="{% url 'family-detail' object.pk %}" class="btn btn-secondary btn-lg">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </a>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-4">
+            <strong><i class="bi bi-info-circle"></i> Note:</strong><br>
+            <small>
+                Only administrators can delete families from the system. Consider archiving the family instead
+                if you want to keep the historical records but mark it as inactive.
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}

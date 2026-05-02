@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}Request Emergency Help - EvacuaLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+    #helpMap {
+        height: 400px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .map-instructions {
+        background-color: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 4px;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+    }
+
+    .form-section h5 {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .coordinates-display {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-top: 10px;
+        border: 1px solid #dee2e6;
+    }
+
+    .coordinates-display p {
+        margin-bottom: 5px;
+        font-family: 'Courier New', monospace;
+    }
+
+    .alert-info {
+        background-color: #e7f3ff;
+        border: 1px solid #b3d9ff;
+        color: #004085;
+    }
+
+    .btn-group-vertical {
+        width: 100%;
+    }
+
+    .btn-group-vertical .btn {
+        text-align: left;
+        white-space: normal;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-exclamation-circle"></i> Emergency Help Request
+        </h1>
+        <p class="text-muted">
+            If you are in an emergency and need help, please fill out this form and mark your location on the map.
+            Your information will be sent to emergency responders immediately.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post" id="helpRequestForm">
+                    {% csrf_token %}
+
+                    <!-- Personal Information Section -->
+                    <div class="form-section">
+                        <h5><i class="bi bi-person"></i> Your Information</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ form.requester_name.id_for_label }}" class="form-label">
+                                Full Name <span class="text-danger">*</span>
+                            </label>
+                            {{ form.requester_name }}
+                            {% if form.requester_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.requester_name.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.contact_number.id_for_label }}" class="form-label">
+                                Contact Number <span class="text-danger">*</span>
+                            </label>
+                            {{ form.contact_number }}
+                            <small class="form-text text-muted">
+                                So we can reach you back. Include country code if possible.
+                            </small>
+                            {% if form.contact_number.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.contact_number.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Location Section -->
+                    <div class="form-section">
+                        <h5><i class="bi bi-geo-alt"></i> Your Location</h5>
+
+                        <div class="map-instructions">
+                            <strong><i class="bi bi-info-circle"></i> How to mark your location:</strong><br>
+                            <small>
+                                Click on the map below to mark your exact location. The coordinates will be automatically
+                                filled in. Make sure you click within Barangay Alicante.
+                            </small>
+                        </div>
+
+                        <div id="helpMap"></div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.location_description.id_for_label }}" class="form-label">
+                                Location Description <span class="text-danger">*</span>
+                            </label>
+                            {{ form.location_description }}
+                            <small class="form-text text-muted">
+                                Describe your location in detail (e.g., "near the school", "behind the market")
+                            </small>
+                            {% if form.location_description.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.location_description.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="coordinates-display">
+                            <p><strong>Latitude:</strong> <span id="latDisplay">-</span></p>
+                            <p><strong>Longitude:</strong> <span id="lonDisplay">-</span></p>
+                        </div>
+
+                        {{ form.latitude }}
+                        {{ form.longitude }}
+
+                        {% if form.latitude.errors or form.longitude.errors %}
+                            <div class="alert alert-danger mt-3">
+                                <strong>Location Error:</strong> The location must be within Barangay Alicante.
+                                Please click on the map within the barangay boundary.
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Emergency Message Section -->
+                    <div class="form-section">
+                        <h5><i class="bi bi-chat-dots"></i> Emergency Details</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ form.message.id_for_label }}" class="form-label">
+                                What is your emergency? <span class="text-danger">*</span>
+                            </label>
+                            {{ form.message }}
+                            <small class="form-text text-muted">
+                                Please describe your situation clearly, what help you need, and any other important details
+                                (injuries, people involved, immediate dangers, etc.)
+                            </small>
+                            {% if form.message.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.message.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-section">
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                <strong>Form Error:</strong>
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <button type="submit" class="btn btn-danger btn-lg w-100">
+                            <i class="bi bi-telephone"></i> Submit Emergency Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar with Information -->
+    <div class="col-lg-4">
+        <div class="card mb-4">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle-fill"></i> Emergency Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-danger mb-3">
+                    <strong>In Life-Threatening Emergency?</strong><br>
+                    <small>If you or someone is in immediate danger, call emergency services at <strong>911</strong> first.</small>
+                </div>
+
+                <h6>What This System Does:</h6>
+                <ul class="small">
+                    <li>Sends your location to emergency responders</li>
+                    <li>Helps rescuers find you quickly</li>
+                    <li>Logs all requests for coordination</li>
+                    <li>Tracks response progress</li>
+                </ul>
+
+                <hr>
+
+                <h6>Information Will Include:</h6>
+                <ul class="small mb-0">
+                    <li>Your name and contact number</li>
+                    <li>Your GPS location coordinates</li>
+                    <li>Your detailed location description</li>
+                    <li>What help you need</li>
+                    <li>Time of submission</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-geo-alt"></i> Service Area
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2"><strong>Coverage Area:</strong></p>
+                <p class="mb-3">
+                    Barangay Alicante<br>
+                    EB Magalona, Negros Occidental<br>
+                    Philippines
+                </p>
+
+                <small class="text-muted">
+                    This system only accepts help requests from within Barangay Alicante. Make sure your location is
+                    within the barangay boundaries for your request to be processed.
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+    // Initialize map
+    const mapCenter = [{{ map_center.latitude }}, {{ map_center.longitude }}];
+    const mapBounds = {
+        north: {{ map_bounds.north }},
+        south: {{ map_bounds.south }},
+        east: {{ map_bounds.east }},
+        west: {{ map_bounds.west }}
+    };
+
+    const helpMap = L.map('helpMap').setView(mapCenter, {{ zoom_level }});
+
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+        minZoom: 11
+    }).addTo(helpMap);
+
+    // Define max bounds to restrict panning
+    const bounds = L.latLngBounds(
+        [mapBounds.south, mapBounds.west],
+        [mapBounds.north, mapBounds.east]
+    );
+    helpMap.setMaxBounds(bounds);
+
+    // Store the help location marker
+    let helpMarker = null;
+
+    // Handle map clicks to place help marker
+    helpMap.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+
+        // Check if location is within bounds
+        if (!bounds.contains(e.latlng)) {
+            alert('Location is outside Barangay Alicante. Please click within the barangay.');
+            return;
+        }
+
+        // Remove previous marker if exists
+        if (helpMarker) {
+            helpMap.removeLayer(helpMarker);
+        }
+
+        // Add new marker
+        helpMarker = L.circleMarker([lat, lon], {
+            radius: 10,
+            fillColor: '#dc3545',
+            color: '#fff',
+            weight: 2,
+            opacity: 0.8,
+            fillOpacity: 0.8
+        }).addTo(helpMap);
+
+        helpMarker.bindPopup('Your Help Request Location').openPopup();
+
+        // Update form fields
+        document.getElementById('id_latitude').value = lat.toFixed(6);
+        document.getElementById('id_longitude').value = lon.toFixed(6);
+
+        // Update display
+        document.getElementById('latDisplay').textContent = lat.toFixed(6);
+        document.getElementById('lonDisplay').textContent = lon.toFixed(6);
+    });
+
+    // Fit map to bounds on load
+    helpMap.fitBounds(bounds, {padding: [50, 50]});
+
+    // Add scale control
+    L.control.scale().addTo(helpMap);
+
+    // Form validation
+    document.getElementById('helpRequestForm').addEventListener('submit', function(e) {
+        const lat = document.getElementById('id_latitude').value;
+        const lon = document.getElementById('id_longitude').value;
+
+        if (!lat || !lon) {
+            e.preventDefault();
+            alert('Please click on the map to mark your location before submitting.');
+        }
+    });
+</script>
+{% endblock %}

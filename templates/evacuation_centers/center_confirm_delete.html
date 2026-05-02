@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Delete Center | EvacuaLink{% endblock %}
+{% block content %}
+<div class="card card-body shadow-sm">
+    <h1 class="h3">Delete Evacuation Center</h1>
+    <p>Are you sure you want to delete <strong>{{ object.name }}</strong>?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button class="btn btn-danger" type="submit">Delete</button>
+        <a class="btn btn-outline-secondary" href="{% url 'evacuation-center-detail' object.pk %}">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Dashboard - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-speedometer2"></i> Emergency Management Dashboard
+        </h1>
+        <p class="text-muted">Overview of help requests and emergency incidents in Barangay Alicante</p>
+    </div>
+</div>
+
+<!-- Alert Section - High Priority Items -->
+{% if alerts %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-exclamation-triangle-fill"></i> Active Alerts
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for incident in alerts %}
+                            <div class="col-md-6 mb-2">
+                                <div class="alert alert-danger mb-0">
+                                    <strong>{{ incident.title }}</strong><br>
+                                    <small>{{ incident.location }} | Severity: {{ incident.get_severity_display }}</small>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Key Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-danger">{{ total_help_requests }}</h3>
+                <p class="text-muted mb-0">Total Help Requests</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ pending_requests }}</h3>
+                <p class="text-muted mb-0">Pending Requests</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-info">{{ total_incidents }}</h3>
+                <p class="text-muted mb-0">Total Incidents</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card">
+            <div class="card-body text-center">
+                <h3 class="text-danger">{{ open_incidents }}</h3>
+                <p class="text-muted mb-0">Open Incidents</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Help Requests -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Help Requests
+                </h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for request in recent_requests %}
+                    <a href="{% url 'help-request-detail' request.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ request.requester_name }}</h6>
+                            <small>
+                                {% if request.status == 'PENDING' %}
+                                    <span class="badge bg-danger">{{ request.get_status_display }}</span>
+                                {% elif request.status == 'IN_PROGRESS' %}
+                                    <span class="badge bg-warning">{{ request.get_status_display }}</span>
+                                {% elif request.status == 'RESOLVED' %}
+                                    <span class="badge bg-success">{{ request.get_status_display }}</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <p class="mb-1 small">{{ request.location_description|truncatewords:10 }}</p>
+                        <small class="text-muted">{{ request.created_at|timesince }} ago</small>
+                    </a>
+                {% empty %}
+                    <div class="list-group-item text-muted text-center py-4">
+                        <small>No help requests yet</small>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{% url 'help-request-list' %}" class="btn btn-sm btn-primary w-100">
+                    View All Requests
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Incidents -->
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Recent Incidents
+                </h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for incident in recent_incidents %}
+                    <a href="{% url 'emergency-incident-detail' incident.pk %}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ incident.title }}</h6>
+                            <small>
+                                {% if incident.severity == 'CRITICAL' %}
+                                    <span class="badge bg-danger">{{ incident.get_severity_display }}</span>
+                                {% elif incident.severity == 'HIGH' %}
+                                    <span class="badge bg-orange">{{ incident.get_severity_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ incident.get_severity_display }}</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <p class="mb-1 small">{{ incident.location }}</p>
+                        <small class="text-muted">{{ incident.reported_at|timesince }} ago</small>
+                    </a>
+                {% empty %}
+                    <div class="list-group-item text-muted text-center py-4">
+                        <small>No incidents reported</small>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="card-footer bg-light">
+                <a href="{% url 'emergency-incident-list' %}" class="btn btn-sm btn-warning w-100">
+                    View All Incidents
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mt-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-lightning"></i> Quick Actions
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-2">
+                <a href="{% url 'help-request-list' %}" class="btn btn-outline-primary btn-lg w-100">
+                    <i class="bi bi-list-check"></i> Manage Help Requests
+                </a>
+            </div>
+            <div class="col-md-6 mb-2">
+                <a href="{% url 'emergency-incident-list' %}" class="btn btn-outline-warning btn-lg w-100">
+                    <i class="bi bi-exclamation-triangle"></i> Manage Incidents
+                </a>
+            </div>
+            <div class="col-md-6 mb-2">
+                <a href="{% url 'emergency-incident-create' %}" class="btn btn-outline-danger btn-lg w-100">
+                    <i class="bi bi-plus-circle"></i> Report New Incident
+                </a>
+            </div>
+            <div class="col-md-6 mb-2">
+                <a href="{% url 'public-map' %}" class="btn btn-outline-info btn-lg w-100">
+                    <i class="bi bi-map"></i> View Map
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

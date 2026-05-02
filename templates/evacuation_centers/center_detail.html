@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ center.name }} | EvacuaLink{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">{{ center.name }}</h1>
+    <div>
+        <a class="btn btn-outline-secondary" href="{% url 'evacuation-center-list' %}">Back</a>
+        <a class="btn btn-primary" href="{% url 'evacuation-center-edit' center.pk %}">Edit</a>
+    </div>
+</div>
+<div class="card shadow-sm"><div class="card-body">
+    <p><strong>Address:</strong> {{ center.address }}</p>
+    <p><strong>Coordinates:</strong> {{ center.latitude }}, {{ center.longitude }}</p>
+    <p><strong>Capacity:</strong> {{ center.capacity }}</p>
+    <p><strong>Current Occupancy:</strong> {{ center.current_occupancy }}</p>
+    <p><strong>Available Space:</strong> {{ center.available_space }}</p>
+    <p><strong>Status:</strong> {{ center.get_status_display }}</p>
+    <p><strong>Full:</strong> {% if center.is_full %}Yes{% else %}No{% endif %}</p>
+</div></div>
+{% endblock %}

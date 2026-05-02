@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Evacuation Centers | EvacuaLink{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">Evacuation Centers</h1>
+    <a class="btn btn-primary" href="{% url 'evacuation-center-add' %}">Add Center</a>
+</div>
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0">
+            <thead>
+            <tr>
+                <th>Name</th><th>Capacity</th><th>Occupancy</th><th>Available</th><th>Status</th><th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for center in centers %}
+                <tr>
+                    <td><a href="{% url 'evacuation-center-detail' center.pk %}">{{ center.name }}</a></td>
+                    <td>{{ center.capacity }}</td>
+                    <td>{{ center.current_occupancy }}</td>
+                    <td>{{ center.available_space }}</td>
+                    <td><span class="badge bg-secondary">{{ center.get_status_display }}</span></td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary" href="{% url 'evacuation-center-edit' center.pk %}">Edit</a>
+                        <a class="btn btn-sm btn-outline-danger" href="{% url 'evacuation-center-delete' center.pk %}">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr><td colspan="6" class="text-center text-muted py-4">No evacuation centers found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
