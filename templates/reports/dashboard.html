@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h1 class="page-title">
+            <i class="bi bi-file-earmark-text"></i> Reports & Analytics
+        </h1>
+        <p class="text-muted">Generate and export comprehensive reports for system analysis</p>
+    </div>
+</div>
+
+<!-- Report Generation Form -->
+<div class="row">
+    <div class="col-lg-8 offset-lg-2 mb-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-gear"></i> Generate Report
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if not weasyprint_available %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        <strong>Note:</strong> PDF export is not available. Install WeasyPrint to enable PDF generation:
+                        <code>pip install WeasyPrint</code>
+                    </div>
+                {% endif %}
+
+                {% if error %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle"></i> {{ error }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'report-generate' %}">
+                    {% csrf_token %}
+
+                    <fieldset class="mb-4">
+                        <legend class="mb-3">
+                            <i class="bi bi-chart-bar"></i> Report Type
+                        </legend>
+
+                        <div class="mb-3">
+                            <label for="{{ form.report_type.id_for_label }}" class="form-label">
+                                Select Report Type <span class="text-danger">*</span>
+                            </label>
+                            {{ form.report_type }}
+                            {% if form.report_type.errors %}
+                                <div class="text-danger small mt-1">{{ form.report_type.errors.0 }}</div>
+                            {% endif %}
+                            <small class="form-text text-muted d-block mt-2">
+                                <strong>Occupancy Report:</strong> View capacity and occupancy status of evacuation centers<br>
+                                <strong>Family Reunification:</strong> Track family reunification progress and status<br>
+                                <strong>Special Needs:</strong> Identify evacuees requiring special care and assistance<br>
+                                <strong>Incident Report:</strong> Review emergency incidents and response actions
+                            </small>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="mb-4">
+                        <legend class="mb-3">
+                            <i class="bi bi-calendar"></i> Date Range
+                        </legend>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_from.id_for_label }}" class="form-label">
+                                    From Date
+                                </label>
+                                {{ form.date_from }}
+                                {% if form.date_from.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date_from.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.date_to.id_for_label }}" class="form-label">
+                                    To Date
+                                </label>
+                                {{ form.date_to }}
+                                {% if form.date_to.errors %}
+                                    <div class="text-danger small mt-1">{{ form.date_to.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <small class="form-text text-muted">Leave empty to include all data</small>
+                    </fieldset>
+
+                    <fieldset class="mb-4">
+                        <legend class="mb-3">
+                            <i class="bi bi-building"></i> Evacuation Center (Optional)
+                        </legend>
+
+                        <div class="mb-3">
+                            <label for="{{ form.evacuation_center.id_for_label }}" class="form-label">
+                                Filter by Center
+                            </label>
+                            {{ form.evacuation_center }}
+                            <small class="form-text text-muted">Leave blank to include all centers</small>
+                        </div>
+                    </fieldset>
+
+                    <fieldset class="mb-4">
+                        <legend class="mb-3">
+                            <i class="bi bi-download"></i> Export Format
+                        </legend>
+
+                        <div class="mb-3">
+                            {% for radio in form.format %}
+                                <div class="form-check mb-2">
+                                    {{ radio.tag }}
+                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                        {% if radio.choice_value == 'html' %}
+                                            <i class="bi bi-eye"></i> {{ radio.choice_label }}
+                                        {% else %}
+                                            <i class="bi bi-filetype-pdf"></i> {{ radio.choice_label }}
+                                            {% if not weasyprint_available %}
+                                                <span class="badge bg-warning">Not Available</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-play-circle"></i> Generate Report
+                        </button>
+                        <a href="{% url 'report-list' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="bi bi-list-ul"></i> View Generated Reports
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Information -->
+<div class="row">
+    <div class="col-lg-12 mt-4">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Available Reports
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6 class="mb-2">
+                            <i class="bi bi-graph-up text-primary"></i> Occupancy Report
+                        </h6>
+                        <p class="text-muted small">
+                            Monitor evacuation center capacity, current occupancy, and available space. Useful for capacity planning and resource allocation.
+                        </p>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <h6 class="mb-2">
+                            <i class="bi bi-arrow-repeat text-success"></i> Family Reunification
+                        </h6>
+                        <p class="text-muted small">
+                            Track reunification progress for families. See which families are pending, partially reunified, or fully reunified.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-2">
+                            <i class="bi bi-exclamation-circle text-warning"></i> Special Needs Report
+                        </h6>
+                        <p class="text-muted small">
+                            Identify evacuees with special medical or accessibility needs. Includes detailed descriptions and current locations.
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-2">
+                            <i class="bi bi-fire text-danger"></i> Incident Report
+                        </h6>
+                        <p class="text-muted small">
+                            Review emergency incidents reported in the system. Track severity, status, and response actions taken.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

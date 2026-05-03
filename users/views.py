@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
 from django.views import View
@@ -49,92 +49,31 @@ class LogoutView(LoginRequiredMixin, View):
         return redirect("login")
 
 
-class RegisterView(UserPassesTestMixin, CreateView):
-    """Handle user registration (admin only)"""
-
-    model = User
-    form_class = CustomUserCreationForm
-    template_name = "auth/register.html"
-    success_url = reverse_lazy("user_list")
-
-    def test_func(self):
-        """Only admins can create new users"""
-        return self.request.user.is_authenticated and self.request.user.role == User.Role.ADMIN
-
-    def handle_no_permission(self):
-        return redirect("login")
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["page_title"] = "Register New User"
-        return context
-
-
-class UserListView(LoginRequiredMixin, ListView):
-    """List all users (admin only)"""
-
-    model = User
-    template_name = "users/user_list.html"
-    context_object_name = "users"
-    paginate_by = 20
-
-    def get_queryset(self):
-        # Only admins can see all users
-        if self.request.user.role == User.Role.ADMIN:
-            return User.objects.all().order_by("username")
-        # Other users can only see their own profile
-        return User.objects.filter(pk=self.request.user.pk)
-
-
-class UserDetailView(LoginRequiredMixin, DetailView):
-    """Display user profile details"""
-
-    model = User
-    template_name = "users/user_detail.html"
-    context_object_name = "user"
-
-    def get_queryset(self):
-        # Users can only view their own profile or admins can view anyone
-        if self.request.user.role == User.Role.ADMIN:
-            return User.objects.all()
-        return User.objects.filter(pk=self.request.user.pk)
-
-
-class UserUpdateView(LoginRequiredMixin, UpdateView):
-    """Update user information"""
-
-    model = User
-    form_class = CustomUserChangeForm
-    template_name = "users/user_form.html"
-    success_url = reverse_lazy("dashboard")
-
-    def get_queryset(self):
-        # Users can only update their own profile or admins can update anyone
-        if self.request.user.role == User.Role.ADMIN:
-            return User.objects.all()
-        return User.objects.filter(pk=self.request.user.pk)
-
-    def get_object(self, queryset=None):
-        if queryset is None:
-            queryset = self.get_queryset()
-
-        # If user_id is in URL, use that; otherwise use current user
-        user_id = self.kwargs.get("pk")
-        if user_id:
-            return queryset.get(pk=user_id)
-        return self.request.user
-
-
-class DashboardView(LoginRequiredMixin, TemplateView):
-    """Main dashboard view with real-time statistics"""
+class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """
+    Main operational dashboard for emergency responders and staff.
+    TECHNICAL_ADMIN users are redirected to Django admin instead.
+    """
 
     template_name = "dashboard.html"
+
+    def test_func(self):
+        """Only operational staff (not technical admins) can access this"""
+        return not self.request.user.is_technical_admin
+
+    def handle_no_permission(self):
+        """Redirect technical admins to admin panel"""
+        if self.request.user.is_authenticated and self.request.user.is_technical_admin:
+            return redirect("evacualink_admin:index")
+        return redirect("login")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context["user"] = user
         context["user_role"] = user.get_role_display()
+        context["is_technical_admin"] = user.is_technical_admin
+        context["is_operational_admin"] = user.is_operational_admin
 
         # Import models for statistics
         from evacuees.models import Evacuee
@@ -165,17 +104,100 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         context["centers_full"] = EvacuationCenter.objects.filter(status="FULL").count()
         context["centers_closed"] = EvacuationCenter.objects.filter(status="CLOSED").count()
 
-        # Emergency Statistics (if user has permission)
-        if user.is_emergency_responder:
-            context["total_help_requests"] = EmergencyHelpRequest.objects.count()
-            context["pending_requests"] = EmergencyHelpRequest.objects.filter(status="PENDING").count()
-            context["in_progress_requests"] = EmergencyHelpRequest.objects.filter(status="IN_PROGRESS").count()
+        # Emergency Statistics
+        context["total_help_requests"] = EmergencyHelpRequest.objects.count()
+        context["pending_requests"] = EmergencyHelpRequest.objects.filter(status="PENDING").count()
+        context["in_progress_requests"] = EmergencyHelpRequest.objects.filter(status="IN_PROGRESS").count()
 
-            context["total_incidents"] = EmergencyIncident.objects.count()
-            context["open_incidents"] = EmergencyIncident.objects.filter(status="OPEN").count()
-            context["critical_incidents"] = EmergencyIncident.objects.filter(severity="CRITICAL").count()
+        context["total_incidents"] = EmergencyIncident.objects.count()
+        context["open_incidents"] = EmergencyIncident.objects.filter(status="OPEN").count()
+        context["critical_incidents"] = EmergencyIncident.objects.filter(severity="CRITICAL").count()
 
         return context
+
+
+class RegisterView(UserPassesTestMixin, CreateView):
+    """Handle user registration (operational admin only)"""
+
+    model = User
+    form_class = CustomUserCreationForm
+    template_name = "auth/register.html"
+    success_url = reverse_lazy("user_list")
+
+    def test_func(self):
+        """Only operational admins can create new users"""
+        return (
+            self.request.user.is_authenticated
+            and self.request.user.is_operational_admin
+        )
+
+    def handle_no_permission(self):
+        return redirect("login")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Register New User"
+        return context
+
+
+class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
+    """List all users (operational admin only)"""
+
+    model = User
+    template_name = "users/user_list.html"
+    context_object_name = "users"
+    paginate_by = 20
+
+    def test_func(self):
+        """Only operational admins can view user list"""
+        return self.request.user.is_operational_admin
+
+    def get_queryset(self):
+        return User.objects.all().order_by("username")
+
+
+class UserDetailView(LoginRequiredMixin, DetailView):
+    """Display user profile details"""
+
+    model = User
+    template_name = "users/user_detail.html"
+    context_object_name = "user"
+
+    def get_queryset(self):
+        # Users can only view their own profile or admins can view anyone
+        if self.request.user.is_operational_admin:
+            return User.objects.all()
+        return User.objects.filter(pk=self.request.user.pk)
+
+
+class UserUpdateView(LoginRequiredMixin, UpdateView):
+    """Update user information"""
+
+    model = User
+    form_class = CustomUserChangeForm
+    template_name = "users/user_form.html"
+    success_url = reverse_lazy("dashboard")
+
+    def get_queryset(self):
+        # Users can only update their own profile or admins can update anyone
+        if self.request.user.is_operational_admin:
+            return User.objects.all()
+        return User.objects.filter(pk=self.request.user.pk)
+
+    def get_object(self, queryset=None):
+        if queryset is None:
+            queryset = self.get_queryset()
+
+        # If user_id is in URL, use that; otherwise use current user
+        user_id = self.kwargs.get("pk")
+        if user_id:
+            return queryset.get(pk=user_id)
+        return self.request.user
+
+
+class DashboardView(OperationalDashboardView):
+    """Alias for backward compatibility"""
+    pass
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):
@@ -194,4 +216,5 @@ class ProfileView(LoginRequiredMixin, TemplateView):
                 "phone_number": user.phone_number,
             }
         )
+
 

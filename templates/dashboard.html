@@ -1,54 +1,200 @@
 {% extends "base.html" %}
 
-{% block title %}Dashboard - EvacuaLink{% endblock %}
+{% block title %}Operational Dashboard - EvacuaLink{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
         <h1 class="page-title">
-            <i class="bi bi-speedometer2"></i> Dashboard
+            <i class="bi bi-speedometer2"></i> Operational Dashboard
         </h1>
-        <p class="text-muted">Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>!</p>
+        <p class="text-muted">
+            Welcome back, <strong>{{ user.get_full_name|default:user.username }}</strong>!
+            <span class="badge bg-primary ms-2">{{ user.get_role_display }}</span>
+        </p>
     </div>
 </div>
 
 <!-- Key Metrics Row -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="card text-center">
-            <div class="card-body">
+        <a href="{% url 'evacuee-list' %}" class="card text-decoration-none text-dark hover-shadow">
+            <div class="card-body text-center">
                 <h3 class="text-primary">{{ total_evacuees }}</h3>
                 <p class="text-muted mb-0">Total Evacuees</p>
+                <small class="text-muted">Click to view</small>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-center">
-            <div class="card-body">
+        <a href="{% url 'family-list' %}" class="card text-decoration-none text-dark hover-shadow">
+            <div class="card-body text-center">
                 <h3 class="text-success">{{ total_families }}</h3>
                 <p class="text-muted mb-0">Families</p>
+                <small class="text-muted">Click to view</small>
             </div>
-        </div>
+        </a>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="card text-center">
-            <div class="card-body">
+        <a href="{% url 'evacuation-center-list' %}" class="card text-decoration-none text-dark hover-shadow">
+            <div class="card-body text-center">
                 <h3 class="text-info">{{ total_centers }}</h3>
                 <p class="text-muted mb-0">Evacuation Centers</p>
+                <small class="text-muted">Click to view</small>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 mb-3">
+        <a href="{% url 'report-dashboard' %}" class="card text-decoration-none text-dark hover-shadow">
+            <div class="card-body text-center">
+                <h3 class="text-warning">{{ reports_available|default:'7' }}</h3>
+                <p class="text-muted mb-0">Reports</p>
+                <small class="text-muted">Click to generate</small>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Module Navigation Cards -->
+<div class="row mb-4">
+    <div class="col-lg-12">
+        <h5 class="mb-3"><i class="bi bi-layers"></i> System Modules</h5>
+    </div>
+
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-person-badge text-primary" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title">Evacuee Management</h6>
+                        <p class="card-text small text-muted">Register, assign, and track evacuees</p>
+                        <a href="{% url 'evacuee-dashboard' %}" class="btn btn-sm btn-outline-primary">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'evacuee-register' %}" class="btn btn-sm btn-outline-primary">
+                            Register
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3 mb-3">
-        <div class="card text-center">
+
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm">
             <div class="card-body">
-                <h3 class="text-warning">{{ total_users }}</h3>
-                <p class="text-muted mb-0">System Users</p>
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-people text-success" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title">Family Management</h6>
+                        <p class="card-text small text-muted">Track families and reunification status</p>
+                        <a href="{% url 'family-dashboard' %}" class="btn btn-sm btn-outline-success">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'family-register' %}" class="btn btn-sm btn-outline-success">
+                            Register
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-building text-info" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title">Evacuation Centers</h6>
+                        <p class="card-text small text-muted">Manage centers and occupancy</p>
+                        <a href="{% url 'evacuation-center-list' %}" class="btn btn-sm btn-outline-info">
+                            View Centers
+                        </a>
+                        <a href="{% url 'evacuation-center-add' %}" class="btn btn-sm btn-outline-info">
+                            Add Center
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-map text-secondary" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title">Mapping</h6>
+                        <p class="card-text small text-muted">View geographic data and boundaries</p>
+                        <a href="{% url 'public-map' %}" class="btn btn-sm btn-outline-secondary">
+                            Public Map
+                        </a>
+                        <a href="{% url 'admin-map' %}" class="btn btn-sm btn-outline-secondary">
+                            Admin Map
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-file-earmark-text text-warning" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title">Reports</h6>
+                        <p class="card-text small text-muted">Generate and export reports</p>
+                        <a href="{% url 'report-dashboard' %}" class="btn btn-sm btn-outline-warning">
+                            Generate
+                        </a>
+                        <a href="{% url 'report-list' %}" class="btn btn-sm btn-outline-warning">
+                            View History
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-lg-4 mb-3">
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-start">
+                    <div class="flex-shrink-0">
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <h6 class="card-title">Emergency</h6>
+                        <p class="card-text small text-muted">Report incidents and help requests</p>
+                        <a href="{% url 'emergency-dashboard' %}" class="btn btn-sm btn-outline-danger">
+                            Dashboard
+                        </a>
+                        <a href="{% url 'emergency-incident-create' %}" class="btn btn-sm btn-outline-danger">
+                            Report
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Evacuee Status Overview -->
+<!-- System Status Row -->
 <div class="row mb-4">
     <div class="col-lg-6 mb-3">
         <div class="card">
@@ -78,19 +224,18 @@
                 </div>
                 {% if evacuees_special_needs %}
                     <div class="alert alert-warning mb-0 mt-3">
-                        <i class="bi bi-exclamation-circle"></i> <strong>{{ evacuees_special_needs }}</strong> evacuees with special needs
+                        <i class="bi bi-exclamation-circle"></i> <strong>{{ evacuees_special_needs }}</strong> with special needs
                     </div>
                 {% endif %}
             </div>
         </div>
     </div>
 
-    <!-- Family Status Overview -->
     <div class="col-lg-6 mb-3">
         <div class="card">
             <div class="card-header bg-success text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-people"></i> Family Reunification Status
+                    <i class="bi bi-people"></i> Family Reunification
                 </h5>
             </div>
             <div class="card-body">
@@ -113,131 +258,35 @@
     </div>
 </div>
 
-<!-- Center Status Overview -->
+<!-- Center Occupancy -->
 <div class="row mb-4">
-    <div class="col-lg-12 mb-3">
+    <div class="col-lg-12">
         <div class="card">
             <div class="card-header bg-info text-white">
                 <h5 class="mb-0">
-                    <i class="bi bi-building"></i> Evacuation Centers
+                    <i class="bi bi-building"></i> Evacuation Center Status
                 </h5>
             </div>
             <div class="card-body">
                 <div class="row text-center">
-                    <div class="col-4 mb-3">
+                    <div class="col-md-4 mb-3">
                         <h4 class="text-success">{{ centers_open }}</h4>
-                        <small class="text-muted">Open</small>
+                        <small class="text-muted">Open Centers</small>
                     </div>
-                    <div class="col-4 mb-3">
+                    <div class="col-md-4 mb-3">
                         <h4 class="text-warning">{{ centers_full }}</h4>
-                        <small class="text-muted">Full</small>
+                        <small class="text-muted">Full Centers</small>
                     </div>
-                    <div class="col-4 mb-3">
+                    <div class="col-md-4 mb-3">
                         <h4 class="text-secondary">{{ centers_closed }}</h4>
-                        <small class="text-muted">Closed</small>
+                        <small class="text-muted">Closed Centers</small>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- User Profile Card -->
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-body text-center">
-                <div class="mb-3">
-                    <i class="bi bi-person-circle" style="font-size: 4rem; color: #0d6efd;"></i>
+                <div class="text-center mt-2">
+                    <a href="{% url 'evacuation-center-list' %}" class="btn btn-sm btn-outline-info">
+                        <i class="bi bi-arrow-right"></i> View Occupancy Details
+                    </a>
                 </div>
-                <h5 class="card-title">{{ user.get_full_name|default:user.username }}</h5>
-                <p class="text-muted mb-2">@{{ user.username }}</p>
-                <span class="badge bg-primary mb-3">{{ user.get_role_display }}</span>
-                <p class="text-muted small mb-3">
-                    {% if user.phone_number %}
-                        <i class="bi bi-telephone"></i> {{ user.phone_number }}<br>
-                    {% endif %}
-                    {% if user.email %}
-                        <i class="bi bi-envelope"></i> {{ user.email }}<br>
-                    {% endif %}
-                </p>
-                <a href="{% url 'user_edit' user.pk %}" class="btn btn-sm btn-primary">
-                    <i class="bi bi-pencil"></i> Edit Profile
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-header bg-secondary text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-lightning-fill"></i> Quick Actions
-                </h5>
-            </div>
-            <div class="card-body">
-                <div class="d-grid gap-2">
-                    <a href="{% url 'evacuee-register' %}" class="btn btn-outline-primary btn-sm text-start">
-                        <i class="bi bi-plus-lg"></i> Register Evacuee
-                    </a>
-                    <a href="{% url 'family-register' %}" class="btn btn-outline-primary btn-sm text-start">
-                        <i class="bi bi-plus-lg"></i> Register Family
-                    </a>
-                    <a href="{% url 'family-list' %}" class="btn btn-outline-primary btn-sm text-start">
-                        <i class="bi bi-people"></i> View Families
-                    </a>
-                    <a href="{% url 'evacuee-list' %}" class="btn btn-outline-primary btn-sm text-start">
-                        <i class="bi bi-person-badge"></i> View Evacuees
-                    </a>
-                    {% if user.is_emergency_responder %}
-                        <hr>
-                        <a href="{% url 'emergency-incident-list' %}" class="btn btn-outline-danger btn-sm text-start">
-                            <i class="bi bi-exclamation-triangle"></i> View Incidents
-                        </a>
-                        <a href="{% url 'help-request-list' %}" class="btn btn-outline-warning btn-sm text-start">
-                            <i class="bi bi-telephone"></i> Help Requests
-                        </a>
-                    {% endif %}
-                    {% if user.role == 'ADMIN' %}
-                        <hr>
-                        <a href="{% url 'user_list' %}" class="btn btn-outline-secondary btn-sm text-start">
-                            <i class="bi bi-people"></i> Manage Users
-                        </a>
-                        <a href="{% url 'admin:index' %}" class="btn btn-outline-secondary btn-sm text-start">
-                            <i class="bi bi-gear"></i> Admin Panel
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- System Information -->
-    <div class="col-md-4 mb-3">
-        <div class="card">
-            <div class="card-header bg-info text-white">
-                <h5 class="mb-0">
-                    <i class="bi bi-info-circle"></i> System Information
-                </h5>
-            </div>
-            <div class="card-body">
-                <p class="mb-2">
-                    <strong>System Status:</strong><br>
-                    <span class="badge bg-success">Operational</span>
-                </p>
-                <p class="mb-2">
-                    <strong>Database:</strong><br>
-                    <span class="badge bg-info">PostgreSQL</span>
-                </p>
-                <p class="mb-2">
-                    <strong>Your Role:</strong><br>
-                    <span class="badge bg-primary">{{ user.get_role_display }}</span>
-                </p>
-                <p class="mb-0">
-                    <strong>Last Login:</strong><br>
-                    <small class="text-muted">{{ user.last_login|default:"First time logging in" }}</small>
-                </p>
             </div>
         </div>
     </div>
@@ -247,7 +296,7 @@
 {% if user.is_emergency_responder %}
     <div class="row mb-4">
         <div class="col-lg-12">
-            <div class="card">
+            <div class="card border-danger">
                 <div class="card-header bg-danger text-white">
                     <h5 class="mb-0">
                         <i class="bi bi-exclamation-triangle"></i> Emergency Management
@@ -279,6 +328,9 @@
                         <a href="{% url 'emergency-incident-create' %}" class="btn btn-outline-danger">
                             <i class="bi bi-plus-lg"></i> Report Incident
                         </a>
+                        <a href="{% url 'help-request-list' %}" class="btn btn-outline-warning">
+                            <i class="bi bi-list-ul"></i> Help Requests
+                        </a>
                     </div>
                 </div>
             </div>
@@ -286,73 +338,144 @@
     </div>
 {% endif %}
 
-<!-- Admin Section -->
-{% if user.role == 'ADMIN' %}
-    <div class="row">
+<!-- User & Admin Section -->
+<div class="row">
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-person-circle"></i> Your Profile
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-person-circle" style="font-size: 3rem; color: #6c757d;"></i>
+                </div>
+                <h6 class="card-title">{{ user.get_full_name|default:user.username }}</h6>
+                <p class="text-muted small mb-2">@{{ user.username }}</p>
+                <span class="badge bg-primary mb-3">{{ user.get_role_display }}</span>
+                {% if user.phone_number or user.email %}
+                    <p class="text-muted small">
+                        {% if user.phone_number %}
+                            <i class="bi bi-telephone"></i> {{ user.phone_number }}<br>
+                        {% endif %}
+                        {% if user.email %}
+                            <i class="bi bi-envelope"></i> {{ user.email }}
+                        {% endif %}
+                    </p>
+                {% endif %}
+                <a href="{% url 'user_edit' user.pk %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-pencil"></i> Edit Profile
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-3">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> System Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-2">
+                    <strong>System Status:</strong><br>
+                    <span class="badge bg-success">Operational</span>
+                </p>
+                <p class="mb-2">
+                    <strong>Database:</strong><br>
+                    <span class="badge bg-info">PostgreSQL Connected</span>
+                </p>
+                <p class="mb-2">
+                    <strong>Your Role:</strong><br>
+                    <span class="badge bg-primary">{{ user.get_role_display }}</span>
+                </p>
+                <p class="mb-0">
+                    <strong>Last Login:</strong><br>
+                    <small class="text-muted">{{ user.last_login|date:"M d, Y H:i"|default:"First login" }}</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin-only section -->
+{% if user.is_operational_admin %}
+    <div class="row mt-4">
         <div class="col-lg-12">
-            <div class="card">
+            <div class="card border-warning">
                 <div class="card-header bg-warning text-dark">
                     <h5 class="mb-0">
-                        <i class="bi bi-tools"></i> Administrator Panel
+                        <i class="bi bi-tools"></i> Administrator Functions
                     </h5>
                 </div>
                 <div class="card-body">
-                    <p class="mb-2">As an Administrator, you have access to:</p>
-                    <ul class="mb-3">
-                        <li>User account management and role assignment</li>
-                        <li>System configuration and settings</li>
-                        <li>All reports and analytics</li>
-                        <li>Evacuation center and evacuee management</li>
-                        <li>Emergency incident tracking</li>
-                        <li>Django admin panel for direct database access</li>
-                    </ul>
-                    <a href="{% url 'admin:index' %}" class="btn btn-warning">
-                        <i class="bi bi-gear"></i> Go to Admin Panel
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-{% elif user.is_emergency_responder %}
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-shield-check"></i> Emergency Responder
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2">As an Emergency Responder, you have access to:</p>
-                    <ul>
-                        <li>Emergency incident reporting, tracking, and updates</li>
-                        <li>Public help request management and responses</li>
-                        <li>Evacuation center information and occupancy status</li>
-                        <li>Evacuee status updates and reunification tracking</li>
-                        <li>Family management and coordination</li>
-                        <li>Emergency dashboard with real-time alerts</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-{% else %}
-    <div class="row">
-        <div class="col-lg-12">
-            <div class="card">
-                <div class="card-header bg-secondary text-white">
-                    <h5 class="mb-0">
-                        <i class="bi bi-info-circle"></i> System User
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-0">
-                        As a system user, you can view evacuation centers, families, and evacuees.
-                        Contact an administrator to request elevated permissions.
-                    </p>
+                    <p class="mb-3">As an Operational Administrator, you have full access to:</p>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <ul class="mb-0">
+                                <li>User account management and role assignment</li>
+                                <li>All reports and analytics</li>
+                                <li>Emergency incident management</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <ul class="mb-0">
+                                <li>Evacuee and family records</li>
+                                <li>Evacuation center configuration</li>
+                                <li>System-wide statistics and monitoring</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'user_list' %}" class="btn btn-info btn-sm">
+                            <i class="bi bi-people"></i> Manage Users
+                        </a>
+                        <a href="{% url 'report-dashboard' %}" class="btn btn-info btn-sm">
+                            <i class="bi bi-file-earmark-text"></i> View Reports
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 {% endif %}
+
+<!-- Technical Admin only -->
+{% if user.is_technical_admin %}
+    <div class="row mt-4">
+        <div class="col-lg-12">
+            <div class="card border-danger">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear"></i> Technical Administration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3"><strong>You are logged in as TECHNICAL_ADMIN.</strong></p>
+                    <p class="text-muted mb-3">
+                        As a technical administrator, you have direct database access through the Django admin panel.
+                        You do NOT have access to operational features.
+                    </p>
+                    <a href="{% url 'evacualink_admin:index' %}" class="btn btn-dark">
+                        <i class="bi bi-gear"></i> Go to Django Admin Panel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<!-- CSS for hover effects -->
+<style>
+    .hover-shadow:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+    }
+    .card {
+        transition: all 0.3s ease;
+    }
+</style>
 {% endblock %}
