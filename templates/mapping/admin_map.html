@@ -317,7 +317,16 @@
         west: {{ map_bounds.west }}
     };
 
-    const map = L.map('map').setView(mapCenter, {{ zoom_level }});
+    // Define boundary constraints
+    const maxBounds = L.latLngBounds(
+        [mapBounds.south, mapBounds.west],
+        [mapBounds.north, mapBounds.east]
+    );
+
+    const map = L.map('map', {
+        maxBounds: maxBounds,
+        maxBoundsViscosity: 1.0  // Maximum viscosity (prevent panning outside)
+    }).setView(mapCenter, {{ zoom_level }});
 
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
