@@ -15,6 +15,25 @@
     </div>
 </div>
 
+<!-- Critical Safety Alert -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle-fill" style="font-size: 1.5rem; margin-right: 15px;"></i>
+                <div>
+                    <strong>IMPORTANT: Safety Map Available!</strong><br>
+                    <small>View hazard-prone areas, safe zones, and evacuation center locations on the interactive map to stay informed during disasters.</small>
+                </div>
+            </div>
+            <a href="{% url 'public-map' %}" class="btn btn-sm btn-danger mt-2">
+                <i class="bi bi-map"></i> View Safety Map Now
+            </a>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
 <!-- Key Metrics Row -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
@@ -45,11 +64,13 @@
         </a>
     </div>
     <div class="col-md-3 mb-3">
-        <a href="{% url 'report-dashboard' %}" class="card text-decoration-none text-dark hover-shadow">
+        <a href="{% url 'public-map' %}" class="card text-decoration-none text-dark hover-shadow border-danger border-2">
             <div class="card-body text-center">
-                <h3 class="text-warning">{{ reports_available|default:'7' }}</h3>
-                <p class="text-muted mb-0">Reports</p>
-                <small class="text-muted">Click to generate</small>
+                <h3 class="text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </h3>
+                <p class="text-muted mb-0 fw-bold">View Safety Map</p>
+                <small class="text-danger">IMPORTANT!</small>
             </div>
         </a>
     </div>
@@ -128,20 +149,23 @@
     </div>
 
     <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card border-0 shadow-sm">
+        <div class="card border-0 shadow-sm border-danger">
             <div class="card-body">
                 <div class="d-flex align-items-start">
                     <div class="flex-shrink-0">
-                        <i class="bi bi-map text-secondary" style="font-size: 1.5rem;"></i>
+                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 1.5rem;"></i>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="card-title">Mapping</h6>
-                        <p class="card-text small text-muted">View geographic data and boundaries</p>
-                        <a href="{% url 'public-map' %}" class="btn btn-sm btn-outline-secondary">
-                            Public Map
+                        <h6 class="card-title">Safety & Emergency</h6>
+                        <p class="card-text small text-muted">
+                            <strong>Hazard zones, safe areas, and help requests</strong><br>
+                            View dangerous areas and safe locations on interactive map
+                        </p>
+                        <a href="{% url 'public-map' %}" class="btn btn-sm btn-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Safety Map
                         </a>
-                        <a href="{% url 'admin-map' %}" class="btn btn-sm btn-outline-secondary">
-                            Admin Map
+                        <a href="{% url 'emergency-dashboard' %}" class="btn btn-sm btn-outline-danger">
+                            <i class="bi bi-telephone"></i> Emergency
                         </a>
                     </div>
                 </div>
@@ -157,35 +181,13 @@
                         <i class="bi bi-file-earmark-text text-warning" style="font-size: 1.5rem;"></i>
                     </div>
                     <div class="flex-grow-1 ms-3">
-                        <h6 class="card-title">Reports</h6>
-                        <p class="card-text small text-muted">Generate and export reports</p>
+                        <h6 class="card-title">Reports & Analytics</h6>
+                        <p class="card-text small text-muted">Generate and export comprehensive reports</p>
                         <a href="{% url 'report-dashboard' %}" class="btn btn-sm btn-outline-warning">
                             Generate
                         </a>
                         <a href="{% url 'report-list' %}" class="btn btn-sm btn-outline-warning">
                             View History
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-6 col-lg-4 mb-3">
-        <div class="card border-0 shadow-sm">
-            <div class="card-body">
-                <div class="d-flex align-items-start">
-                    <div class="flex-shrink-0">
-                        <i class="bi bi-exclamation-triangle text-danger" style="font-size: 1.5rem;"></i>
-                    </div>
-                    <div class="flex-grow-1 ms-3">
-                        <h6 class="card-title">Emergency</h6>
-                        <p class="card-text small text-muted">Report incidents and help requests</p>
-                        <a href="{% url 'emergency-dashboard' %}" class="btn btn-sm btn-outline-danger">
-                            Dashboard
-                        </a>
-                        <a href="{% url 'emergency-incident-create' %}" class="btn btn-sm btn-outline-danger">
-                            Report
                         </a>
                     </div>
                 </div>
