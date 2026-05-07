@@ -1,0 +1,535 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EvacuaLink - Emergency Evacuation Information System</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.min.css" />
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .navbar-custom {
+            background-color: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea !important;
+        }
+
+        .hero-section {
+            padding: 2rem 0;
+            color: white;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-emergency {
+            background-color: #dc3545;
+            border: none;
+            padding: 1rem 2.5rem;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .btn-emergency:hover {
+            background-color: #c82333;
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+            color: white;
+        }
+
+        .map-container {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            margin: 2rem 0;
+            height: 500px;
+        }
+
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+        .info-section {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-card {
+            text-align: center;
+            padding: 1.5rem;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            margin: 1rem 0;
+        }
+
+        .info-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card h5 {
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .legend-box {
+            background: white;
+            border-radius: 10px;
+            padding: 1rem;
+            margin: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            border-radius: 50%;
+            border: 2px solid #ddd;
+        }
+
+        .footer-section {
+            background: rgba(0, 0, 0, 0.1);
+            color: white;
+            text-align: center;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .badge-danger {
+            background-color: #dc3545 !important;
+        }
+
+        .badge-warning {
+            background-color: #ffc107 !important;
+            color: #333 !important;
+        }
+
+        .badge-success {
+            background-color: #28a745 !important;
+        }
+
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .map-container {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
+        <div class="container-custom">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="bi bi-shield-check"></i> EvacuaLink
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'login' %}" class="btn btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Staff Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section container-custom">
+        <h1 class="hero-title">
+            <i class="bi bi-exclamation-triangle-fill"></i> EvacuaLink
+        </h1>
+        <p class="hero-subtitle">Emergency Evacuation & Disaster Information System</p>
+        <p style="font-size: 1rem; margin-bottom: 2rem;">
+            Stay informed about safe zones, evacuation centers, and request help when you need it
+        </p>
+
+        <!-- Emergency Help Button -->
+        <button class="btn btn-emergency" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
+            <i class="bi bi-telephone-fill"></i> REQUEST HELP NOW
+        </button>
+    </section>
+
+    <!-- Information Cards -->
+    <section class="container-custom">
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="info-card">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <h5>Hazard Zones</h5>
+                    <p>Avoid areas marked as hazardous</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card">
+                    <i class="bi bi-shield-check"></i>
+                    <h5>Safe Zones</h5>
+                    <p>Go to designated safe areas</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="info-card">
+                    <i class="bi bi-building"></i>
+                    <h5>Evacuation Centers</h5>
+                    <p>Find shelter and assistance</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section class="container-custom">
+        <h2 class="text-white text-center mb-3">
+            <i class="bi bi-map"></i> Safety Map - Barangay Alicante
+        </h2>
+        <div class="map-container">
+            <div id="map"></div>
+        </div>
+
+        <!-- Legend -->
+        <div class="legend-box">
+            <h6 class="mb-3"><i class="bi bi-list-ul"></i> Map Legend</h6>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #dc3545;"></div>
+                <span><strong>Evacuation Centers</strong> - Go here for shelter and help</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                <span><strong>Critical Hazard</strong> - AVOID this area immediately</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffc107;"></div>
+                <span><strong>High Risk</strong> - Use caution, consider evacuation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #fd7e14;"></div>
+                <span><strong>Moderate Risk</strong> - Monitor situation</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #28a745;"></div>
+                <span><strong>Safe Zones</strong> - Designated safe areas</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #0066cc; opacity: 0.3;"></div>
+                <span><strong>Barangay Boundary</strong> - Service area limits</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Information Section -->
+    <section class="info-section container-custom">
+        <h3 class="mb-4">
+            <i class="bi bi-info-circle"></i> What to Do in an Emergency
+        </h3>
+        <div class="row">
+            <div class="col-md-6">
+                <h5>If You Need Help:</h5>
+                <ul style="line-height: 2;">
+                    <li>1. Click the "REQUEST HELP NOW" button above</li>
+                    <li>2. Describe your situation and location</li>
+                    <li>3. Wait for response from emergency responders</li>
+                    <li>4. Follow instructions from authorities</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h5>General Safety Tips:</h5>
+                <ul style="line-height: 2;">
+                    <li>✓ Know the location of nearest evacuation center</li>
+                    <li>✓ Avoid hazard zones shown in RED</li>
+                    <li>✓ Stay in safe zones shown in GREEN</li>
+                    <li>✓ Contact authorities for updates</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Help Request Modal -->
+    <div class="modal fade" id="helpRequestModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-telephone-fill"></i> Request Emergency Help
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="helpForm">
+                        <div class="mb-3">
+                            <label class="form-label">Your Name</label>
+                            <input type="text" class="form-control" id="requesterName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Contact Number</label>
+                            <input type="tel" class="form-control" id="contactNumber" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Location/Address</label>
+                            <input type="text" class="form-control" id="location" placeholder="Where are you?" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Describe Your Situation</label>
+                            <textarea class="form-control" id="message" rows="4" placeholder="What kind of help do you need?" required></textarea>
+                        </div>
+                        <div class="alert alert-info">
+                            <small><i class="bi bi-info-circle"></i> Your location will help us respond faster. Emergency responders are standing by.</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" onclick="submitHelpRequest()">
+                        <i class="bi bi-send"></i> Submit Help Request
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <div class="container-custom">
+            <p class="mb-2">
+                <strong>EvacuaLink Emergency System</strong>
+            </p>
+            <p class="mb-0">
+                Barangay Alicante, EB Magalona, Negros Occidental, Philippines
+            </p>
+            <p class="small mt-3">
+                For life-threatening emergencies, call 911 or your local emergency number
+            </p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.min.js"></script>
+
+    <script>
+        // Initialize map
+        const mapCenter = [{{ map_center.latitude }}, {{ map_center.longitude }}];
+        const mapBounds = {
+            north: {{ map_bounds.north }},
+            south: {{ map_bounds.south }},
+            east: {{ map_bounds.east }},
+            west: {{ map_bounds.west }}
+        };
+
+        // Define boundary constraints
+        const maxBounds = L.latLngBounds(
+            [mapBounds.south, mapBounds.west],
+            [mapBounds.north, mapBounds.east]
+        );
+
+        const map = L.map('map', {
+            maxBounds: maxBounds,
+            maxBoundsViscosity: 1.0
+        }).setView(mapCenter, {{ zoom_level }});
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors',
+            maxZoom: 19,
+            minZoom: 11
+        }).addTo(map);
+
+        // Add boundary
+        {% if boundary_geojson %}
+            const boundaryStyle = {
+                color: '#0066cc',
+                weight: 3,
+                opacity: 0.8,
+                fillColor: '#0066cc',
+                fillOpacity: 0.1
+            };
+
+            L.geoJSON({{ boundary_geojson|safe }}, {
+                style: boundaryStyle
+            }).addTo(map);
+
+            const bounds = L.latLngBounds(
+                [mapBounds.south, mapBounds.west],
+                [mapBounds.north, mapBounds.east]
+            );
+            map.fitBounds(bounds, {padding: [50, 50]});
+        {% endif %}
+
+        // Add evacuation centers
+        {% for center in evacuation_centers %}
+            L.circleMarker(
+                [{{ center.latitude }}, {{ center.longitude }}],
+                {
+                    radius: 10,
+                    fillColor: '#dc3545',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.8
+                }
+            ).bindPopup(
+                '<div style="font-weight: bold;">{{ center.name }}</div>' +
+                '<small>Evacuation Center</small><br>' +
+                '<small>{{ center.address }}</small>'
+            ).addTo(map);
+        {% endfor %}
+
+        // Add hazard zones
+        {% for zone in hazard_zones %}
+            {% if zone.risk_level == 'CRITICAL' %}
+                const colorH{{ zone.id }} = '#ff6b6b';
+            {% elif zone.risk_level == 'HIGH' %}
+                const colorH{{ zone.id }} = '#ffc107';
+            {% elif zone.risk_level == 'MODERATE' %}
+                const colorH{{ zone.id }} = '#fd7e14';
+            {% else %}
+                const colorH{{ zone.id }} = '#20c997';
+            {% endif %}
+
+            L.circleMarker(
+                [{{ zone.latitude }}, {{ zone.longitude }}],
+                {
+                    radius: 8,
+                    fillColor: colorH{{ zone.id }},
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.7
+                }
+            ).bindPopup(
+                '<div style="font-weight: bold; color: red;">{{ zone.name }}</div>' +
+                '<strong>Type:</strong> {{ zone.hazard_type }}<br>' +
+                '<strong>Risk Level:</strong> {{ zone.risk_level }}<br>' +
+                '<small>{{ zone.description }}</small>'
+            ).addTo(map);
+        {% endfor %}
+
+        // Add safe zones
+        {% for zone in safe_zones %}
+            L.circleMarker(
+                [{{ zone.latitude }}, {{ zone.longitude }}],
+                {
+                    radius: 9,
+                    fillColor: '#28a745',
+                    color: '#fff',
+                    weight: 2,
+                    opacity: 0.8,
+                    fillOpacity: 0.8
+                }
+            ).bindPopup(
+                '<div style="font-weight: bold; color: green;">{{ zone.name }}</div>' +
+                '<small>{{ zone.description }}</small>'
+            ).addTo(map);
+        {% endfor %}
+
+        L.control.scale().addTo(map);
+
+        // Help request submission
+        function submitHelpRequest() {
+            const name = document.getElementById('requesterName').value;
+            const phone = document.getElementById('contactNumber').value;
+            const location = document.getElementById('location').value;
+            const message = document.getElementById('message').value;
+
+            if (!name || !phone || !location || !message) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            // Create help request
+            fetch('{% url "help-request-create" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    requester_name: name,
+                    contact_number: phone,
+                    location_description: location,
+                    message: message,
+                    latitude: mapCenter[0],
+                    longitude: mapCenter[1]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert('Your help request has been submitted! Emergency responders are on the way.');
+                document.getElementById('helpForm').reset();
+                bootstrap.Modal.getInstance(document.getElementById('helpRequestModal')).hide();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting request. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>

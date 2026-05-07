@@ -12,6 +12,47 @@ from users.forms import CustomUserCreationForm, CustomUserChangeForm, UserLoginF
 User = get_user_model()
 
 
+class PublicLandingPageView(TemplateView):
+    """Public landing page - no login required. Shows safety map and help request button for citizens."""
+
+    template_name = "public/landing.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Get map data for public view
+        from mapping.models import HazardZone, SafeZone, EvacuationCenter, BarangayBoundary
+        from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds, get_zoom_level_for_bounds
+
+        # Get all active locations
+        evacuation_centers = list(
+            EvacuationCenter.objects.all().values("id", "name", "latitude", "longitude", "address")
+        )
+
+        hazard_zones = list(
+            HazardZone.objects.all().values("id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description")
+        )
+
+        safe_zones = list(
+            SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description")
+        )
+
+        # Get boundary and center info
+        boundary_geojson = get_barangay_boundary_geojson()
+        location_data = get_barangay_center_and_bounds()
+
+        context["evacuation_centers"] = evacuation_centers
+        context["hazard_zones"] = hazard_zones
+        context["safe_zones"] = safe_zones
+        context["boundary_geojson"] = boundary_geojson
+        context["map_center"] = location_data["center"]
+        context["map_bounds"] = location_data["bounds"]
+        context["zoom_level"] = get_zoom_level_for_bounds()
+
+        return context
+
+
+
 class LoginView(View):
     """Handle user login"""
 

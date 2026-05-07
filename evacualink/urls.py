@@ -3,12 +3,12 @@ from django.contrib import admin
 from django.urls import include, path
 from django.views.generic import RedirectView
 
-from users.views import LoginView, LogoutView, OperationalDashboardView
+from users.views import LoginView, LogoutView, OperationalDashboardView, PublicLandingPageView
 from .admin import evacualink_admin_site
 
 urlpatterns = [
-    # Route based on user role
-    path("", RedirectView.as_view(url="dashboard/", permanent=False), name="home"),
+    # Public Landing Page (no login required)
+    path("", PublicLandingPageView.as_view(), name="home"),
 
     # Operational Dashboard (for ADMIN, COORDINATOR, VOLUNTEER, STAFF)
     path("dashboard/", OperationalDashboardView.as_view(), name="dashboard"),
