@@ -503,32 +503,36 @@
                 return;
             }
 
-            // Create help request
-            fetch('{% url "help-request-create" %}', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': '{{ csrf_token }}',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    requester_name: name,
-                    contact_number: phone,
-                    location_description: location,
-                    message: message,
-                    latitude: mapCenter[0],
-                    longitude: mapCenter[1]
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert('Your help request has been submitted! Emergency responders are on the way.');
-                document.getElementById('helpForm').reset();
-                bootstrap.Modal.getInstance(document.getElementById('helpRequestModal')).hide();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error submitting request. Please try again.');
-            });
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+                            document.querySelector('input[name="csrfmiddlewaretoken"]')?.value ||
+                            '{{ csrf_token }}';
+
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "help-request" %}';
+
+            const fields = {
+                'requester_name': name,
+                'contact_number': phone,
+                'location_description': location,
+                'message': message,
+                'latitude': mapCenter[0],
+                'longitude': mapCenter[1],
+                'csrfmiddlewaretoken': csrfToken
+            };
+
+            for (const [key, value] of Object.entries(fields)) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                form.appendChild(input);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
         }
     </script>
 </body>
