@@ -21,7 +21,8 @@ class PublicLandingPageView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         # Get map data for public view
-        from mapping.models import HazardZone, SafeZone, EvacuationCenter, BarangayBoundary
+        from mapping.models import HazardZone, SafeZone, BarangayBoundary
+        from evacuation_centers.models import EvacuationCenter
         from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds, get_zoom_level_for_bounds
 
         # Get all active locations
@@ -50,6 +51,7 @@ class PublicLandingPageView(TemplateView):
         context["zoom_level"] = get_zoom_level_for_bounds()
 
         return context
+
 
 
 
