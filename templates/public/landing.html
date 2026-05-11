@@ -17,71 +17,154 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
     <style>
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-color: #f8f9fa;
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .navbar-custom {
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background-color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
             padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         .navbar-brand {
             font-size: 1.5rem;
             font-weight: bold;
-            color: #667eea !important;
+            color: #dc3545 !important;
         }
 
+        .container-custom {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        /* Hero Section */
         .hero-section {
-            padding: 2rem 0;
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            padding: 4rem 0;
             color: white;
             text-align: center;
         }
 
         .hero-title {
-            font-size: 3rem;
+            font-size: 2.5rem;
             font-weight: bold;
-            margin-bottom: 1rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 0.5rem;
         }
 
         .hero-subtitle {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             margin-bottom: 2rem;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            opacity: 0.95;
         }
 
         .btn-emergency {
-            background-color: #dc3545;
+            background-color: white;
+            color: #dc3545;
             border: none;
-            padding: 1rem 2.5rem;
-            font-size: 1.2rem;
+            padding: 0.9rem 2.5rem;
+            font-size: 1.1rem;
             font-weight: bold;
             border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: all 0.3s ease;
+            display: inline-block;
         }
 
         .btn-emergency:hover {
-            background-color: #c82333;
-            transform: scale(1.05);
-            box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
-            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            color: #dc3545;
         }
 
+        /* Quick Actions Section */
+        .quick-actions-section {
+            margin-top: -3rem;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        .action-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .action-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .action-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: inline-block;
+        }
+
+        .action-card-icon.hazard {
+            color: #dc3545;
+        }
+
+        .action-card-icon.safe {
+            color: #28a745;
+        }
+
+        .action-card-icon.shelter {
+            color: #0066cc;
+        }
+
+        .action-card h5 {
+            margin: 1rem 0 0.5rem 0;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .action-card p {
+            color: #666;
+            margin: 0;
+            font-size: 0.95rem;
+        }
+
+        /* Main Content Section */
+        .main-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #dc3545;
+            display: inline-block;
+        }
+
+        /* Map Section */
         .map-container {
             background: white;
-            border-radius: 15px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
-            margin: 2rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
             height: 500px;
+            margin-bottom: 1.5rem;
         }
 
         #map {
@@ -89,88 +172,183 @@
             width: 100%;
         }
 
-        .info-section {
-            background: white;
-            border-radius: 15px;
-            padding: 2rem;
-            margin: 2rem 0;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .info-card {
-            text-align: center;
-            padding: 1.5rem;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            margin: 1rem 0;
-        }
-
-        .info-card i {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .info-card h5 {
-            margin-bottom: 0.5rem;
-            font-weight: bold;
-        }
-
         .legend-box {
             background: white;
-            border-radius: 10px;
-            padding: 1rem;
-            margin: 1rem 0;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .legend-box h6 {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1.5rem;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            margin-bottom: 0.75rem;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .legend-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
         }
 
         .legend-color {
-            width: 20px;
-            height: 20px;
-            margin-right: 10px;
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
             border-radius: 50%;
             border: 2px solid #ddd;
+            flex-shrink: 0;
         }
 
+        .legend-item span {
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .legend-item strong {
+            color: #333;
+        }
+
+        /* Info Section */
+        .info-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            margin-bottom: 3rem;
+        }
+
+        .info-section h3 {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 2rem;
+        }
+
+        .info-column {
+            margin-bottom: 2rem;
+        }
+
+        .info-column h5 {
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .info-column ol,
+        .info-column ul {
+            padding-left: 1.5rem;
+            line-height: 1.8;
+        }
+
+        .info-column li {
+            color: #555;
+            margin-bottom: 0.8rem;
+        }
+
+        .info-column li strong {
+            color: #333;
+        }
+
+        /* Footer */
         .footer-section {
-            background: rgba(0, 0, 0, 0.1);
+            background-color: #333;
             color: white;
             text-align: center;
-            padding: 2rem 0;
-            margin-top: 3rem;
+            padding: 3rem 0;
+            margin-top: 4rem;
         }
 
-        .container-custom {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
+        .footer-section p {
+            margin-bottom: 0.5rem;
         }
 
-        .badge-danger {
-            background-color: #dc3545 !important;
+        .footer-section .mb-2 {
+            font-weight: bold;
+            font-size: 1.1rem;
         }
 
-        .badge-warning {
-            background-color: #ffc107 !important;
-            color: #333 !important;
+        .footer-section .small {
+            color: #aaa;
         }
 
-        .badge-success {
-            background-color: #28a745 !important;
+        /* Modal Styling */
+        .modal-header {
+            background-color: #dc3545;
+            color: white;
         }
 
+        .modal-header .modal-title {
+            font-weight: bold;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .form-control:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
             .hero-title {
-                font-size: 2rem;
+                font-size: 1.8rem;
             }
 
             .hero-subtitle {
+                font-size: 1rem;
+            }
+
+            .hero-section {
+                padding: 2.5rem 0;
+            }
+
+            .quick-actions-section {
+                margin-top: -1.5rem;
+            }
+
+            .map-container {
+                height: 350px;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .info-section {
+                padding: 1.5rem;
+            }
+
+            .container-custom {
+                padding: 0 1rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-title {
+                font-size: 1.5rem;
+            }
+
+            .btn-emergency {
+                padding: 0.75rem 2rem;
                 font-size: 1rem;
             }
 
@@ -201,110 +379,128 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="hero-section container-custom">
-        <h1 class="hero-title">
-            <i class="bi bi-exclamation-triangle-fill"></i> EvacuaLink
-        </h1>
-        <p class="hero-subtitle">Emergency Evacuation & Disaster Information System</p>
-        <p style="font-size: 1rem; margin-bottom: 2rem;">
-            Stay informed about safe zones, evacuation centers, and request help when you need it
-        </p>
+    <section class="hero-section">
+        <div class="container-custom">
+            <h1 class="hero-title">
+                <i class="bi bi-exclamation-triangle-fill"></i> EvacuaLink
+            </h1>
+            <p class="hero-subtitle">Emergency Evacuation & Disaster Information System</p>
+            <p style="font-size: 1rem; margin-bottom: 2rem; color: rgba(255,255,255,0.9);">
+                Stay safe and informed. Find help, evacuation centers, and safety information in real-time.
+            </p>
 
-        <!-- Emergency Help Button -->
-        <button class="btn btn-emergency" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
-            <i class="bi bi-telephone-fill"></i> REQUEST HELP NOW
-        </button>
+            <!-- Emergency Help Button -->
+            <button class="btn btn-emergency" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
+                <i class="bi bi-telephone-fill"></i> REQUEST HELP NOW
+            </button>
+        </div>
     </section>
 
-    <!-- Information Cards -->
-    <section class="container-custom">
-        <div class="row mb-4">
+    <!-- Quick Actions Section -->
+    <section class="container-custom quick-actions-section">
+        <div class="row g-3">
             <div class="col-md-4">
-                <div class="info-card">
-                    <i class="bi bi-exclamation-triangle"></i>
-                    <h5>Hazard Zones</h5>
-                    <p>Avoid areas marked as hazardous</p>
+                <div class="action-card">
+                    <div class="action-card-icon hazard">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <h5>Stay Away from Hazards</h5>
+                    <p>Red zones are dangerous. Check the map below to identify hazard areas.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="info-card">
-                    <i class="bi bi-shield-check"></i>
-                    <h5>Safe Zones</h5>
-                    <p>Go to designated safe areas</p>
+                <div class="action-card">
+                    <div class="action-card-icon safe">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5>Go to Safe Zones</h5>
+                    <p>Green zones are safe. Evacuate to designated safe areas during emergencies.</p>
                 </div>
             </div>
             <div class="col-md-4">
-                <div class="info-card">
-                    <i class="bi bi-building"></i>
-                    <h5>Evacuation Centers</h5>
-                    <p>Find shelter and assistance</p>
+                <div class="action-card">
+                    <div class="action-card-icon shelter">
+                        <i class="bi bi-building"></i>
+                    </div>
+                    <h5>Find Shelter Centers</h5>
+                    <p>Evacuation centers provide food, water, and medical assistance.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Map Section -->
-    <section class="container-custom">
-        <h2 class="text-white text-center mb-3">
-            <i class="bi bi-map"></i> Safety Map - Barangay Alicante
+    <section class="container-custom main-section">
+        <h2 class="section-title">
+            <i class="bi bi-map"></i> Safety Map
         </h2>
-        <div class="map-container">
-            <div id="map"></div>
-        </div>
-
-        <!-- Legend -->
-        <div class="legend-box">
-            <h6 class="mb-3"><i class="bi bi-list-ul"></i> Map Legend</h6>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #dc3545;"></div>
-                <span><strong>Evacuation Centers</strong> - Go here for shelter and help</span>
+        <div class="row mt-3">
+            <div class="col-lg-8">
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
             </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ff6b6b;"></div>
-                <span><strong>Critical Hazard</strong> - AVOID this area immediately</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #ffc107;"></div>
-                <span><strong>High Risk</strong> - Use caution, consider evacuation</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #fd7e14;"></div>
-                <span><strong>Moderate Risk</strong> - Monitor situation</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #28a745;"></div>
-                <span><strong>Safe Zones</strong> - Designated safe areas</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color" style="background-color: #0066cc; opacity: 0.3;"></div>
-                <span><strong>Barangay Boundary</strong> - Service area limits</span>
+            <div class="col-lg-4">
+                <div class="legend-box">
+                    <h6><i class="bi bi-list-ul"></i> Map Legend</h6>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #dc3545;"></div>
+                        <span><strong>Evacuation Centers</strong> - Safe shelter & assistance</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                        <span><strong>Critical Hazard</strong> - AVOID immediately</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #ffc107;"></div>
+                        <span><strong>High Risk</strong> - Consider evacuation</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #fd7e14;"></div>
+                        <span><strong>Moderate Risk</strong> - Monitor situation</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #28a745;"></div>
+                        <span><strong>Safe Zones</strong> - Designated safe areas</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #0066cc; opacity: 0.3;"></div>
+                        <span><strong>Boundary</strong> - Service area limits</span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Information Section -->
-    <section class="info-section container-custom">
-        <h3 class="mb-4">
-            <i class="bi bi-info-circle"></i> What to Do in an Emergency
-        </h3>
-        <div class="row">
-            <div class="col-md-6">
-                <h5>If You Need Help:</h5>
-                <ul style="line-height: 2;">
-                    <li>1. Click the "REQUEST HELP NOW" button above</li>
-                    <li>2. Describe your situation and location</li>
-                    <li>3. Wait for response from emergency responders</li>
-                    <li>4. Follow instructions from authorities</li>
-                </ul>
-            </div>
-            <div class="col-md-6">
-                <h5>General Safety Tips:</h5>
-                <ul style="line-height: 2;">
-                    <li>✓ Know the location of nearest evacuation center</li>
-                    <li>✓ Avoid hazard zones shown in RED</li>
-                    <li>✓ Stay in safe zones shown in GREEN</li>
-                    <li>✓ Contact authorities for updates</li>
-                </ul>
+    <section class="container-custom main-section">
+        <h2 class="section-title">
+            <i class="bi bi-info-circle"></i> Emergency Safety Guide
+        </h2>
+        <div class="info-section mt-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="info-column">
+                        <h5><i class="bi bi-telephone-fill"></i> Need Help?</h5>
+                        <ol>
+                            <li>Click <strong>"REQUEST HELP NOW"</strong> button at the top</li>
+                            <li>Provide your <strong>name, phone, and location</strong></li>
+                            <li>Describe your <strong>emergency situation</strong></li>
+                            <li><strong>Emergency responders</strong> will assist you immediately</li>
+                        </ol>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="info-column">
+                        <h5><i class="bi bi-shield-exclamation"></i> Stay Safe</h5>
+                        <ul>
+                            <li><strong>Know</strong> your nearest evacuation center location</li>
+                            <li><strong>Avoid</strong> red/hazard zones on the map</strong></li>
+                            <li><strong>Go to</strong> green/safe zones during emergencies</li>
+                            <li><strong>Listen</strong> to official announcements & authorities</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -356,13 +552,11 @@
     <footer class="footer-section">
         <div class="container-custom">
             <p class="mb-2">
-                <strong>EvacuaLink Emergency System</strong>
+                <i class="bi bi-shield-check"></i> <strong>EvacuaLink Emergency System</strong>
             </p>
-            <p class="mb-0">
-                Barangay Alicante, EB Magalona, Negros Occidental, Philippines
-            </p>
-            <p class="small mt-3">
-                For life-threatening emergencies, call 911 or your local emergency number
+            <p class="mb-2">Barangay Alicante, EB Magalona, Negros Occidental, Philippines</p>
+            <p class="small">
+                <i class="bi bi-exclamation-circle"></i> For life-threatening emergencies, call <strong>911</strong> or your local emergency number
             </p>
         </div>
     </footer>
