@@ -91,7 +91,7 @@ class EvacueeAssignmentForm(forms.Form):
     """Form for assigning evacuees to centers"""
 
     evacuation_center = forms.ModelChoiceField(
-        queryset=EvacuationCenter.objects.filter(status__in=["OPEN", "FULL"]).order_by("name"),
+        queryset=EvacuationCenter.objects.filter(status="OPEN").order_by("name"),
         widget=forms.Select(attrs={"class": "form-select"}),
         label="Evacuation Center",
         required=True,
@@ -100,7 +100,7 @@ class EvacueeAssignmentForm(forms.Form):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Update center choices to show capacity info
-        centers = EvacuationCenter.objects.filter(status__in=["OPEN", "FULL"])
+        centers = [center for center in EvacuationCenter.objects.filter(status="OPEN").order_by("name") if not center.is_full()]
         choices = [(c.id, f"{c.name} ({c.current_occupancy}/{c.capacity})") for c in centers]
         self.fields["evacuation_center"].choices = choices
 
@@ -182,7 +182,7 @@ class EvacueeTransferForm(forms.ModelForm):
     )
 
     to_center = forms.ModelChoiceField(
-        queryset=EvacuationCenter.objects.all(),
+        queryset=EvacuationCenter.objects.filter(status="OPEN"),
         widget=forms.Select(attrs={"class": "form-select"}),
         label="To Center",
         required=True,
@@ -218,6 +218,15 @@ class EvacueeTransferForm(forms.ModelForm):
         # Pre-fill from_center if evacuee is provided
         if evacuee and evacuee.evacuation_center:
             self.initial["from_center"] = evacuee.evacuation_center
+            self.fields["from_center"].queryset = EvacuationCenter.objects.filter(pk=evacuee.evacuation_center_id)
+            self.fields["from_center"].disabled = True
+
+        if evacuee and evacuee.evacuation_center_id:
+            self.fields["to_center"].queryset = EvacuationCenter.objects.filter(status="OPEN").exclude(
+                pk=evacuee.evacuation_center_id
+            ).order_by("name")
+        else:
+            self.fields["to_center"].queryset = EvacuationCenter.objects.filter(status="OPEN").order_by("name")
 
     def clean(self):
         cleaned_data = super().clean()
@@ -228,6 +237,9 @@ class EvacueeTransferForm(forms.ModelForm):
             raise ValidationError(
                 "The destination center must be different from the origin center."
             )
+
+        if to_center and to_center.is_full():
+            raise ValidationError("The destination center is already full.")
 
         return cleaned_data
 

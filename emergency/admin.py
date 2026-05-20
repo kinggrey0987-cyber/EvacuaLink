@@ -68,9 +68,9 @@ class EmergencyIncidentAdmin(admin.ModelAdmin):
 
 @admin.register(EmergencyHelpRequest)
 class EmergencyHelpRequestAdmin(admin.ModelAdmin):
-    list_display = ("requester_name", "contact_number", "get_status_badge", "location_display", "created_at", "resolution_time")
+    list_display = ("requester_name", "contact_number", "get_status_badge", "location_display", "location_source", "created_at", "resolution_time")
     search_fields = ("requester_name", "contact_number", "location_description", "message")
-    list_filter = ("status", "created_at", "resolved_at")
+    list_filter = ("status", "location_source", "created_at", "resolved_at")
     readonly_fields = ("created_at", "resolution_time")
     ordering = ("-created_at",)
 
@@ -79,7 +79,7 @@ class EmergencyHelpRequestAdmin(admin.ModelAdmin):
             "fields": ("requester_name", "contact_number")
         }),
         ("Location", {
-            "fields": ("location_description", "latitude", "longitude")
+            "fields": ("location_description", "latitude", "longitude", "location_source", "location_accuracy")
         }),
         ("Request Details", {
             "fields": ("message", "priority")

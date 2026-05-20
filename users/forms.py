@@ -116,6 +116,24 @@ class CustomUserChangeForm(UserChangeForm):
         # Add Bootstrap classes
         self.fields['username'].widget.attrs['class'] = 'form-control'
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        queryset = User.objects.filter(email=email)
+        if self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if email and queryset.exists():
+            raise ValidationError("This email address is already registered.")
+        return email
+
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        queryset = User.objects.filter(username=username)
+        if self.instance.pk:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        if username and queryset.exists():
+            raise ValidationError("This username is already taken.")
+        return username
+
 
 class UserLoginForm(forms.Form):
     """Form for user login"""

@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DetailView
 
@@ -77,6 +78,12 @@ class LoginView(View):
             if user is not None:
                 login(request, user)
                 next_url = request.GET.get("next", "dashboard")
+                if not url_has_allowed_host_and_scheme(
+                    next_url,
+                    allowed_hosts={request.get_host()},
+                    require_https=request.is_secure(),
+                ):
+                    next_url = "dashboard"
                 return redirect(next_url)
             else:
                 form.add_error(None, "Invalid username or password.")
@@ -247,17 +254,5 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     """User profile view"""
 
     template_name = "users/profile.html"
-
-    def render_to_response(self, context, **response_kwargs):
-        user = self.request.user
-        return JsonResponse(
-            {
-                "username": user.username,
-                "email": user.email,
-                "full_name": user.get_full_name(),
-                "role": user.role,
-                "phone_number": user.phone_number,
-            }
-        )
 
 

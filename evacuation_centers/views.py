@@ -1,5 +1,5 @@
 from django.contrib import messages
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -19,11 +19,14 @@ class EvacuationCenterDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "center"
 
 
-class EvacuationCenterCreateView(LoginRequiredMixin, CreateView):
+class EvacuationCenterCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = EvacuationCenter
     form_class = EvacuationCenterForm
     template_name = "evacuation_centers/center_form.html"
     success_url = reverse_lazy("evacuation-center-list")
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder
 
     def form_valid(self, form):
         messages.success(self.request, "Evacuation center added successfully.")
@@ -34,11 +37,14 @@ class EvacuationCenterCreateView(LoginRequiredMixin, CreateView):
         return super().form_invalid(form)
 
 
-class EvacuationCenterUpdateView(LoginRequiredMixin, UpdateView):
+class EvacuationCenterUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = EvacuationCenter
     form_class = EvacuationCenterForm
     template_name = "evacuation_centers/center_form.html"
     success_url = reverse_lazy("evacuation-center-list")
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder
 
     def form_valid(self, form):
         messages.success(self.request, "Evacuation center updated successfully.")
@@ -49,10 +55,13 @@ class EvacuationCenterUpdateView(LoginRequiredMixin, UpdateView):
         return super().form_invalid(form)
 
 
-class EvacuationCenterDeleteView(LoginRequiredMixin, DeleteView):
+class EvacuationCenterDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = EvacuationCenter
     template_name = "evacuation_centers/center_confirm_delete.html"
     success_url = reverse_lazy("evacuation-center-list")
+
+    def test_func(self):
+        return self.request.user.is_operational_admin
 
     def form_valid(self, form):
         messages.success(self.request, "Evacuation center deleted successfully.")

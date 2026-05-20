@@ -59,6 +59,7 @@
                     <th>Requester</th>
                     <th>Contact</th>
                     <th>Location Description</th>
+                    <th>Location Source</th>
                     <th>Status</th>
                     <th>Submitted</th>
                     <th>Actions</th>
@@ -77,6 +78,12 @@
                         </td>
                         <td>
                             <small>{{ request.location_description|truncatewords:10 }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ request.get_location_source_display }}</span>
+                            {% if request.location_accuracy %}
+                                <br><small class="text-muted">±{{ request.location_accuracy }}m</small>
+                            {% endif %}
                         </td>
                         <td>
                             {% if request.status == 'PENDING' %}

@@ -5,6 +5,7 @@ Views for evacuee management system.
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -140,9 +141,21 @@ class EvacueeAssignmentView(LoginRequiredMixin, UserPassesTestMixin, SuccessMess
 
         # Assign to center and change status to CHECKED_IN
         center = form.cleaned_data["evacuation_center"]
-        evacuee.evacuation_center = center
-        evacuee.status = "CHECKED_IN"
-        evacuee.save()
+        if center.is_full():
+            form.add_error("evacuation_center", "This evacuation center is already full.")
+            return self.form_invalid(form)
+
+        with transaction.atomic():
+            evacuee.evacuation_center = center
+            evacuee.status = "CHECKED_IN"
+            evacuee.save()
+            center.current_occupancy = Evacuee.objects.filter(
+                evacuation_center=center,
+                status__in=["CHECKED_IN", "TRANSFERRED"],
+            ).count()
+            if center.current_occupancy >= center.capacity:
+                center.status = "FULL"
+            center.save(update_fields=["current_occupancy", "status", "updated_at"])
 
         messages.success(
             self.request,
@@ -199,20 +212,39 @@ class EvacueeTransferView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessag
     def form_valid(self, form):
         evacuee_id = self.kwargs.get("pk")
         evacuee = get_object_or_404(Evacuee, pk=evacuee_id)
+        old_center = evacuee.evacuation_center
+        new_center = form.cleaned_data["to_center"]
 
-        # Create transfer record
-        transfer = form.save(commit=False)
-        transfer.evacuee = evacuee
-        transfer.save()
+        if new_center.is_full():
+            form.add_error("to_center", "The destination center is already full.")
+            return self.form_invalid(form)
 
-        # Update evacuee's current center
-        evacuee.evacuation_center = form.cleaned_data["to_center"]
-        evacuee.status = "TRANSFERRED"
-        evacuee.save()
+        with transaction.atomic():
+            # Create transfer record
+            transfer = form.save(commit=False)
+            transfer.evacuee = evacuee
+            transfer.from_center = old_center
+            transfer.save()
+
+            # Update evacuee's current center
+            evacuee.evacuation_center = new_center
+            evacuee.status = "TRANSFERRED"
+            evacuee.save()
+
+            for center in filter(None, [old_center, new_center]):
+                center.current_occupancy = Evacuee.objects.filter(
+                    evacuation_center=center,
+                    status__in=["CHECKED_IN", "TRANSFERRED"],
+                ).count()
+                if center.status == "FULL" and center.current_occupancy < center.capacity:
+                    center.status = "OPEN"
+                elif center.current_occupancy >= center.capacity:
+                    center.status = "FULL"
+                center.save(update_fields=["current_occupancy", "status", "updated_at"])
 
         messages.success(
             self.request,
-            f"{evacuee.full_name} transferred to {form.cleaned_data['to_center'].name}",
+            f"{evacuee.full_name} transferred to {new_center.name}",
         )
         return super().form_valid(form)
 

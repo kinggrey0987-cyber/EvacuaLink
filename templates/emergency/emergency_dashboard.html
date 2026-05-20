@@ -2,6 +2,16 @@
 
 {% block title %}Emergency Dashboard - EvacuaLink{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<style>
+    #activeHelpRequestsMap {
+        min-height: 420px;
+        border-radius: 8px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
@@ -75,6 +85,21 @@
     </div>
 </div>
 
+<!-- Active Help Request Map -->
+<div class="card mb-4">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">
+            <i class="bi bi-map"></i> Active Help Request Map
+        </h5>
+    </div>
+    <div class="card-body">
+        <div id="activeHelpRequestsMap"></div>
+        <small class="text-muted d-block mt-2">
+            Shows pending and in-progress requests only. Exact coordinates are visible to authorized responders.
+        </small>
+    </div>
+</div>
+
 <div class="row">
     <!-- Recent Help Requests -->
     <div class="col-lg-6 mb-4">
@@ -100,6 +125,10 @@
                             </small>
                         </div>
                         <p class="mb-1 small">{{ request.location_description|truncatewords:10 }}</p>
+                        <small class="text-muted">
+                            Source: {{ request.get_location_source_display }}
+                            {% if request.location_accuracy %}| Accuracy: {{ request.location_accuracy }}m{% endif %}
+                        </small><br>
                         <small class="text-muted">{{ request.created_at|timesince }} ago</small>
                     </a>
                 {% empty %}
@@ -189,4 +218,58 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+    const activeHelpRequests = {{ active_help_request_markers|safe }};
+    const defaultCenter = [10.878900, 123.018100];
+    const activeMap = L.map('activeHelpRequestsMap').setView(defaultCenter, 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19
+    }).addTo(activeMap);
+
+    const markerGroup = L.featureGroup().addTo(activeMap);
+
+    function getRequestColor(status) {
+        if (status === 'PENDING') {
+            return '#dc3545';
+        }
+        if (status === 'IN_PROGRESS') {
+            return '#ffc107';
+        }
+        return '#6c757d';
+    }
+
+    activeHelpRequests.forEach(function(request) {
+        const lat = Number(request.latitude);
+        const lon = Number(request.longitude);
+        const color = getRequestColor(request.status);
+        const marker = L.circleMarker([lat, lon], {
+            radius: 9,
+            color: '#fff',
+            weight: 2,
+            fillColor: color,
+            fillOpacity: 0.9
+        }).addTo(markerGroup);
+
+        const accuracyText = request.location_accuracy ? `${request.location_accuracy}m` : 'Not provided';
+        marker.bindPopup(`
+            <strong>${request.requester_name}</strong><br>
+            <span>Status: ${request.status.replace('_', ' ')}</span><br>
+            <span>Contact: <a href="tel:${request.contact_number}">${request.contact_number}</a></span><br>
+            <span>Location: ${request.location_description}</span><br>
+            <span>Source: ${request.location_source.replace('_', ' ')}</span><br>
+            <span>Accuracy: ${accuracyText}</span><br>
+            <a href="/emergency/help-requests/${request.id}/" class="btn btn-sm btn-primary mt-2">View Details</a>
+        `);
+    });
+
+    if (activeHelpRequests.length > 0) {
+        activeMap.fitBounds(markerGroup.getBounds(), { padding: [40, 40] });
+    }
+</script>
 {% endblock %}

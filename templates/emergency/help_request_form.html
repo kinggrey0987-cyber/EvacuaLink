@@ -59,6 +59,12 @@
         text-align: left;
         white-space: normal;
     }
+
+    .location-status {
+        border-radius: 6px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -119,11 +125,25 @@
                         <h5><i class="bi bi-geo-alt"></i> Your Location</h5>
 
                         <div class="map-instructions">
-                            <strong><i class="bi bi-info-circle"></i> How to mark your location:</strong><br>
+                            <strong><i class="bi bi-info-circle"></i> Share your location:</strong><br>
                             <small>
-                                Click on the map below to mark your exact location. The coordinates will be automatically
-                                filled in. Make sure you click within Barangay Alicante.
+                                Tap "Use My Current Location" to let responders receive your GPS location. If GPS is not
+                                available, click the map to place the marker manually. Make sure the marker is within Barangay Alicante.
                             </small>
+                        </div>
+
+                        <div id="locationStatus" class="location-status alert-info">
+                            <i class="bi bi-shield-lock"></i>
+                            Your exact location will only be sent to authorized emergency responders.
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex mb-3">
+                            <button type="button" id="useCurrentLocationBtn" class="btn btn-primary">
+                                <i class="bi bi-crosshair"></i> Use My Current Location
+                            </button>
+                            <button type="button" id="clearLocationBtn" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Clear Marker
+                            </button>
                         </div>
 
                         <div id="helpMap"></div>
@@ -146,10 +166,14 @@
                         <div class="coordinates-display">
                             <p><strong>Latitude:</strong> <span id="latDisplay">-</span></p>
                             <p><strong>Longitude:</strong> <span id="lonDisplay">-</span></p>
+                            <p><strong>Location Source:</strong> <span id="sourceDisplay">Not selected</span></p>
+                            <p><strong>Estimated Accuracy:</strong> <span id="accuracyDisplay">-</span></p>
                         </div>
 
                         {{ form.latitude }}
                         {{ form.longitude }}
+                        {{ form.location_source }}
+                        {{ form.location_accuracy }}
 
                         {% if form.latitude.errors or form.longitude.errors %}
                             <div class="alert alert-danger mt-3">
@@ -227,7 +251,8 @@
                 <h6>Information Will Include:</h6>
                 <ul class="small mb-0">
                     <li>Your name and contact number</li>
-                    <li>Your GPS location coordinates</li>
+                    <li>Your GPS location coordinates or manually placed map pin</li>
+                    <li>Location source and GPS accuracy when available</li>
                     <li>Your detailed location description</li>
                     <li>What help you need</li>
                     <li>Time of submission</li>
@@ -287,45 +312,146 @@
     );
     helpMap.setMaxBounds(bounds);
 
-    // Store the help location marker
+    // Store the help location marker and location metadata
     let helpMarker = null;
+    let accuracyCircle = null;
+    const locationStatus = document.getElementById('locationStatus');
+    const useCurrentLocationBtn = document.getElementById('useCurrentLocationBtn');
+    const clearLocationBtn = document.getElementById('clearLocationBtn');
 
-    // Handle map clicks to place help marker
-    helpMap.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
+    function setLocationStatus(message, type = 'info') {
+        locationStatus.className = `location-status alert-${type}`;
+        locationStatus.innerHTML = message;
+    }
 
-        // Check if location is within bounds
-        if (!bounds.contains(e.latlng)) {
-            alert('Location is outside Barangay Alicante. Please click within the barangay.');
-            return;
+    function clearLocation() {
+        if (helpMarker) {
+            helpMap.removeLayer(helpMarker);
+            helpMarker = null;
         }
 
-        // Remove previous marker if exists
+        if (accuracyCircle) {
+            helpMap.removeLayer(accuracyCircle);
+            accuracyCircle = null;
+        }
+
+        document.getElementById('id_latitude').value = '';
+        document.getElementById('id_longitude').value = '';
+        document.getElementById('id_location_source').value = 'MAP_PIN';
+        document.getElementById('id_location_accuracy').value = '';
+        document.getElementById('latDisplay').textContent = '-';
+        document.getElementById('lonDisplay').textContent = '-';
+        document.getElementById('sourceDisplay').textContent = 'Not selected';
+        document.getElementById('accuracyDisplay').textContent = '-';
+        setLocationStatus('<i class="bi bi-shield-lock"></i> Your exact location will only be sent to authorized emergency responders.');
+    }
+
+    function setHelpLocation(lat, lon, source = 'MAP_PIN', accuracy = null) {
+        const point = L.latLng(lat, lon);
+
+        if (!bounds.contains(point)) {
+            alert('Location is outside Barangay Alicante. Please choose a location within the barangay.');
+            return false;
+        }
+
         if (helpMarker) {
             helpMap.removeLayer(helpMarker);
         }
 
-        // Add new marker
+        if (accuracyCircle) {
+            helpMap.removeLayer(accuracyCircle);
+            accuracyCircle = null;
+        }
+
         helpMarker = L.circleMarker([lat, lon], {
             radius: 10,
-            fillColor: '#dc3545',
+            fillColor: source === 'AUTO_GPS' ? '#0d6efd' : '#dc3545',
             color: '#fff',
             weight: 2,
             opacity: 0.8,
             fillOpacity: 0.8
         }).addTo(helpMap);
 
-        helpMarker.bindPopup('Your Help Request Location').openPopup();
+        helpMarker.bindPopup(source === 'AUTO_GPS' ? 'Your GPS Help Request Location' : 'Your Help Request Location').openPopup();
 
-        // Update form fields
+        if (accuracy) {
+            accuracyCircle = L.circle([lat, lon], {
+                radius: accuracy,
+                color: '#0d6efd',
+                fillColor: '#0d6efd',
+                fillOpacity: 0.08,
+                weight: 1
+            }).addTo(helpMap);
+        }
+
         document.getElementById('id_latitude').value = lat.toFixed(6);
         document.getElementById('id_longitude').value = lon.toFixed(6);
+        document.getElementById('id_location_source').value = source;
+        document.getElementById('id_location_accuracy').value = accuracy ? Number(accuracy).toFixed(2) : '';
 
-        // Update display
         document.getElementById('latDisplay').textContent = lat.toFixed(6);
         document.getElementById('lonDisplay').textContent = lon.toFixed(6);
+        document.getElementById('sourceDisplay').textContent = source === 'AUTO_GPS' ? 'Auto GPS' : 'Map Pin';
+        document.getElementById('accuracyDisplay').textContent = accuracy ? `${Number(accuracy).toFixed(0)} meters` : '-';
+
+        setLocationStatus(
+            source === 'AUTO_GPS'
+                ? '<i class="bi bi-check-circle"></i> GPS location captured. You can still drag/click the map if this is not exact.'
+                : '<i class="bi bi-check-circle"></i> Map location selected manually.',
+            'success'
+        );
+
+        return true;
+    }
+
+    // Handle map clicks to place help marker
+    helpMap.on('click', function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        setHelpLocation(lat, lon, 'MAP_PIN');
     });
+
+    useCurrentLocationBtn.addEventListener('click', function() {
+        if (!navigator.geolocation) {
+            setLocationStatus('<i class="bi bi-exclamation-triangle"></i> Your browser does not support GPS location. Please click the map manually.', 'warning');
+            return;
+        }
+
+        useCurrentLocationBtn.disabled = true;
+        useCurrentLocationBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Getting Location...';
+        setLocationStatus('<i class="bi bi-crosshair"></i> Asking permission to capture your current location...', 'info');
+
+        navigator.geolocation.getCurrentPosition(
+            function(position) {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const accuracy = position.coords.accuracy;
+
+                if (setHelpLocation(lat, lon, 'AUTO_GPS', accuracy)) {
+                    helpMap.setView([lat, lon], 17);
+                }
+
+                useCurrentLocationBtn.disabled = false;
+                useCurrentLocationBtn.innerHTML = '<i class="bi bi-crosshair"></i> Use My Current Location';
+            },
+            function(error) {
+                const message = error.code === error.PERMISSION_DENIED
+                    ? 'Location permission was denied. Please click the map manually.'
+                    : 'Could not get your GPS location. Please click the map manually.';
+
+                setLocationStatus(`<i class="bi bi-exclamation-triangle"></i> ${message}`, 'warning');
+                useCurrentLocationBtn.disabled = false;
+                useCurrentLocationBtn.innerHTML = '<i class="bi bi-crosshair"></i> Use My Current Location';
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    });
+
+    clearLocationBtn.addEventListener('click', clearLocation);
 
     // Fit map to bounds on load
     helpMap.fitBounds(bounds, {padding: [50, 50]});
@@ -340,7 +466,7 @@
 
         if (!lat || !lon) {
             e.preventDefault();
-            alert('Please click on the map to mark your location before submitting.');
+            alert('Please use your current location or click on the map to mark your location before submitting.');
         }
     });
 </script>

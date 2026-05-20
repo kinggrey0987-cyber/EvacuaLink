@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block title %}Transfer Evacuee | EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h1 class="h4 mb-0"><i class="bi bi-arrow-left-right"></i> Transfer Evacuee</h1>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">
+                    Transfer <strong>{{ evacuee.full_name }}</strong> to another open evacuation center.
+                </p>
+                <form method="post" novalidate>
+                    {% include "includes/form_fields.html" %}
+                    <div class="btn-group-wrap mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-arrow-left-right"></i> Record Transfer
+                        </button>
+                        <a href="{% url 'evacuee-detail' evacuee.pk %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

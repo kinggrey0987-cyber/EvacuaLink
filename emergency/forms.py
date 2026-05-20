@@ -14,7 +14,16 @@ class EmergencyHelpRequestForm(forms.ModelForm):
 
     class Meta:
         model = EmergencyHelpRequest
-        fields = ["requester_name", "contact_number", "location_description", "latitude", "longitude", "message"]
+        fields = [
+            "requester_name",
+            "contact_number",
+            "location_description",
+            "latitude",
+            "longitude",
+            "location_source",
+            "location_accuracy",
+            "message",
+        ]
         widgets = {
             "requester_name": forms.TextInput(
                 attrs={
@@ -40,6 +49,8 @@ class EmergencyHelpRequestForm(forms.ModelForm):
             ),
             "latitude": forms.HiddenInput(),
             "longitude": forms.HiddenInput(),
+            "location_source": forms.HiddenInput(),
+            "location_accuracy": forms.HiddenInput(),
             "message": forms.Textarea(
                 attrs={
                     "class": "form-control",
@@ -57,6 +68,10 @@ class EmergencyHelpRequestForm(forms.ModelForm):
         self.fields["location_description"].label = "Location Description"
         self.fields["latitude"].label = "Latitude"
         self.fields["longitude"].label = "Longitude"
+        self.fields["location_source"].label = "Location Source"
+        self.fields["location_source"].initial = EmergencyHelpRequest.LocationSource.MAP_PIN
+        self.fields["location_accuracy"].label = "Location Accuracy"
+        self.fields["location_accuracy"].required = False
         self.fields["message"].label = "Emergency Message"
 
     def clean(self):

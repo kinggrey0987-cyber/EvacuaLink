@@ -37,6 +37,12 @@ class EmergencyIncident(models.Model):
 
 
 class EmergencyHelpRequest(models.Model):
+    class LocationSource(models.TextChoices):
+        AUTO_GPS = "AUTO_GPS", "Auto GPS"
+        MAP_PIN = "MAP_PIN", "Map Pin"
+        MANUAL = "MANUAL", "Manual Entry"
+        ADMIN_CORRECTED = "ADMIN_CORRECTED", "Admin Corrected"
+
     class Status(models.TextChoices):
         PENDING = "PENDING", "Pending"
         IN_PROGRESS = "IN_PROGRESS", "In Progress"
@@ -49,6 +55,8 @@ class EmergencyHelpRequest(models.Model):
     message = models.TextField()
     latitude = models.DecimalField(max_digits=9, decimal_places=6, validators=[MinValueValidator(-90), MaxValueValidator(90)])
     longitude = models.DecimalField(max_digits=9, decimal_places=6, validators=[MinValueValidator(-180), MaxValueValidator(180)])
+    location_source = models.CharField(max_length=20, choices=LocationSource.choices, default=LocationSource.MAP_PIN)
+    location_accuracy = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text="Estimated GPS accuracy in meters")
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)

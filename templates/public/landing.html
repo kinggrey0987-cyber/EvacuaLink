@@ -495,7 +495,7 @@
                         <h5><i class="bi bi-shield-exclamation"></i> Stay Safe</h5>
                         <ul>
                             <li><strong>Know</strong> your nearest evacuation center location</li>
-                            <li><strong>Avoid</strong> red/hazard zones on the map</strong></li>
+                            <li><strong>Avoid</strong> red/hazard zones on the map</li>
                             <li><strong>Go to</strong> green/safe zones during emergencies</li>
                             <li><strong>Listen</strong> to official announcements & authorities</li>
                         </ul>
@@ -517,6 +517,7 @@
                 </div>
                 <div class="modal-body">
                     <form id="helpForm">
+                        {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label">Your Name</label>
                             <input type="text" class="form-control" id="requesterName" required>

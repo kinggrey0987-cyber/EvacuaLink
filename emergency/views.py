@@ -5,6 +5,7 @@ Includes public help requests and admin incident tracking.
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.messages.views import SuccessMessageMixin
+from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -18,6 +19,7 @@ from django.views.generic import (
 )
 from django.utils import timezone
 from django.db.models import Q
+import json
 
 from emergency.models import EmergencyHelpRequest, EmergencyIncident
 from emergency.forms import (
@@ -206,6 +208,23 @@ class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         context["pending_requests"] = help_requests.filter(status="PENDING").count()
         context["in_progress_requests"] = help_requests.filter(status="IN_PROGRESS").count()
         context["recent_requests"] = help_requests[:5]
+        context["active_help_request_markers"] = json.dumps(
+            list(
+                help_requests.exclude(status__in=["RESOLVED", "CANCELLED"]).values(
+                    "id",
+                    "requester_name",
+                    "contact_number",
+                    "location_description",
+                    "latitude",
+                    "longitude",
+                    "location_source",
+                    "location_accuracy",
+                    "status",
+                    "created_at",
+                )
+            ),
+            cls=DjangoJSONEncoder,
+        )
 
         # Emergency incident statistics
         incidents = EmergencyIncident.objects.all()
@@ -253,6 +272,8 @@ class HelpRequestJSONListView(View):
                 "location_description",
                 "latitude",
                 "longitude",
+                "location_source",
+                "location_accuracy",
                 "status",
                 "created_at",
             )
