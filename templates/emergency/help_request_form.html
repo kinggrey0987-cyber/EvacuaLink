@@ -296,13 +296,17 @@
         west: {{ map_bounds.west }}
     };
 
-    const helpMap = L.map('helpMap').setView(mapCenter, {{ zoom_level }});
+    const helpMap = L.map('helpMap', {
+        maxBoundsViscosity: 1.0,
+        zoomSnap: 0.25,
+        wheelPxPerZoomLevel: 90
+    }).setView(mapCenter, {{ zoom_level }});
 
     // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 19,
-        minZoom: 11
+        minZoom: 13
     }).addTo(helpMap);
 
     // Define max bounds to restrict panning
@@ -311,6 +315,8 @@
         [mapBounds.north, mapBounds.east]
     );
     helpMap.setMaxBounds(bounds);
+    helpMap.fitBounds(bounds, {padding: [24, 24]});
+    helpMap.setMinZoom(helpMap.getBoundsZoom(bounds, true) - 0.25);
 
     // Store the help location marker and location metadata
     let helpMarker = null;
@@ -453,8 +459,8 @@
 
     clearLocationBtn.addEventListener('click', clearLocation);
 
-    // Fit map to bounds on load
-    helpMap.fitBounds(bounds, {padding: [50, 50]});
+    // Fit map to barangay geofence on load
+    helpMap.fitBounds(bounds, {padding: [24, 24]});
 
     // Add scale control
     L.control.scale().addTo(helpMap);
