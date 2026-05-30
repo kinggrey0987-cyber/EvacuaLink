@@ -11,17 +11,29 @@
     </div>
     <div class="col-md-4 text-end">
         {% if not pdf_export %}
-            <form method="post" action="{% url 'report-generate' %}" style="display: inline;">
-                {% csrf_token %}
-                {{ form.as_hidden }}
-                <button type="submit" name="format" value="pdf" class="btn btn-danger">
+            {% if report %}
+                <a href="{% url 'report-detail' report.pk %}?format=pdf" class="btn btn-danger">
                     <i class="bi bi-download"></i> Download PDF
-                </button>
-            </form>
+                </a>
+            {% else %}
+                <form method="post" action="{% url 'report-generate' %}" style="display: inline;">
+                    {% csrf_token %}
+                    {{ form.as_hidden }}
+                    <button type="submit" name="format" value="pdf" class="btn btn-danger">
+                        <i class="bi bi-download"></i> Download PDF
+                    </button>
+                </form>
+            {% endif %}
         {% endif %}
-        <a href="{% url 'report-dashboard' %}" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
+        {% if report %}
+            <a href="{% url 'report-list' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        {% else %}
+            <a href="{% url 'report-dashboard' %}" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        {% endif %}
     </div>
 </div>
 

@@ -9,22 +9,23 @@
 <style>
     #map {
         height: 600px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        margin-bottom: 2rem;
+        border-radius: 22px;
+        box-shadow: var(--ev-shadow-soft);
+        overflow: hidden;
     }
 
     .map-legend {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        background: var(--ev-surface-soft);
+        border: 1px solid var(--ev-border);
+        border-radius: 16px;
+        padding: 1rem;
     }
 
     .legend-item {
         display: flex;
         align-items: center;
-        margin-bottom: 10px;
+        gap: 0.65rem;
+        margin-bottom: 0.85rem;
     }
 
     .legend-item:last-child {
@@ -34,7 +35,6 @@
     .legend-color {
         width: 20px;
         height: 20px;
-        margin-right: 10px;
         border-radius: 4px;
         border: 2px solid rgba(255, 255, 255, 0.9);
         box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
@@ -55,10 +55,11 @@
     }
 
     .map-focus-note {
-        background: #e8f5e9;
-        border-left: 4px solid #198754;
-        border-radius: 6px;
-        padding: 0.75rem;
+        background: #eaf8f0;
+        border: 1px solid rgba(25, 135, 84, 0.18);
+        border-radius: 14px;
+        color: #146c43;
+        padding: 0.85rem;
         margin-bottom: 1rem;
     }
 
@@ -94,8 +95,33 @@
         color: #0066cc;
     }
 
-    .navbar-brand {
-        font-size: 1.5rem;
+    .map-hero {
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 246, 255, 0.95)),
+            radial-gradient(circle at top right, rgba(28, 126, 214, 0.2), transparent 24rem);
+        border: 1px solid var(--ev-border);
+        border-radius: 24px;
+        box-shadow: var(--ev-shadow);
+        padding: clamp(1.25rem, 3vw, 2rem);
+    }
+
+    .map-shell .card {
+        overflow: hidden;
+    }
+
+    .quick-stat {
+        align-items: center;
+        background: var(--ev-surface-soft);
+        border: 1px solid var(--ev-border);
+        border-radius: 14px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.85rem 1rem;
+    }
+
+    .location-list .list-group-item {
+        border-color: var(--ev-border);
+        padding: 1rem 1.25rem;
     }
 
     @media (max-width: 768px) {
@@ -107,16 +133,23 @@
 {% endblock %}
 
 {% block content %}
-<div class="row mb-4">
-    <div class="col-12">
-        <h1 class="page-title">
-            <i class="bi bi-geo-alt"></i> Evacuation Map
-        </h1>
-        <p class="text-muted">
-            Interactive map showing evacuation centers, hazard-prone areas, and safe zones in Barangay Alicante
-        </p>
+<div class="map-shell">
+<section class="map-hero mb-4">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+            <span class="page-kicker">Safety Operations</span>
+            <h1 class="page-title mt-2"><i class="bi bi-geo-alt"></i> Evacuation Map</h1>
+            <p class="text-muted mb-0">
+                View evacuation centers, hazard-prone areas, safe zones, and the Barangay Alicante service boundary.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-primary-subtle text-primary px-3 py-2">{{ evacuation_centers|length }} Centers</span>
+            <span class="badge bg-warning-subtle text-warning px-3 py-2">{{ hazard_zones|length }} Hazards</span>
+            <span class="badge bg-success-subtle text-success px-3 py-2">{{ safe_zones|length }} Safe Zones</span>
+        </div>
     </div>
-</div>
+</section>
 
 <div class="row">
     <div class="col-lg-9 mb-4">
@@ -129,9 +162,9 @@
 
     <div class="col-lg-3 mb-4">
         <div class="card">
-            <div class="card-header bg-primary text-white">
+            <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-info-circle"></i> Map Legend
+                    <i class="bi bi-info-circle text-primary"></i> Map Legend
                 </h5>
             </div>
             <div class="card-body">
@@ -168,22 +201,19 @@
 
                 <hr>
 
-                <div class="mt-4">
+                <div class="mt-4 d-grid gap-2">
                     <h6 class="mb-3">Quick Information</h6>
-                    <div class="alert alert-info py-2 px-3 mb-2">
-                        <small>
-                            <strong>Evacuation Centers:</strong> {{ evacuation_centers|length }}
-                        </small>
+                    <div class="quick-stat">
+                        <small>Evacuation Centers</small>
+                        <strong class="text-primary">{{ evacuation_centers|length }}</strong>
                     </div>
-                    <div class="alert alert-warning py-2 px-3 mb-2">
-                        <small>
-                            <strong>Hazard Zones:</strong> {{ hazard_zones|length }}
-                        </small>
+                    <div class="quick-stat">
+                        <small>Hazard Zones</small>
+                        <strong class="text-warning">{{ hazard_zones|length }}</strong>
                     </div>
-                    <div class="alert alert-success py-2 px-3 mb-0">
-                        <small>
-                            <strong>Safe Zones:</strong> {{ safe_zones|length }}
-                        </small>
+                    <div class="quick-stat">
+                        <small>Safe Zones</small>
+                        <strong class="text-success">{{ safe_zones|length }}</strong>
                     </div>
                 </div>
             </div>
@@ -195,12 +225,12 @@
 <div class="row">
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header bg-danger text-white">
+            <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-building"></i> Evacuation Centers
+                    <i class="bi bi-building text-primary"></i> Evacuation Centers
                 </h5>
             </div>
-            <div class="list-group list-group-flush">
+            <div class="list-group list-group-flush location-list">
                 {% for center in evacuation_centers %}
                     <div class="list-group-item">
                         <h6 class="mb-1">{{ center.name }}</h6>
@@ -223,12 +253,12 @@
 
     <div class="col-md-6 mb-4">
         <div class="card">
-            <div class="card-header bg-success text-white">
+            <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-shield-check"></i> Safe Zones
+                    <i class="bi bi-shield-check text-success"></i> Safe Zones
                 </h5>
             </div>
-            <div class="list-group list-group-flush">
+            <div class="list-group list-group-flush location-list">
                 {% for zone in safe_zones %}
                     <div class="list-group-item">
                         <h6 class="mb-1">{{ zone.name }}</h6>
@@ -253,9 +283,9 @@
 <div class="row">
     <div class="col-12 mb-4">
         <div class="card">
-            <div class="card-header bg-warning text-dark">
+            <div class="card-header">
                 <h5 class="mb-0">
-                    <i class="bi bi-exclamation-triangle"></i> Hazard Zones
+                    <i class="bi bi-exclamation-triangle text-warning"></i> Hazard Zones
                 </h5>
             </div>
             <div class="table-responsive">
@@ -308,6 +338,7 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 {% endblock %}
 

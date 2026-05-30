@@ -26,21 +26,29 @@ class Family(models.Model):
     @property
     def member_count(self):
         """Get total number of family members"""
+        if hasattr(self, "num_members"):
+            return self.num_members
         return self.evacuees.count()
 
     @property
     def checked_in_count(self):
         """Get number of members checked in"""
+        if hasattr(self, "num_checked_in"):
+            return self.num_checked_in
         return self.evacuees.filter(status="CHECKED_IN").count()
 
     @property
     def reunited_count(self):
         """Get number of members reunited"""
+        if hasattr(self, "num_reunited"):
+            return self.num_reunited
         return self.evacuees.filter(status="REUNITED").count()
 
     @property
     def missing_count(self):
         """Get number of missing members"""
+        if hasattr(self, "num_missing"):
+            return self.num_missing
         return self.evacuees.filter(status="MISSING").count()
 
     @property

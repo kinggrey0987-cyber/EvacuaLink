@@ -8,103 +8,256 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <style>
         :root {
-            --ev-primary: #0d6efd;
+            --ev-primary: #0f4c81;
+            --ev-primary-dark: #0b355b;
+            --ev-accent: #1c7ed6;
+            --ev-danger: #dc3545;
+            --ev-success: #198754;
+            --ev-warning: #f59f00;
+            --ev-bg: #f3f6fb;
             --ev-surface: #ffffff;
-            --ev-muted: #6c757d;
-            --ev-border: #dee2e6;
-            --ev-shadow: 0 0.5rem 1.25rem rgba(15, 23, 42, 0.08);
+            --ev-surface-soft: #f8fafc;
+            --ev-text: #172033;
+            --ev-muted: #687386;
+            --ev-border: #e5eaf2;
+            --ev-shadow: 0 14px 34px rgba(15, 35, 65, 0.08);
+            --ev-shadow-soft: 0 8px 18px rgba(15, 35, 65, 0.06);
+            --ev-radius: 18px;
+            --ev-radius-sm: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
-            background-color: #f8f9fa;
-            padding-top: 70px;
-            color: #212529;
+            background:
+                radial-gradient(circle at top left, rgba(28, 126, 214, 0.12), transparent 32rem),
+                linear-gradient(180deg, #f8fbff 0%, var(--ev-bg) 100%);
+            color: var(--ev-text);
+            font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            min-height: 100vh;
+            padding-top: 82px;
         }
 
-        .navbar {
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+        a {
+            transition: color 0.2s ease, background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+        }
+
+        .app-navbar {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(229, 234, 242, 0.88);
+            box-shadow: 0 10px 28px rgba(15, 35, 65, 0.08);
+            padding: 0.85rem 0;
         }
 
         .navbar-brand {
-            font-weight: 700;
-            font-size: 1.5rem;
-            letter-spacing: -0.5px;
+            align-items: center;
+            color: var(--ev-text) !important;
+            display: inline-flex;
+            font-size: 1.2rem;
+            font-weight: 800;
+            gap: 0.7rem;
+            letter-spacing: -0.03em;
+        }
+
+        .brand-mark {
+            align-items: center;
+            background: linear-gradient(135deg, var(--ev-primary), var(--ev-accent));
+            border-radius: 14px;
+            box-shadow: 0 10px 22px rgba(15, 76, 129, 0.22);
+            color: #fff;
+            display: inline-flex;
+            height: 42px;
+            justify-content: center;
+            width: 42px;
+        }
+
+        .navbar-toggler {
+            border: 1px solid var(--ev-border);
+            border-radius: 12px;
+            box-shadow: none !important;
+            padding: 0.55rem 0.7rem;
+        }
+
+        .navbar-nav {
+            gap: 0.18rem;
         }
 
         .nav-link {
-            font-weight: 500;
-            border-radius: 0.5rem;
-            transition: background-color 0.2s ease, color 0.2s ease;
+            align-items: center;
+            border-radius: 999px;
+            color: var(--ev-muted) !important;
+            display: inline-flex;
+            font-size: 0.94rem;
+            font-weight: 650;
+            gap: 0.45rem;
+            padding: 0.62rem 0.92rem !important;
         }
 
         .nav-link:hover,
         .nav-link.active {
-            background-color: rgba(255, 255, 255, 0.16);
-            color: #fff !important;
+            background-color: #eef6ff;
+            color: var(--ev-primary) !important;
         }
 
         .dropdown-menu {
-            border: none;
+            border: 1px solid var(--ev-border);
+            border-radius: 16px;
             box-shadow: var(--ev-shadow);
+            padding: 0.5rem;
+        }
+
+        .dropdown-item {
+            border-radius: 10px;
+            color: var(--ev-text);
+            font-weight: 550;
+            padding: 0.65rem 0.8rem;
         }
 
         .dropdown-item:hover {
-            background-color: #f8f9fa;
-            color: #0d6efd;
+            background-color: #eef6ff;
+            color: var(--ev-primary);
         }
 
         main {
-            min-height: calc(100vh - 200px);
-            padding: 2rem 0;
+            min-height: calc(100vh - 202px);
+            padding: 2rem 0 2.5rem;
+        }
+
+        .content-shell {
+            max-width: 1320px;
         }
 
         .alert {
-            border-radius: 8px;
-            border: none;
-            box-shadow: var(--ev-shadow);
+            border: 1px solid transparent;
+            border-radius: var(--ev-radius-sm);
+            box-shadow: var(--ev-shadow-soft);
         }
 
         .card {
-            border: none;
-            border-radius: 8px;
-            box-shadow: var(--ev-shadow);
+            background: var(--ev-surface);
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
+            box-shadow: var(--ev-shadow-soft);
         }
 
         .card-header {
-            border-radius: 8px 8px 0 0 !important;
-            font-weight: 600;
+            background: var(--ev-surface);
+            border-bottom: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius) var(--ev-radius) 0 0 !important;
+            font-weight: 750;
+            padding: 1rem 1.25rem;
+        }
+
+        .card-body {
+            padding: 1.25rem;
         }
 
         .btn {
-            border-radius: 6px;
-            font-weight: 500;
+            border-radius: 999px;
+            font-weight: 700;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--ev-primary);
+            border-color: var(--ev-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--ev-primary-dark);
+            border-color: var(--ev-primary-dark);
+        }
+
+        .btn-light {
+            background: #f8fafc;
+            border-color: var(--ev-border);
+            color: var(--ev-text);
+        }
+
+        .badge {
+            border-radius: 999px;
+            font-weight: 700;
+            letter-spacing: 0.01em;
         }
 
         .page-title {
-            color: #333;
-            font-weight: 700;
-            margin-bottom: 2rem;
-            padding-bottom: 1rem;
-            border-bottom: 3px solid #0d6efd;
-            display: inline-block;
+            color: var(--ev-text);
+            display: block;
+            font-size: clamp(1.65rem, 3vw, 2.35rem);
+            font-weight: 850;
+            letter-spacing: -0.045em;
+            line-height: 1.1;
+            margin-bottom: 0.45rem;
         }
 
-        footer {
-            background-color: #f8f9fa;
-            border-top: 1px solid #dee2e6;
-            padding: 2rem 0;
-            color: #6c757d;
-            text-align: center;
-            margin-top: 2rem;
+        .page-title i {
+            color: var(--ev-primary);
         }
 
-        .role-badge {
-            font-size: 0.85rem;
-            padding: 0.35rem 0.65rem;
+        .page-kicker {
+            color: var(--ev-primary);
+            font-size: 0.78rem;
+            font-weight: 850;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
+        .section-heading {
+            align-items: center;
+            color: var(--ev-text);
+            display: flex;
+            font-size: 1.05rem;
+            font-weight: 800;
+            gap: 0.55rem;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .table {
+            margin-bottom: 0;
+            vertical-align: middle;
+        }
+
+        .table > :not(caption) > * > * {
+            border-bottom-color: var(--ev-border);
+            padding: 0.85rem 1rem;
+        }
+
+        .table thead th {
+            background: var(--ev-surface-soft);
+            color: var(--ev-muted);
+            font-size: 0.78rem;
+            font-weight: 850;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
         }
 
         .table-responsive {
-            border-radius: 0 0 0.5rem 0.5rem;
+            border-radius: var(--ev-radius-sm);
+        }
+
+        .form-control,
+        .form-select {
+            border-color: var(--ev-border);
+            border-radius: 12px;
+            padding: 0.72rem 0.9rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            border-color: var(--ev-accent);
+            box-shadow: 0 0 0 0.22rem rgba(28, 126, 214, 0.12);
+        }
+
+        .role-badge {
+            background: #eef6ff !important;
+            color: var(--ev-primary) !important;
+            font-size: 0.78rem;
+            padding: 0.45rem 0.7rem;
         }
 
         .btn-group-wrap {
@@ -113,13 +266,31 @@
             gap: 0.5rem;
         }
 
+        footer {
+            background: transparent;
+            border-top: 1px solid var(--ev-border);
+            color: var(--ev-muted);
+            margin-top: 1.5rem;
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
         @media (max-width: 991.98px) {
             body {
-                padding-top: 64px;
+                padding-top: 76px;
             }
 
             .navbar-collapse {
-                padding: 1rem 0 0.5rem;
+                background: #fff;
+                border: 1px solid var(--ev-border);
+                border-radius: var(--ev-radius);
+                box-shadow: var(--ev-shadow);
+                margin-top: 0.9rem;
+                padding: 0.75rem;
+            }
+
+            .nav-link {
+                display: flex;
             }
 
             .navbar .d-flex.align-items-center {
@@ -136,13 +307,7 @@
 
         @media (max-width: 575.98px) {
             main {
-                padding: 1rem 0;
-            }
-
-            .page-title {
-                display: block;
-                font-size: 1.55rem;
-                margin-bottom: 1rem;
+                padding: 1rem 0 1.5rem;
             }
 
             .card-body {
@@ -157,10 +322,11 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
-    <div class="container-fluid">
+<nav class="navbar navbar-expand-lg app-navbar fixed-top">
+    <div class="container-fluid px-3 px-lg-4">
         <a class="navbar-brand" href="{% if request.user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'home' %}{% endif %}">
-            <i class="bi bi-shield-check"></i> EvacuaLink
+            <span class="brand-mark"><i class="bi bi-shield-check"></i></span>
+            <span>EvacuaLink</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -266,7 +432,7 @@
             </div>
         {% endfor %}
     {% endif %}
-    <div class="container">
+    <div class="container-fluid content-shell px-3 px-lg-4">
         {% block content %}{% endblock %}
     </div>
 </main>
