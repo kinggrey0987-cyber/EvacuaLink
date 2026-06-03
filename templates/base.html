@@ -172,6 +172,17 @@
             border-color: var(--ev-primary-dark);
         }
 
+        .btn-outline-primary {
+            border-color: var(--ev-border);
+            color: var(--ev-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--ev-primary);
+            border-color: var(--ev-primary);
+            color: #fff;
+        }
+
         .btn-light {
             background: #f8fafc;
             border-color: var(--ev-border);
@@ -402,8 +413,8 @@
                     </div>
                 </div>
             {% else %}
-                <div>
-                    <a class="btn btn-light" href="{% url 'login' %}">
+                <div class="d-flex align-items-center">
+                    <a class="btn btn-outline-primary" href="{% url 'login' %}">
                         <i class="bi bi-box-arrow-in-right"></i> Login
                     </a>
                 </div>

@@ -21,88 +21,197 @@
             box-sizing: border-box;
         }
 
+        :root {
+            --ev-primary: #0f4c81;
+            --ev-primary-dark: #0b355b;
+            --ev-accent: #1c7ed6;
+            --ev-danger: #dc3545;
+            --ev-success: #198754;
+            --ev-warning: #f59f00;
+            --ev-bg: #f3f6fb;
+            --ev-surface: #ffffff;
+            --ev-surface-soft: #f8fafc;
+            --ev-text: #172033;
+            --ev-muted: #687386;
+            --ev-border: #e5eaf2;
+            --ev-shadow: 0 14px 34px rgba(15, 35, 65, 0.08);
+            --ev-shadow-soft: 0 8px 18px rgba(15, 35, 65, 0.06);
+            --ev-radius: 18px;
+            --ev-radius-sm: 12px;
+        }
+
         body {
             margin: 0;
             padding: 0;
-            background-color: #f8f9fa;
+            background:
+                radial-gradient(circle at top left, rgba(28, 126, 214, 0.12), transparent 32rem),
+                linear-gradient(180deg, #f8fbff 0%, var(--ev-bg) 100%);
+            color: var(--ev-text);
             min-height: 100vh;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         .navbar-custom {
-            background-color: white;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            padding: 1rem 0;
+            background: rgba(255, 255, 255, 0.94);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(229, 234, 242, 0.88);
+            box-shadow: 0 10px 28px rgba(15, 35, 65, 0.08);
+            padding: 0.85rem 0;
             position: sticky;
             top: 0;
             z-index: 1000;
         }
 
         .navbar-brand {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #dc3545 !important;
+            align-items: center;
+            color: var(--ev-text) !important;
+            display: inline-flex;
+            font-size: 1.2rem;
+            font-weight: 800;
+            gap: 0.7rem;
         }
 
         .container-custom {
-            max-width: 1200px;
+            max-width: 1240px;
             margin: 0 auto;
             padding: 0 1.5rem;
         }
 
+        .brand-mark {
+            align-items: center;
+            background: linear-gradient(135deg, var(--ev-primary), var(--ev-accent));
+            border-radius: 14px;
+            box-shadow: 0 10px 22px rgba(15, 76, 129, 0.22);
+            color: #fff;
+            display: inline-flex;
+            height: 42px;
+            justify-content: center;
+            width: 42px;
+        }
+
+        .navbar-nav {
+            gap: 0.18rem;
+        }
+
+        .nav-link {
+            align-items: center;
+            border-radius: 999px;
+            color: var(--ev-muted) !important;
+            display: inline-flex;
+            font-size: 0.94rem;
+            font-weight: 650;
+            gap: 0.45rem;
+            padding: 0.62rem 0.92rem !important;
+        }
+
+        .nav-link:hover,
+        .nav-link:focus {
+            background-color: #eef6ff;
+            color: var(--ev-primary) !important;
+        }
+
+        .btn {
+            border-radius: 999px;
+            font-weight: 700;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .btn-primary {
+            background-color: var(--ev-primary);
+            border-color: var(--ev-primary);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--ev-primary-dark);
+            border-color: var(--ev-primary-dark);
+        }
+
+        .btn-outline-primary {
+            border-color: var(--ev-border);
+            color: var(--ev-primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--ev-primary);
+            border-color: var(--ev-primary);
+        }
+
         /* Hero Section */
         .hero-section {
-            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-            padding: 4rem 0;
-            color: white;
-            text-align: center;
+            padding: 3rem 0 5rem;
+        }
+
+        .hero-panel {
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 246, 255, 0.95)),
+                radial-gradient(circle at top right, rgba(28, 126, 214, 0.2), transparent 24rem);
+            border: 1px solid var(--ev-border);
+            border-radius: 24px;
+            box-shadow: var(--ev-shadow);
+            padding: clamp(1.5rem, 4vw, 3rem);
+        }
+
+        .hero-kicker {
+            color: var(--ev-primary);
+            font-size: 0.78rem;
+            font-weight: 850;
+            letter-spacing: 0.12em;
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
         }
 
         .hero-title {
-            font-size: 2.5rem;
-            font-weight: bold;
+            color: var(--ev-text);
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 850;
+            letter-spacing: -0.045em;
+            line-height: 1;
             margin-bottom: 0.5rem;
         }
 
         .hero-subtitle {
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-            opacity: 0.95;
+            color: var(--ev-muted);
+            font-size: 1.08rem;
+            line-height: 1.7;
+            margin: 0 auto 1.75rem;
+            max-width: 680px;
         }
 
         .btn-emergency {
-            background-color: white;
-            color: #dc3545;
-            border: none;
-            padding: 0.9rem 2.5rem;
+            background-color: var(--ev-danger);
+            border: 1px solid var(--ev-danger);
+            color: #fff;
+            padding: 0.9rem 1.6rem;
             font-size: 1.1rem;
             font-weight: bold;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.2);
             transition: all 0.3s ease;
             display: inline-block;
         }
 
         .btn-emergency:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-            color: #dc3545;
+            box-shadow: 0 16px 30px rgba(220, 53, 69, 0.26);
+            background-color: #bb2d3b;
+            border-color: #bb2d3b;
+            color: #fff;
         }
 
         /* Quick Actions Section */
         .quick-actions-section {
-            margin-top: -3rem;
+            margin-top: -3.5rem;
             margin-bottom: 3rem;
             position: relative;
             z-index: 10;
         }
 
         .action-card {
-            background: white;
-            border-radius: 12px;
+            background: var(--ev-surface);
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
             padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-            text-align: center;
+            box-shadow: var(--ev-shadow-soft);
             transition: all 0.3s ease;
             height: 100%;
         }
@@ -119,25 +228,25 @@
         }
 
         .action-card-icon.hazard {
-            color: #dc3545;
+            color: var(--ev-danger);
         }
 
         .action-card-icon.safe {
-            color: #28a745;
+            color: var(--ev-success);
         }
 
         .action-card-icon.shelter {
-            color: #0066cc;
+            color: var(--ev-primary);
         }
 
         .action-card h5 {
             margin: 1rem 0 0.5rem 0;
-            font-weight: bold;
-            color: #333;
+            font-weight: 800;
+            color: var(--ev-text);
         }
 
         .action-card p {
-            color: #666;
+            color: var(--ev-muted);
             margin: 0;
             font-size: 0.95rem;
         }
@@ -148,21 +257,22 @@
         }
 
         .section-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            color: #333;
+            align-items: center;
+            color: var(--ev-text);
+            display: flex;
+            font-size: 1.35rem;
+            font-weight: 850;
+            gap: 0.6rem;
             margin-bottom: 2rem;
-            padding-bottom: 0.5rem;
-            border-bottom: 3px solid #dc3545;
-            display: inline-block;
         }
 
         /* Map Section */
         .map-container {
-            background: white;
-            border-radius: 12px;
+            background: var(--ev-surface);
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
             overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--ev-shadow-soft);
             height: 500px;
             margin-bottom: 1.5rem;
         }
@@ -173,15 +283,16 @@
         }
 
         .legend-box {
-            background: white;
-            border-radius: 12px;
+            background: var(--ev-surface);
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
             padding: 1.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--ev-shadow-soft);
         }
 
         .legend-box h6 {
-            font-weight: bold;
-            color: #333;
+            font-weight: 800;
+            color: var(--ev-text);
             margin-bottom: 1.5rem;
         }
 
@@ -190,7 +301,7 @@
             align-items: center;
             margin-bottom: 1rem;
             padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid var(--ev-border);
         }
 
         .legend-item:last-child {
@@ -209,26 +320,27 @@
         }
 
         .legend-item span {
-            color: #555;
+            color: var(--ev-muted);
             font-size: 0.95rem;
         }
 
         .legend-item strong {
-            color: #333;
+            color: var(--ev-text);
         }
 
         /* Info Section */
         .info-section {
-            background: white;
-            border-radius: 12px;
+            background: var(--ev-surface);
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
             padding: 2.5rem;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            box-shadow: var(--ev-shadow-soft);
             margin-bottom: 3rem;
         }
 
         .info-section h3 {
-            font-weight: bold;
-            color: #333;
+            font-weight: 800;
+            color: var(--ev-text);
             margin-bottom: 2rem;
         }
 
@@ -237,8 +349,8 @@
         }
 
         .info-column h5 {
-            font-weight: bold;
-            color: #dc3545;
+            font-weight: 800;
+            color: var(--ev-primary);
             margin-bottom: 1.5rem;
             display: flex;
             align-items: center;
@@ -252,17 +364,17 @@
         }
 
         .info-column li {
-            color: #555;
+            color: var(--ev-muted);
             margin-bottom: 0.8rem;
         }
 
         .info-column li strong {
-            color: #333;
+            color: var(--ev-text);
         }
 
         /* Footer */
         .footer-section {
-            background-color: #333;
+            background-color: var(--ev-primary-dark);
             color: white;
             text-align: center;
             padding: 3rem 0;
@@ -284,7 +396,7 @@
 
         /* Modal Styling */
         .modal-header {
-            background-color: #dc3545;
+            background-color: var(--ev-danger);
             color: white;
         }
 
@@ -294,21 +406,35 @@
 
         .form-label {
             font-weight: 500;
-            color: #333;
+            color: var(--ev-text);
         }
 
         .form-control {
-            border-radius: 8px;
-            border: 1px solid #ddd;
+            border-radius: var(--ev-radius-sm);
+            border: 1px solid var(--ev-border);
         }
 
         .form-control:focus {
-            border-color: #dc3545;
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+            border-color: var(--ev-accent);
+            box-shadow: 0 0 0 0.2rem rgba(28, 126, 214, 0.14);
         }
 
         /* Responsive */
         @media (max-width: 768px) {
+            .navbar-collapse {
+                background: #fff;
+                border: 1px solid var(--ev-border);
+                border-radius: var(--ev-radius);
+                box-shadow: var(--ev-shadow);
+                margin-top: 0.9rem;
+                padding: 0.75rem;
+            }
+
+            .navbar-collapse .d-flex {
+                align-items: stretch !important;
+                flex-direction: column;
+            }
+
             .hero-title {
                 font-size: 1.8rem;
             }
@@ -363,14 +489,27 @@
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
         <div class="container-custom">
             <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="bi bi-shield-check"></i> EvacuaLink
+                <span class="brand-mark"><i class="bi bi-shield-check"></i></span>
+                <span>EvacuaLink</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-                <div class="d-flex gap-2">
-                    <a href="{% url 'login' %}" class="btn btn-primary">
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-lg-4 me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#safety-map">
+                            <i class="bi bi-map"></i> Safety Map
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#safety-guide">
+                            <i class="bi bi-info-circle"></i> Safety Guide
+                        </a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{% url 'login' %}" class="btn btn-outline-primary">
                         <i class="bi bi-box-arrow-in-right"></i> Staff Login
                     </a>
                 </div>
@@ -381,18 +520,18 @@
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="container-custom">
-            <h1 class="hero-title">
-                <i class="bi bi-exclamation-triangle-fill"></i> EvacuaLink
-            </h1>
-            <p class="hero-subtitle">Emergency Evacuation & Disaster Information System</p>
-            <p style="font-size: 1rem; margin-bottom: 2rem; color: rgba(255,255,255,0.9);">
-                Stay safe and informed. Find help, evacuation centers, and safety information in real-time.
-            </p>
+            <div class="hero-panel text-center">
+                <div class="hero-kicker">Barangay Alicante Emergency Operations</div>
+                <h1 class="hero-title">Emergency evacuation information system</h1>
+                <p class="hero-subtitle">
+                    Stay informed, find evacuation centers, review hazard and safe zones, and request emergency assistance from responders.
+                </p>
 
-            <!-- Emergency Help Button -->
-            <button class="btn btn-emergency" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
-                <i class="bi bi-telephone-fill"></i> REQUEST HELP NOW
-            </button>
+                <!-- Emergency Help Button -->
+                <button class="btn btn-emergency btn-lg" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
+                    <i class="bi bi-telephone-fill"></i> Request Emergency Help
+                </button>
+            </div>
         </div>
     </section>
 
@@ -430,7 +569,7 @@
     </section>
 
     <!-- Map Section -->
-    <section class="container-custom main-section">
+    <section class="container-custom main-section" id="safety-map">
         <h2 class="section-title">
             <i class="bi bi-map"></i> Safety Map
         </h2>
@@ -444,19 +583,19 @@
                 <div class="legend-box">
                     <h6><i class="bi bi-list-ul"></i> Map Legend</h6>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #dc3545;"></div>
+                        <div class="legend-color" style="background-color: #0d6efd;"></div>
                         <span><strong>Evacuation Centers</strong> - Safe shelter & assistance</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #ff6b6b;"></div>
+                        <div class="legend-color" style="background-color: #dc3545;"></div>
                         <span><strong>Critical Hazard</strong> - AVOID immediately</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #ffc107;"></div>
+                        <div class="legend-color" style="background-color: #ff8c00;"></div>
                         <span><strong>High Risk</strong> - Consider evacuation</span>
                     </div>
                     <div class="legend-item">
-                        <div class="legend-color" style="background-color: #fd7e14;"></div>
+                        <div class="legend-color" style="background-color: #ffc107;"></div>
                         <span><strong>Moderate Risk</strong> - Monitor situation</span>
                     </div>
                     <div class="legend-item">
@@ -473,7 +612,7 @@
     </section>
 
     <!-- Information Section -->
-    <section class="container-custom main-section">
+    <section class="container-custom main-section" id="safety-guide">
         <h2 class="section-title">
             <i class="bi bi-info-circle"></i> Emergency Safety Guide
         </h2>
@@ -623,7 +762,7 @@
                 [{{ center.latitude }}, {{ center.longitude }}],
                 {
                     radius: 10,
-                    fillColor: '#dc3545',
+                    fillColor: '#0d6efd',
                     color: '#fff',
                     weight: 2,
                     opacity: 0.8,
@@ -639,11 +778,11 @@
         // Add hazard zones
         {% for zone in hazard_zones %}
             {% if zone.risk_level == 'CRITICAL' %}
-                const colorH{{ zone.id }} = '#ff6b6b';
+                const colorH{{ zone.id }} = '#dc3545';
             {% elif zone.risk_level == 'HIGH' %}
-                const colorH{{ zone.id }} = '#ffc107';
+                const colorH{{ zone.id }} = '#ff8c00';
             {% elif zone.risk_level == 'MODERATE' %}
-                const colorH{{ zone.id }} = '#fd7e14';
+                const colorH{{ zone.id }} = '#ffc107';
             {% else %}
                 const colorH{{ zone.id }} = '#20c997';
             {% endif %}
@@ -672,7 +811,7 @@
                 [{{ zone.latitude }}, {{ zone.longitude }}],
                 {
                     radius: 9,
-                    fillColor: '#28a745',
+                    fillColor: '#198754',
                     color: '#fff',
                     weight: 2,
                     opacity: 0.8,
