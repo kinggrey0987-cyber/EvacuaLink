@@ -1110,10 +1110,50 @@
         const quickPhoto = document.getElementById('quickPhoto');
         const quickPhotoPreview = document.getElementById('quickPhotoPreview');
         let quickLocationRequested = false;
+        let quickLocationMarker = null;
+        let quickAccuracyCircle = null;
 
         function setQuickLocationStatus(message, type = 'info') {
             quickLocationStatus.className = `quick-location-status alert-${type} mt-2`;
             quickLocationStatus.innerHTML = message;
+        }
+
+        function showQuickLocationOnMap(lat, lon, accuracy = null) {
+            if (quickLocationMarker) {
+                map.removeLayer(quickLocationMarker);
+            }
+
+            if (quickAccuracyCircle) {
+                map.removeLayer(quickAccuracyCircle);
+                quickAccuracyCircle = null;
+            }
+
+            quickLocationMarker = L.circleMarker([lat, lon], {
+                radius: 11,
+                fillColor: '#0d6efd',
+                color: '#ffffff',
+                weight: 3,
+                opacity: 1,
+                fillOpacity: 0.92
+            }).addTo(map);
+
+            quickLocationMarker.bindPopup(
+                '<strong>Your captured location</strong><br>' +
+                '<small>This is the device location that will be sent with your help request.</small>'
+            );
+
+            if (accuracy) {
+                quickAccuracyCircle = L.circle([lat, lon], {
+                    radius: accuracy,
+                    color: '#0d6efd',
+                    fillColor: '#0d6efd',
+                    fillOpacity: 0.08,
+                    weight: 1
+                }).addTo(map);
+            }
+
+            map.setView([lat, lon], Math.max(map.getZoom(), 16));
+            quickLocationMarker.openPopup();
         }
 
         function setQuickLocation(lat, lon, accuracy = null) {
@@ -1131,8 +1171,9 @@
             document.getElementById('quickLongitude').value = lon.toFixed(6);
             document.getElementById('quickLocationSource').value = 'AUTO_GPS';
             document.getElementById('quickLocationAccuracy').value = accuracy ? Number(accuracy).toFixed(2) : '';
+            showQuickLocationOnMap(lat, lon, accuracy);
             setQuickLocationStatus(
-                `<i class="bi bi-check-circle"></i> Device location captured${accuracy ? ` within about ${Number(accuracy).toFixed(0)} meters` : ''}.`,
+                `<i class="bi bi-check-circle"></i> Device location captured${accuracy ? ` within about ${Number(accuracy).toFixed(0)} meters` : ''} and marked on the safety map.`,
                 'success'
             );
             return true;
