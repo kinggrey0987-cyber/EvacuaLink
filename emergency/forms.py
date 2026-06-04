@@ -22,6 +22,7 @@ class EmergencyHelpRequestForm(forms.ModelForm):
             "longitude",
             "location_source",
             "location_accuracy",
+            "photo",
             "message",
         ]
         widgets = {
@@ -51,6 +52,13 @@ class EmergencyHelpRequestForm(forms.ModelForm):
             "longitude": forms.HiddenInput(),
             "location_source": forms.HiddenInput(),
             "location_accuracy": forms.HiddenInput(),
+            "photo": forms.ClearableFileInput(
+                attrs={
+                    "class": "form-control",
+                    "accept": "image/*",
+                    "capture": "environment",
+                }
+            ),
             "message": forms.Textarea(
                 attrs={
                     "class": "form-control",
@@ -72,6 +80,8 @@ class EmergencyHelpRequestForm(forms.ModelForm):
         self.fields["location_source"].initial = EmergencyHelpRequest.LocationSource.MAP_PIN
         self.fields["location_accuracy"].label = "Location Accuracy"
         self.fields["location_accuracy"].required = False
+        self.fields["photo"].label = "Situation Photo"
+        self.fields["photo"].required = False
         self.fields["message"].label = "Emergency Message"
 
     def clean(self):

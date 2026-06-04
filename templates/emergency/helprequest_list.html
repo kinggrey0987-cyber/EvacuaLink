@@ -60,6 +60,7 @@
                     <th>Contact</th>
                     <th>Location Description</th>
                     <th>Location Source</th>
+                    <th>Photo</th>
                     <th>Status</th>
                     <th>Submitted</th>
                     <th>Actions</th>
@@ -83,6 +84,15 @@
                             <span class="badge bg-info">{{ request.get_location_source_display }}</span>
                             {% if request.location_accuracy %}
                                 <br><small class="text-muted">±{{ request.location_accuracy }}m</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if request.photo %}
+                                <a href="{{ request.photo.url }}" target="_blank" class="badge bg-primary text-decoration-none">
+                                    <i class="bi bi-camera"></i> View
+                                </a>
+                            {% else %}
+                                <span class="text-muted small">None</span>
                             {% endif %}
                         </td>
                         <td>
@@ -112,7 +122,7 @@
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="6" class="text-center text-muted py-4">
+                        <td colspan="8" class="text-center text-muted py-4">
                             <i class="bi bi-inbox"></i> No help requests found
                         </td>
                     </tr>

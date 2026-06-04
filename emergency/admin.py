@@ -68,10 +68,9 @@ class EmergencyIncidentAdmin(admin.ModelAdmin):
 
 @admin.register(EmergencyHelpRequest)
 class EmergencyHelpRequestAdmin(admin.ModelAdmin):
-    list_display = ("requester_name", "contact_number", "get_status_badge", "location_display", "location_source", "created_at", "resolution_time")
+    list_display = ("requester_name", "contact_number", "get_status_badge", "location_display", "location_source", "has_photo", "created_at", "resolution_time")
     search_fields = ("requester_name", "contact_number", "location_description", "message")
     list_filter = ("status", "location_source", "created_at", "resolved_at")
-    readonly_fields = ("created_at", "resolution_time")
     ordering = ("-created_at",)
 
     fieldsets = (
@@ -82,13 +81,14 @@ class EmergencyHelpRequestAdmin(admin.ModelAdmin):
             "fields": ("location_description", "latitude", "longitude", "location_source", "location_accuracy")
         }),
         ("Request Details", {
-            "fields": ("message", "priority")
+            "fields": ("message", "photo", "photo_preview")
         }),
         ("Status & Resolution", {
-            "fields": ("status", "response_notes", "created_at", "resolved_at", "resolution_time"),
+            "fields": ("status", "created_at", "resolved_at", "resolution_time"),
             "classes": ("collapse",)
         }),
     )
+    readonly_fields = ("created_at", "resolution_time", "photo_preview")
 
     @admin.display(description="Status", ordering="status")
     def get_status_badge(self, obj):
@@ -111,6 +111,21 @@ class EmergencyHelpRequestAdmin(admin.ModelAdmin):
         if obj.location_description:
             return obj.location_description[:40] + "..." if len(obj.location_description) > 40 else obj.location_description
         return "-"
+
+    @admin.display(description="Photo", boolean=True)
+    def has_photo(self, obj):
+        return bool(obj.photo)
+
+    @admin.display(description="Photo Preview")
+    def photo_preview(self, obj):
+        if not obj.photo:
+            return "-"
+
+        return format_html(
+            '<a href="{}" target="_blank"><img src="{}" style="max-width: 260px; max-height: 180px; border-radius: 6px;" alt="Help request photo"></a>',
+            obj.photo.url,
+            obj.photo.url,
+        )
 
     @admin.display(description="Resolution Time")
     def resolution_time(self, obj):

@@ -57,6 +57,7 @@ class EmergencyHelpRequest(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, validators=[MinValueValidator(-180), MaxValueValidator(180)])
     location_source = models.CharField(max_length=20, choices=LocationSource.choices, default=LocationSource.MAP_PIN)
     location_accuracy = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True, help_text="Estimated GPS accuracy in meters")
+    photo = models.ImageField(upload_to="help_request_photos/", null=True, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     created_at = models.DateTimeField(auto_now_add=True)
     resolved_at = models.DateTimeField(null=True, blank=True)

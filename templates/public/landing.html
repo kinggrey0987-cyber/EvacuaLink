@@ -544,6 +544,16 @@
             border-radius: var(--ev-radius);
         }
 
+        .modal-dialog {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .modal-body {
+            max-height: min(70vh, 680px);
+            overflow-y: auto;
+        }
+
         .modal-header {
             background-color: var(--ev-red);
             color: white;
@@ -565,6 +575,22 @@
         .form-control:focus {
             border-color: var(--ev-blue-2);
             box-shadow: 0 0 0 0.2rem rgba(34, 115, 185, 0.16);
+        }
+
+        .quick-location-status {
+            border-radius: var(--ev-radius);
+            font-size: 0.92rem;
+            padding: 0.75rem;
+        }
+
+        .photo-preview {
+            display: none;
+            margin-top: 0.75rem;
+            max-height: 180px;
+            max-width: 100%;
+            object-fit: cover;
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
         }
 
         @media (max-width: 992px) {
@@ -617,6 +643,20 @@
 
             .map-container {
                 height: 360px;
+            }
+
+            .modal-dialog {
+                margin: 0;
+            }
+
+            .modal-content {
+                border: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+
+            .modal-body {
+                max-height: calc(100vh - 152px);
             }
         }
 
@@ -865,7 +905,7 @@
 
     <!-- Help Request Modal -->
     <div class="modal fade" id="helpRequestModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">
@@ -874,32 +914,51 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="helpForm">
+                    <form id="helpForm" method="post" action="{% url 'help-request' %}" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label">Your Name</label>
-                            <input type="text" class="form-control" id="requesterName" required>
+                            <input type="text" class="form-control" id="requesterName" name="requester_name" autocomplete="name" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contact Number</label>
-                            <input type="tel" class="form-control" id="contactNumber" required>
+                            <input type="tel" class="form-control" id="contactNumber" name="contact_number" autocomplete="tel" required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Location/Address</label>
-                            <input type="text" class="form-control" id="location" placeholder="Where are you?" required>
+                            <input type="text" class="form-control" id="location" name="location_description" placeholder="Where are you?" autocomplete="street-address" required>
+                            <div id="quickLocationStatus" class="quick-location-status alert-info mt-2">
+                                <i class="bi bi-crosshair"></i> Opening this form will ask your device for GPS location.
+                            </div>
+                            <button type="button" id="quickLocationBtn" class="btn btn-outline-primary btn-sm mt-2">
+                                <i class="bi bi-crosshair"></i> Use Device Location
+                            </button>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Describe Your Situation</label>
-                            <textarea class="form-control" id="message" rows="4" placeholder="What kind of help do you need?" required></textarea>
+                            <textarea class="form-control" id="message" name="message" rows="4" placeholder="What kind of help do you need?" required></textarea>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label">Add a Photo <span class="text-muted">(optional)</span></label>
+                            <input type="file" class="form-control" id="quickPhoto" name="photo" accept="image/*" capture="environment">
+                            <small class="form-text text-muted">On a phone, this can open the camera to show the situation or nearby landmarks.</small>
+                            <img id="quickPhotoPreview" class="photo-preview" alt="Selected situation photo preview">
+                        </div>
+                        <input type="hidden" id="quickLatitude" name="latitude">
+                        <input type="hidden" id="quickLongitude" name="longitude">
+                        <input type="hidden" id="quickLocationSource" name="location_source" value="AUTO_GPS">
+                        <input type="hidden" id="quickLocationAccuracy" name="location_accuracy">
                         <div class="alert alert-info">
-                            <small><i class="bi bi-info-circle"></i> Your location will help us respond faster. Emergency responders are standing by.</small>
+                            <small><i class="bi bi-info-circle"></i> Your GPS location and optional photo help responders verify where you are. If GPS is blocked, open the full map form and place the pin manually.</small>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
+                    <a href="{% url 'help-request' %}" class="btn btn-outline-primary me-auto">
+                        <i class="bi bi-map"></i> Full Map Form
+                    </a>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" onclick="submitHelpRequest()">
+                    <button type="button" class="btn btn-danger" id="quickSubmitBtn" onclick="submitHelpRequest()">
                         <i class="bi bi-send"></i> Submit Help Request
                     </button>
                 </div>
@@ -1044,48 +1103,118 @@
 
         L.control.scale().addTo(map);
 
+        const helpRequestModal = document.getElementById('helpRequestModal');
+        const quickLocationStatus = document.getElementById('quickLocationStatus');
+        const quickLocationBtn = document.getElementById('quickLocationBtn');
+        const quickSubmitBtn = document.getElementById('quickSubmitBtn');
+        const quickPhoto = document.getElementById('quickPhoto');
+        const quickPhotoPreview = document.getElementById('quickPhotoPreview');
+        let quickLocationRequested = false;
+
+        function setQuickLocationStatus(message, type = 'info') {
+            quickLocationStatus.className = `quick-location-status alert-${type} mt-2`;
+            quickLocationStatus.innerHTML = message;
+        }
+
+        function setQuickLocation(lat, lon, accuracy = null) {
+            const point = L.latLng(lat, lon);
+
+            if (!maxBounds.contains(point)) {
+                setQuickLocationStatus(
+                    '<i class="bi bi-exclamation-triangle"></i> Your GPS location appears outside Barangay Alicante. Use the full map form to place your location manually.',
+                    'warning'
+                );
+                return false;
+            }
+
+            document.getElementById('quickLatitude').value = lat.toFixed(6);
+            document.getElementById('quickLongitude').value = lon.toFixed(6);
+            document.getElementById('quickLocationSource').value = 'AUTO_GPS';
+            document.getElementById('quickLocationAccuracy').value = accuracy ? Number(accuracy).toFixed(2) : '';
+            setQuickLocationStatus(
+                `<i class="bi bi-check-circle"></i> Device location captured${accuracy ? ` within about ${Number(accuracy).toFixed(0)} meters` : ''}.`,
+                'success'
+            );
+            return true;
+        }
+
+        function requestQuickLocation() {
+            if (!navigator.geolocation) {
+                setQuickLocationStatus('<i class="bi bi-exclamation-triangle"></i> This browser does not support GPS. Use the full map form to place your location manually.', 'warning');
+                return;
+            }
+
+            quickLocationBtn.disabled = true;
+            quickLocationBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Getting Location...';
+            setQuickLocationStatus('<i class="bi bi-crosshair"></i> Asking permission to use your device location...', 'info');
+
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    setQuickLocation(position.coords.latitude, position.coords.longitude, position.coords.accuracy);
+                    quickLocationBtn.disabled = false;
+                    quickLocationBtn.innerHTML = '<i class="bi bi-crosshair"></i> Refresh Device Location';
+                },
+                function(error) {
+                    const message = error.code === error.PERMISSION_DENIED
+                        ? 'Location permission was denied. Use the full map form to place your location manually.'
+                        : 'Could not capture GPS location. Use the full map form to place your location manually.';
+
+                    setQuickLocationStatus(`<i class="bi bi-exclamation-triangle"></i> ${message}`, 'warning');
+                    quickLocationBtn.disabled = false;
+                    quickLocationBtn.innerHTML = '<i class="bi bi-crosshair"></i> Try Device Location Again';
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        }
+
+        helpRequestModal.addEventListener('shown.bs.modal', function() {
+            if (!quickLocationRequested) {
+                quickLocationRequested = true;
+                requestQuickLocation();
+            }
+        });
+
+        quickLocationBtn.addEventListener('click', requestQuickLocation);
+
+        quickPhoto?.addEventListener('change', function() {
+            const file = quickPhoto.files?.[0];
+
+            if (!file) {
+                quickPhotoPreview.style.display = 'none';
+                quickPhotoPreview.removeAttribute('src');
+                return;
+            }
+
+            quickPhotoPreview.src = URL.createObjectURL(file);
+            quickPhotoPreview.style.display = 'block';
+        });
+
         // Help request submission
         function submitHelpRequest() {
             const name = document.getElementById('requesterName').value;
             const phone = document.getElementById('contactNumber').value;
             const location = document.getElementById('location').value;
             const message = document.getElementById('message').value;
+            const lat = document.getElementById('quickLatitude').value;
+            const lon = document.getElementById('quickLongitude').value;
 
             if (!name || !phone || !location || !message) {
                 alert('Please fill in all fields');
                 return;
             }
 
-            // Get CSRF token
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-                            document.querySelector('input[name="csrfmiddlewaretoken"]')?.value ||
-                            '{{ csrf_token }}';
-
-            // Create form and submit
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{% url "help-request" %}';
-
-            const fields = {
-                'requester_name': name,
-                'contact_number': phone,
-                'location_description': location,
-                'message': message,
-                'latitude': mapCenter[0],
-                'longitude': mapCenter[1],
-                'csrfmiddlewaretoken': csrfToken
-            };
-
-            for (const [key, value] of Object.entries(fields)) {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = key;
-                input.value = value;
-                form.appendChild(input);
+            if (!lat || !lon) {
+                setQuickLocationStatus('<i class="bi bi-exclamation-triangle"></i> Device location is required for this quick request. Allow GPS or use the full map form.', 'warning');
+                return;
             }
 
-            document.body.appendChild(form);
-            form.submit();
+            quickSubmitBtn.disabled = true;
+            quickSubmitBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Submitting...';
+            document.getElementById('helpForm').submit();
         }
     </script>
 </body>
