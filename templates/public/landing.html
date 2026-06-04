@@ -22,41 +22,72 @@
         }
 
         :root {
-            --ev-primary: #0f4c81;
-            --ev-primary-dark: #0b355b;
-            --ev-accent: #1c7ed6;
-            --ev-danger: #dc3545;
-            --ev-success: #198754;
-            --ev-warning: #f59f00;
-            --ev-bg: #f3f6fb;
+            --ev-navy: #0b2f57;
+            --ev-blue: #155d9c;
+            --ev-blue-2: #2273b9;
+            --ev-red: #c92a3d;
+            --ev-green: #15803d;
+            --ev-amber: #c87900;
+            --ev-bg: #eef3f8;
             --ev-surface: #ffffff;
-            --ev-surface-soft: #f8fafc;
+            --ev-surface-2: #f6f9fc;
             --ev-text: #172033;
-            --ev-muted: #687386;
-            --ev-border: #e5eaf2;
-            --ev-shadow: 0 14px 34px rgba(15, 35, 65, 0.08);
-            --ev-shadow-soft: 0 8px 18px rgba(15, 35, 65, 0.06);
-            --ev-radius: 18px;
-            --ev-radius-sm: 12px;
+            --ev-muted: #607089;
+            --ev-border: #d8e1ec;
+            --ev-shadow: 0 16px 36px rgba(7, 35, 66, 0.12);
+            --ev-shadow-soft: 0 8px 18px rgba(7, 35, 66, 0.08);
+            --ev-radius: 8px;
         }
 
         body {
             margin: 0;
             padding: 0;
-            background:
-                radial-gradient(circle at top left, rgba(28, 126, 214, 0.12), transparent 32rem),
-                linear-gradient(180deg, #f8fbff 0%, var(--ev-bg) 100%);
+            background: var(--ev-bg);
             color: var(--ev-text);
             min-height: 100vh;
-            font-family: Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        .container-custom {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        .lgu-strip {
+            background: var(--ev-navy);
+            color: #dbeafe;
+            font-size: 0.82rem;
+            font-weight: 650;
+            padding: 0.45rem 0;
+        }
+
+        .lgu-strip .container-custom {
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .lgu-strip strong {
+            color: #ffffff;
+        }
+
+        .status-dot {
+            background: #22c55e;
+            border-radius: 999px;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.16);
+            display: inline-block;
+            height: 0.62rem;
+            margin-right: 0.45rem;
+            width: 0.62rem;
         }
 
         .navbar-custom {
-            background: rgba(255, 255, 255, 0.94);
-            backdrop-filter: blur(18px);
-            border-bottom: 1px solid rgba(229, 234, 242, 0.88);
-            box-shadow: 0 10px 28px rgba(15, 35, 65, 0.08);
-            padding: 0.85rem 0;
+            background: #ffffff;
+            border-bottom: 1px solid var(--ev-border);
+            box-shadow: 0 4px 16px rgba(7, 35, 66, 0.06);
+            padding: 0.72rem 0;
             position: sticky;
             top: 0;
             z-index: 1000;
@@ -66,22 +97,15 @@
             align-items: center;
             color: var(--ev-text) !important;
             display: inline-flex;
-            font-size: 1.2rem;
+            font-size: 1.12rem;
             font-weight: 800;
-            gap: 0.7rem;
-        }
-
-        .container-custom {
-            max-width: 1240px;
-            margin: 0 auto;
-            padding: 0 1.5rem;
+            gap: 0.72rem;
         }
 
         .brand-mark {
             align-items: center;
-            background: linear-gradient(135deg, var(--ev-primary), var(--ev-accent));
-            border-radius: 14px;
-            box-shadow: 0 10px 22px rgba(15, 76, 129, 0.22);
+            background: var(--ev-blue);
+            border-radius: var(--ev-radius);
             color: #fff;
             display: inline-flex;
             height: 42px;
@@ -89,192 +113,314 @@
             width: 42px;
         }
 
+        .brand-copy small {
+            color: var(--ev-muted);
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
         .navbar-nav {
-            gap: 0.18rem;
+            gap: 0.25rem;
         }
 
         .nav-link {
             align-items: center;
-            border-radius: 999px;
-            color: var(--ev-muted) !important;
+            border-radius: var(--ev-radius);
+            color: #49566b !important;
             display: inline-flex;
             font-size: 0.94rem;
-            font-weight: 650;
+            font-weight: 700;
             gap: 0.45rem;
-            padding: 0.62rem 0.92rem !important;
+            padding: 0.58rem 0.82rem !important;
         }
 
         .nav-link:hover,
         .nav-link:focus {
-            background-color: #eef6ff;
-            color: var(--ev-primary) !important;
+            background-color: #e9f2fb;
+            color: var(--ev-blue) !important;
         }
 
         .btn {
-            border-radius: 999px;
-            font-weight: 700;
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        .btn-primary {
-            background-color: var(--ev-primary);
-            border-color: var(--ev-primary);
-        }
-
-        .btn-primary:hover {
-            background-color: var(--ev-primary-dark);
-            border-color: var(--ev-primary-dark);
+            border-radius: var(--ev-radius);
+            font-weight: 800;
         }
 
         .btn-outline-primary {
-            border-color: var(--ev-border);
-            color: var(--ev-primary);
+            border-color: #b7c8da;
+            color: var(--ev-blue);
         }
 
         .btn-outline-primary:hover {
-            background-color: var(--ev-primary);
-            border-color: var(--ev-primary);
+            background-color: var(--ev-blue);
+            border-color: var(--ev-blue);
         }
 
-        /* Hero Section */
+        .alert-band {
+            background: var(--ev-red);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 0.72rem 0;
+        }
+
+        .alert-band .container-custom {
+            align-items: center;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .alert-band a {
+            color: #ffffff;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+
         .hero-section {
-            padding: 3rem 0 5rem;
+            background:
+                linear-gradient(90deg, rgba(11, 47, 87, 0.95), rgba(21, 93, 156, 0.9)),
+                repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0 1px, transparent 1px 18px);
+            color: #ffffff;
+            padding: 3rem 0 2.2rem;
         }
 
-        .hero-panel {
-            background:
-                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 246, 255, 0.95)),
-                radial-gradient(circle at top right, rgba(28, 126, 214, 0.2), transparent 24rem);
-            border: 1px solid var(--ev-border);
-            border-radius: 24px;
-            box-shadow: var(--ev-shadow);
-            padding: clamp(1.5rem, 4vw, 3rem);
+        .hero-grid {
+            align-items: stretch;
+            display: grid;
+            gap: 1.25rem;
+            grid-template-columns: minmax(0, 1.45fr) minmax(320px, 0.75fr);
         }
 
         .hero-kicker {
-            color: var(--ev-primary);
+            align-items: center;
+            color: #bfdbfe;
+            display: inline-flex;
             font-size: 0.78rem;
             font-weight: 850;
-            letter-spacing: 0.12em;
-            margin-bottom: 0.75rem;
+            gap: 0.45rem;
+            margin-bottom: 0.95rem;
             text-transform: uppercase;
         }
 
         .hero-title {
-            color: var(--ev-text);
-            font-size: clamp(2rem, 5vw, 3.5rem);
-            font-weight: 850;
-            letter-spacing: -0.045em;
-            line-height: 1;
-            margin-bottom: 0.5rem;
+            color: #ffffff;
+            font-size: clamp(2.15rem, 4.6vw, 4rem);
+            font-weight: 900;
+            letter-spacing: 0;
+            line-height: 1.02;
+            margin-bottom: 1rem;
+            max-width: 820px;
         }
 
         .hero-subtitle {
-            color: var(--ev-muted);
+            color: #dceaff;
             font-size: 1.08rem;
-            line-height: 1.7;
-            margin: 0 auto 1.75rem;
-            max-width: 680px;
+            line-height: 1.65;
+            margin: 0 0 1.45rem;
+            max-width: 690px;
+        }
+
+        .hero-actions {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
         }
 
         .btn-emergency {
-            background-color: var(--ev-danger);
-            border: 1px solid var(--ev-danger);
+            background-color: var(--ev-red);
+            border: 1px solid #ffb3bd;
             color: #fff;
-            padding: 0.9rem 1.6rem;
-            font-size: 1.1rem;
-            font-weight: bold;
-            box-shadow: 0 12px 24px rgba(220, 53, 69, 0.2);
-            transition: all 0.3s ease;
-            display: inline-block;
+            padding: 0.9rem 1.2rem;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
         }
 
-        .btn-emergency:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 16px 30px rgba(220, 53, 69, 0.26);
-            background-color: #bb2d3b;
-            border-color: #bb2d3b;
-            color: #fff;
+        .btn-emergency:hover,
+        .btn-emergency:focus {
+            background-color: #a91f31;
+            border-color: #ffffff;
+            color: #ffffff;
+            transform: translateY(-1px);
         }
 
-        /* Quick Actions Section */
+        .btn-map {
+            background: #ffffff;
+            border: 1px solid #ffffff;
+            color: var(--ev-blue);
+            padding: 0.9rem 1.2rem;
+        }
+
+        .btn-map:hover,
+        .btn-map:focus {
+            background: #eaf3fb;
+            border-color: #eaf3fb;
+            color: var(--ev-navy);
+        }
+
+        .ops-panel {
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid rgba(255, 255, 255, 0.75);
+            border-radius: var(--ev-radius);
+            box-shadow: var(--ev-shadow);
+            color: var(--ev-text);
+            overflow: hidden;
+        }
+
+        .ops-panel-header {
+            background: #f8fafc;
+            border-bottom: 1px solid var(--ev-border);
+            color: var(--ev-navy);
+            font-size: 0.86rem;
+            font-weight: 900;
+            padding: 0.9rem 1rem;
+            text-transform: uppercase;
+        }
+
+        .ops-list {
+            margin: 0;
+            padding: 0;
+        }
+
+        .ops-list li {
+            align-items: start;
+            border-bottom: 1px solid var(--ev-border);
+            display: grid;
+            gap: 0.8rem;
+            grid-template-columns: 2rem 1fr;
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .ops-list li:last-child {
+            border-bottom: 0;
+        }
+
+        .ops-list i {
+            align-items: center;
+            background: #e9f2fb;
+            border-radius: var(--ev-radius);
+            color: var(--ev-blue);
+            display: inline-flex;
+            height: 2rem;
+            justify-content: center;
+            width: 2rem;
+        }
+
+        .ops-list strong {
+            color: var(--ev-text);
+            display: block;
+            font-size: 0.96rem;
+        }
+
+        .ops-list span {
+            color: var(--ev-muted);
+            display: block;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+
         .quick-actions-section {
-            margin-top: -3.5rem;
-            margin-bottom: 3rem;
-            position: relative;
-            z-index: 10;
+            background: #ffffff;
+            border-bottom: 1px solid var(--ev-border);
+            padding: 1.2rem 0;
         }
 
         .action-card {
+            align-items: start;
             background: var(--ev-surface);
             border: 1px solid var(--ev-border);
+            border-left: 4px solid var(--ev-blue);
             border-radius: var(--ev-radius);
-            padding: 1.5rem;
-            box-shadow: var(--ev-shadow-soft);
-            transition: all 0.3s ease;
+            display: grid;
+            gap: 0.8rem;
+            grid-template-columns: 2.6rem 1fr;
             height: 100%;
+            padding: 1rem;
         }
 
-        .action-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        .action-card.hazard {
+            border-left-color: var(--ev-red);
+        }
+
+        .action-card.safe {
+            border-left-color: var(--ev-green);
         }
 
         .action-card-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1rem;
-            display: inline-block;
+            align-items: center;
+            background: #e9f2fb;
+            border-radius: var(--ev-radius);
+            color: var(--ev-blue);
+            display: inline-flex;
+            font-size: 1.35rem;
+            height: 2.6rem;
+            justify-content: center;
+            width: 2.6rem;
         }
 
         .action-card-icon.hazard {
-            color: var(--ev-danger);
+            background: #fff1f2;
+            color: var(--ev-red);
         }
 
         .action-card-icon.safe {
-            color: var(--ev-success);
-        }
-
-        .action-card-icon.shelter {
-            color: var(--ev-primary);
+            background: #ecfdf3;
+            color: var(--ev-green);
         }
 
         .action-card h5 {
-            margin: 1rem 0 0.5rem 0;
-            font-weight: 800;
             color: var(--ev-text);
+            font-size: 1.02rem;
+            font-weight: 850;
+            margin: 0 0 0.25rem;
         }
 
         .action-card p {
             color: var(--ev-muted);
+            font-size: 0.92rem;
+            line-height: 1.45;
             margin: 0;
-            font-size: 0.95rem;
         }
 
-        /* Main Content Section */
         .main-section {
-            margin-bottom: 3rem;
+            margin: 2.5rem auto;
+        }
+
+        .section-head {
+            align-items: end;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1rem;
         }
 
         .section-title {
             align-items: center;
             color: var(--ev-text);
             display: flex;
-            font-size: 1.35rem;
-            font-weight: 850;
+            font-size: 1.32rem;
+            font-weight: 900;
             gap: 0.6rem;
-            margin-bottom: 2rem;
+            margin: 0;
         }
 
-        /* Map Section */
+        .section-note {
+            color: var(--ev-muted);
+            font-size: 0.94rem;
+            margin: 0;
+            max-width: 520px;
+        }
+
         .map-container {
             background: var(--ev-surface);
             border: 1px solid var(--ev-border);
             border-radius: var(--ev-radius);
-            overflow: hidden;
             box-shadow: var(--ev-shadow-soft);
-            height: 500px;
-            margin-bottom: 1.5rem;
+            height: 520px;
+            margin-bottom: 1rem;
+            overflow: hidden;
         }
 
         #map {
@@ -282,151 +428,169 @@
             width: 100%;
         }
 
-        .legend-box {
+        .legend-box,
+        .info-section {
             background: var(--ev-surface);
             border: 1px solid var(--ev-border);
             border-radius: var(--ev-radius);
-            padding: 1.5rem;
             box-shadow: var(--ev-shadow-soft);
         }
 
+        .legend-box {
+            overflow: hidden;
+        }
+
         .legend-box h6 {
-            font-weight: 800;
-            color: var(--ev-text);
-            margin-bottom: 1.5rem;
+            background: var(--ev-navy);
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 850;
+            margin: 0;
+            padding: 0.9rem 1rem;
         }
 
         .legend-item {
-            display: flex;
             align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
             border-bottom: 1px solid var(--ev-border);
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.9rem 1rem;
         }
 
         .legend-item:last-child {
             border-bottom: none;
-            margin-bottom: 0;
-            padding-bottom: 0;
         }
 
         .legend-color {
-            width: 24px;
-            height: 24px;
-            margin-right: 12px;
-            border-radius: 50%;
-            border: 2px solid #ddd;
+            border: 2px solid #fff;
+            border-radius: 999px;
+            box-shadow: 0 0 0 1px var(--ev-border);
             flex-shrink: 0;
+            height: 22px;
+            width: 22px;
         }
 
         .legend-item span {
             color: var(--ev-muted);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+            line-height: 1.35;
         }
 
         .legend-item strong {
             color: var(--ev-text);
         }
 
-        /* Info Section */
         .info-section {
-            background: var(--ev-surface);
-            border: 1px solid var(--ev-border);
-            border-radius: var(--ev-radius);
-            padding: 2.5rem;
-            box-shadow: var(--ev-shadow-soft);
-            margin-bottom: 3rem;
-        }
-
-        .info-section h3 {
-            font-weight: 800;
-            color: var(--ev-text);
-            margin-bottom: 2rem;
+            padding: 1.4rem;
         }
 
         .info-column {
-            margin-bottom: 2rem;
+            background: var(--ev-surface-2);
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
+            height: 100%;
+            padding: 1.2rem;
         }
 
         .info-column h5 {
-            font-weight: 800;
-            color: var(--ev-primary);
-            margin-bottom: 1.5rem;
-            display: flex;
             align-items: center;
+            color: var(--ev-blue);
+            display: flex;
+            font-size: 1.02rem;
+            font-weight: 850;
             gap: 0.5rem;
+            margin-bottom: 0.9rem;
         }
 
         .info-column ol,
         .info-column ul {
-            padding-left: 1.5rem;
-            line-height: 1.8;
+            margin-bottom: 0;
+            padding-left: 1.35rem;
         }
 
         .info-column li {
             color: var(--ev-muted);
-            margin-bottom: 0.8rem;
+            line-height: 1.65;
+            margin-bottom: 0.45rem;
         }
 
         .info-column li strong {
             color: var(--ev-text);
         }
 
-        /* Footer */
         .footer-section {
-            background-color: var(--ev-primary-dark);
+            background-color: var(--ev-navy);
             color: white;
+            margin-top: 3rem;
+            padding: 2.25rem 0;
             text-align: center;
-            padding: 3rem 0;
-            margin-top: 4rem;
         }
 
         .footer-section p {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.45rem;
         }
 
         .footer-section .mb-2 {
-            font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.05rem;
+            font-weight: 800;
         }
 
         .footer-section .small {
-            color: #aaa;
+            color: #cbd5e1;
         }
 
-        /* Modal Styling */
+        .modal-content,
+        .form-control {
+            border-radius: var(--ev-radius);
+        }
+
         .modal-header {
-            background-color: var(--ev-danger);
+            background-color: var(--ev-red);
             color: white;
         }
 
         .modal-header .modal-title {
-            font-weight: bold;
+            font-weight: 850;
         }
 
         .form-label {
-            font-weight: 500;
             color: var(--ev-text);
+            font-weight: 650;
         }
 
         .form-control {
-            border-radius: var(--ev-radius-sm);
             border: 1px solid var(--ev-border);
         }
 
         .form-control:focus {
-            border-color: var(--ev-accent);
-            box-shadow: 0 0 0 0.2rem rgba(28, 126, 214, 0.14);
+            border-color: var(--ev-blue-2);
+            box-shadow: 0 0 0 0.2rem rgba(34, 115, 185, 0.16);
         }
 
-        /* Responsive */
+        @media (max-width: 992px) {
+            .hero-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
         @media (max-width: 768px) {
+            .container-custom {
+                padding: 0 1rem;
+            }
+
+            .lgu-strip .container-custom,
+            .alert-band .container-custom,
+            .section-head {
+                align-items: start;
+                flex-direction: column;
+            }
+
             .navbar-collapse {
                 background: #fff;
                 border: 1px solid var(--ev-border);
                 border-radius: var(--ev-radius);
                 box-shadow: var(--ev-shadow);
-                margin-top: 0.9rem;
+                margin-top: 0.85rem;
                 padding: 0.75rem;
             }
 
@@ -435,62 +599,64 @@
                 flex-direction: column;
             }
 
+            .hero-section {
+                padding: 2.2rem 0;
+            }
+
             .hero-title {
-                font-size: 1.8rem;
+                font-size: 2rem;
             }
 
             .hero-subtitle {
                 font-size: 1rem;
             }
 
-            .hero-section {
-                padding: 2.5rem 0;
-            }
-
-            .quick-actions-section {
-                margin-top: -1.5rem;
+            .hero-actions .btn {
+                width: 100%;
             }
 
             .map-container {
-                height: 350px;
-            }
-
-            .section-title {
-                font-size: 1.2rem;
-            }
-
-            .info-section {
-                padding: 1.5rem;
-            }
-
-            .container-custom {
-                padding: 0 1rem;
+                height: 360px;
             }
         }
 
         @media (max-width: 576px) {
-            .hero-title {
-                font-size: 1.5rem;
-            }
-
-            .btn-emergency {
-                padding: 0.75rem 2rem;
+            .navbar-brand {
                 font-size: 1rem;
             }
 
+            .brand-copy small {
+                display: none;
+            }
+
+            .hero-title {
+                font-size: 1.75rem;
+            }
+
+            .action-card {
+                grid-template-columns: 2.4rem 1fr;
+            }
+
             .map-container {
-                height: 300px;
+                height: 320px;
             }
         }
     </style>
 </head>
 <body>
+    <div class="lgu-strip">
+        <div class="container-custom">
+            <span><strong>Barangay Alicante LGU</strong> Emergency Operations and Evacuation Information</span>
+            <span><span class="status-dot"></span>Public advisory channel active</span>
+        </div>
+    </div>
+
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg navbar-light navbar-custom">
         <div class="container-custom">
             <a class="navbar-brand" href="{% url 'home' %}">
                 <span class="brand-mark"><i class="bi bi-shield-check"></i></span>
-                <span>EvacuaLink</span>
+                <span class="brand-copy">EvacuaLink<small>Evacuation Response Portal</small></span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -517,52 +683,99 @@
         </div>
     </nav>
 
+    <div class="alert-band">
+        <div class="container-custom">
+            <span><i class="bi bi-broadcast-pin me-2"></i>For immediate danger, submit a help request or call the official emergency hotline.</span>
+            <a href="#safety-map">View hazard and shelter map</a>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <section class="hero-section">
         <div class="container-custom">
-            <div class="hero-panel text-center">
-                <div class="hero-kicker">Barangay Alicante Emergency Operations</div>
-                <h1 class="hero-title">Emergency evacuation information system</h1>
-                <p class="hero-subtitle">
-                    Stay informed, find evacuation centers, review hazard and safe zones, and request emergency assistance from responders.
-                </p>
+            <div class="hero-grid">
+                <div>
+                    <div class="hero-kicker"><i class="bi bi-building-fill-check"></i> Barangay Alicante Emergency Operations</div>
+                    <h1 class="hero-title">Evacuation guidance for residents and responders</h1>
+                    <p class="hero-subtitle">
+                        Check official evacuation centers, avoid mapped hazard zones, move toward safer areas, and request assistance directly from the LGU response team.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-emergency btn-lg" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
+                            <i class="bi bi-telephone-fill"></i> Request Emergency Help
+                        </button>
+                        <a href="#safety-map" class="btn btn-map btn-lg">
+                            <i class="bi bi-map-fill"></i> Open Safety Map
+                        </a>
+                    </div>
+                </div>
 
-                <!-- Emergency Help Button -->
-                <button class="btn btn-emergency btn-lg" data-bs-toggle="modal" data-bs-target="#helpRequestModal">
-                    <i class="bi bi-telephone-fill"></i> Request Emergency Help
-                </button>
+                <aside class="ops-panel" aria-label="Emergency operations summary">
+                    <div class="ops-panel-header">Current Public Safety Directory</div>
+                    <ul class="ops-list">
+                        <li>
+                            <i class="bi bi-building"></i>
+                            <span>
+                                <strong>{{ evacuation_centers|length }} Evacuation Centers</strong>
+                                Shelter locations published for Barangay Alicante residents.
+                            </span>
+                        </li>
+                        <li>
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <span>
+                                <strong>{{ hazard_zones|length }} Hazard Zones</strong>
+                                Areas to avoid or monitor during flood, fire, landslide, or other incidents.
+                            </span>
+                        </li>
+                        <li>
+                            <i class="bi bi-shield-check"></i>
+                            <span>
+                                <strong>{{ safe_zones|length }} Safe Zones</strong>
+                                Safer assembly points and movement areas for evacuation routing.
+                            </span>
+                        </li>
+                    </ul>
+                </aside>
             </div>
         </div>
     </section>
 
     <!-- Quick Actions Section -->
-    <section class="container-custom quick-actions-section">
-        <div class="row g-3">
-            <div class="col-md-4">
-                <div class="action-card">
-                    <div class="action-card-icon hazard">
-                        <i class="bi bi-exclamation-triangle"></i>
+    <section class="quick-actions-section">
+        <div class="container-custom">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="action-card hazard">
+                        <div class="action-card-icon hazard">
+                            <i class="bi bi-exclamation-triangle"></i>
+                        </div>
+                        <div>
+                            <h5>Stay Away from Hazards</h5>
+                            <p>Red and orange markers identify places residents should avoid or monitor closely.</p>
+                        </div>
                     </div>
-                    <h5>Stay Away from Hazards</h5>
-                    <p>Red zones are dangerous. Check the map below to identify hazard areas.</p>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="action-card">
-                    <div class="action-card-icon safe">
-                        <i class="bi bi-shield-check"></i>
+                <div class="col-md-4">
+                    <div class="action-card safe">
+                        <div class="action-card-icon safe">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <h5>Move Toward Safe Zones</h5>
+                            <p>Green markers indicate safer areas for assembly and temporary movement.</p>
+                        </div>
                     </div>
-                    <h5>Go to Safe Zones</h5>
-                    <p>Green zones are safe. Evacuate to designated safe areas during emergencies.</p>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="action-card">
-                    <div class="action-card-icon shelter">
-                        <i class="bi bi-building"></i>
+                <div class="col-md-4">
+                    <div class="action-card">
+                        <div class="action-card-icon shelter">
+                            <i class="bi bi-building"></i>
+                        </div>
+                        <div>
+                            <h5>Find Shelter Centers</h5>
+                            <p>Blue markers show LGU-designated evacuation centers and assistance sites.</p>
+                        </div>
                     </div>
-                    <h5>Find Shelter Centers</h5>
-                    <p>Evacuation centers provide food, water, and medical assistance.</p>
                 </div>
             </div>
         </div>
@@ -570,9 +783,12 @@
 
     <!-- Map Section -->
     <section class="container-custom main-section" id="safety-map">
-        <h2 class="section-title">
-            <i class="bi bi-map"></i> Safety Map
-        </h2>
+        <div class="section-head">
+            <h2 class="section-title">
+                <i class="bi bi-map"></i> Public Safety Map
+            </h2>
+            <p class="section-note">Use this map to compare hazards, safe zones, service boundaries, and evacuation-center locations before moving.</p>
+        </div>
         <div class="row mt-3">
             <div class="col-lg-8">
                 <div class="map-container">
@@ -613,16 +829,19 @@
 
     <!-- Information Section -->
     <section class="container-custom main-section" id="safety-guide">
-        <h2 class="section-title">
-            <i class="bi bi-info-circle"></i> Emergency Safety Guide
-        </h2>
+        <div class="section-head">
+            <h2 class="section-title">
+                <i class="bi bi-info-circle"></i> Emergency Safety Guide
+            </h2>
+            <p class="section-note">Follow official LGU instructions and keep contact details ready when requesting assistance.</p>
+        </div>
         <div class="info-section mt-3">
             <div class="row">
                 <div class="col-md-6">
                     <div class="info-column">
                         <h5><i class="bi bi-telephone-fill"></i> Need Help?</h5>
                         <ol>
-                            <li>Click <strong>"REQUEST HELP NOW"</strong> button at the top</li>
+                            <li>Click the <strong>Request Emergency Help</strong> button at the top</li>
                             <li>Provide your <strong>name, phone, and location</strong></li>
                             <li>Describe your <strong>emergency situation</strong></li>
                             <li><strong>Emergency responders</strong> will assist you immediately</li>
