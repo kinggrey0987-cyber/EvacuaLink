@@ -88,6 +88,15 @@
             z-index: 1000;
         }
 
+        .navbar-custom .container-custom {
+            align-items: center;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+            justify-content: space-between;
+            width: 100%;
+        }
+
         .navbar-brand {
             align-items: center;
             color: var(--ev-text) !important;
@@ -95,6 +104,7 @@
             font-size: 1.12rem;
             font-weight: 800;
             gap: 0.72rem;
+            margin-right: 0;
         }
 
         .brand-mark {
@@ -118,7 +128,15 @@
         }
 
         .navbar-nav {
+            align-items: center;
             gap: 0.25rem;
+        }
+
+        .navbar-actions {
+            align-items: center;
+            display: flex;
+            gap: 0.45rem;
+            justify-content: flex-end;
         }
 
         .nav-link {
@@ -621,13 +639,15 @@
                 border: 1px solid var(--ev-border);
                 border-radius: var(--ev-radius);
                 box-shadow: var(--ev-shadow);
+                flex-basis: 100%;
                 margin-top: 0.85rem;
                 padding: 0.75rem;
             }
 
-            .navbar-collapse .d-flex {
+            .navbar-actions {
                 align-items: stretch !important;
                 flex-direction: column;
+                justify-content: flex-start;
             }
 
             .hero-section {
@@ -686,6 +706,17 @@
                 height: 320px;
             }
         }
+
+        @media (min-width: 992px) {
+            .navbar-collapse {
+                flex-grow: 1;
+                justify-content: flex-end;
+            }
+
+            .navbar-actions {
+                margin-left: auto;
+            }
+        }
     </style>
 </head>
 <body>
@@ -707,7 +738,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-lg-4 me-auto mb-2 mb-lg-0">
+                <ul class="navbar-nav ms-lg-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="#safety-map">
                             <i class="bi bi-map"></i> Safety Map
@@ -719,7 +750,7 @@
                         </a>
                     </li>
                 </ul>
-                <div class="d-flex align-items-center gap-2">
+                <div class="navbar-actions">
                     <a href="{% url 'login' %}" class="btn btn-outline-primary">
                         <i class="bi bi-box-arrow-in-right"></i> Staff Login
                     </a>
