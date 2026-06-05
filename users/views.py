@@ -1,6 +1,7 @@
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.http import JsonResponse, HttpResponseForbidden
 from django.shortcuts import redirect, render
 from django.urls import reverse_lazy
@@ -43,6 +44,17 @@ class PublicLandingPageView(TemplateView):
         boundary_geojson = get_barangay_boundary_geojson()
         location_data = get_barangay_center_and_bounds()
 
+        boundary = BarangayBoundary.objects.first()
+
+        def inside_boundary(item):
+            if not boundary:
+                return True
+            return boundary.contains_point(float(item["latitude"]), float(item["longitude"]))
+
+        evacuation_centers = [center for center in evacuation_centers if inside_boundary(center)]
+        hazard_zones = [zone for zone in hazard_zones if inside_boundary(zone)]
+        safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
+
         context["evacuation_centers"] = evacuation_centers
         context["hazard_zones"] = hazard_zones
         context["safe_zones"] = safe_zones
@@ -50,6 +62,15 @@ class PublicLandingPageView(TemplateView):
         context["map_center"] = location_data["center"]
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["landing_map_payload"] = {
+            "center": location_data["center"],
+            "bounds": location_data["bounds"],
+            "boundary": boundary_geojson,
+            "evacuationCenters": evacuation_centers,
+            "hazardZones": hazard_zones,
+            "safeZones": safe_zones,
+        }
 
         return context
 
