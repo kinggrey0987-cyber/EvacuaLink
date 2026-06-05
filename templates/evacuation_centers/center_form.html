@@ -1,12 +1,281 @@
 {% extends "base.html" %}
-{% block title %}Center Form | EvacuaLink{% endblock %}
+{% load static %}
+
+{% block title %}{% if object %}Edit{% else %}Add{% endif %} Evacuation Center | EvacuaLink{% endblock %}
+
+{% block extra_css %}
+<style>
+    #centerFormMap {
+        height: 450px;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+    }
+
+    .center-form-header {
+        margin-bottom: 2rem;
+    }
+
+    .center-form-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+        .center-form-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-section {
+        background: var(--ev-surface);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius);
+        padding: 1.5rem;
+        box-shadow: var(--ev-shadow-soft);
+    }
+
+    .map-section-card {
+        background: var(--ev-surface);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius);
+        box-shadow: var(--ev-shadow-soft);
+    }
+
+    .map-section-card .card-header {
+        background: var(--ev-surface);
+        border-bottom: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius) var(--ev-radius) 0 0;
+        font-weight: 600;
+        padding: 1rem 1.25rem;
+    }
+
+    .map-section-card .card-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .coordinates-info {
+        background: var(--ev-surface-soft);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius-sm);
+        padding: 0.875rem;
+        margin-bottom: 1rem;
+        font-size: 0.93rem;
+    }
+
+    .coordinates-info p {
+        margin-bottom: 0.5rem;
+        font-family: 'Courier New', monospace;
+    }
+
+    .coordinates-info strong {
+        color: var(--ev-text);
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<h1 class="h3 mb-3">{% if object %}Edit{% else %}Add{% endif %} Evacuation Center</h1>
-<form method="post" class="card card-body shadow-sm">
-    {% include "includes/form_fields.html" %}
-    <div class="d-flex gap-2">
-        <button class="btn btn-primary" type="submit">Save</button>
-        <a class="btn btn-outline-secondary" href="{% url 'evacuation-center-list' %}">Cancel</a>
+<div class="center-form-header">
+    <h1 class="page-title">
+        <i class="bi bi-{% if object %}pencil{% else %}plus-lg{% endif %}"></i>
+        {% if object %}Edit{% else %}Add{% endif %} Evacuation Center
+    </h1>
+    <p class="text-muted mb-0">
+        {% if object %}Update the evacuation center location and details on the map.{% else %}Create a new evacuation center by placing it on the map.{% endif %}
+    </p>
+</div>
+
+<div class="center-form-container">
+    <!-- Form Section -->
+    <div class="form-section">
+        <form method="post" novalidate id="centerForm">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label for="{{ form.name.id_for_label }}" class="form-label">
+                    Center Name <span class="text-danger">*</span>
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                    <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.address.id_for_label }}" class="form-label">
+                    Address <span class="text-danger">*</span>
+                </label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                    <div class="text-danger small mt-1">{{ form.address.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.capacity.id_for_label }}" class="form-label">
+                    Capacity <span class="text-danger">*</span>
+                </label>
+                {{ form.capacity }}
+                {% if form.capacity.errors %}
+                    <div class="text-danger small mt-1">{{ form.capacity.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="mb-3">
+                <label for="{{ form.status.id_for_label }}" class="form-label">
+                    Status
+                </label>
+                {{ form.status }}
+                {% if form.status.errors %}
+                    <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <input type="hidden" id="id_latitude" name="latitude" value="{{ form.latitude.value|default:'' }}">
+            <input type="hidden" id="id_longitude" name="longitude" value="{{ form.longitude.value|default:'' }}">
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-check-lg"></i> Save Center
+                </button>
+                <a href="{% url 'evacuation-center-list' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
+            </div>
+        </form>
     </div>
-</form>
+
+    <!-- Map Section -->
+    <div class="map-section-card">
+        <div class="card-header">
+            <i class="bi bi-geo-alt me-2"></i>Center Location
+        </div>
+        <div class="card-body">
+            <div class="coordinates-info">
+                <p><strong>Latitude:</strong> <span id="latDisplay">{% if object %}{{ object.latitude }}{% else %}-{% endif %}</span></p>
+                <p><strong>Longitude:</strong> <span id="lonDisplay">{% if object %}{{ object.longitude }}{% else %}-{% endif %}</span></p>
+            </div>
+
+            <div id="centerFormMap" class="ev-map-frame"></div>
+
+            <small class="text-muted d-block mt-3">
+                <i class="bi bi-info-circle"></i>
+                Click on the map to place or update the evacuation center location.
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260605-center-form"></script>
+<script>
+    const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
+    const mapCenter = {
+        lat: Number({{ map_center.latitude }}),
+        lng: Number({{ map_center.longitude }})
+    };
+    const mapBounds = {
+        north: Number({{ map_bounds.north }}),
+        south: Number({{ map_bounds.south }}),
+        east: Number({{ map_bounds.east }}),
+        west: Number({{ map_bounds.west }})
+    };
+
+    let formMap = null;
+    let bounds = null;
+    let centerMarker = null;
+
+    function setCenterLocation(lat, lon) {
+        const point = new google.maps.LatLng(lat, lon);
+
+        if (!bounds.contains(point)) {
+            alert('Location is outside Barangay Alicante. Please choose a location within the barangay.');
+            return false;
+        }
+
+        if (centerMarker) {
+            centerMarker.setMap(null);
+        }
+
+        centerMarker = new google.maps.Marker({
+            map: formMap,
+            position: point,
+            title: 'Evacuation Center Location',
+            zIndex: 2000,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: '#0d6efd',
+                fillOpacity: 0.95,
+                strokeColor: '#ffffff',
+                strokeWeight: 3,
+                scale: 11
+            }
+        });
+
+        document.getElementById('id_latitude').value = lat.toFixed(6);
+        document.getElementById('id_longitude').value = lon.toFixed(6);
+        document.getElementById('latDisplay').textContent = lat.toFixed(6);
+        document.getElementById('lonDisplay').textContent = lon.toFixed(6);
+
+        return true;
+    }
+
+    function initCenterFormMap() {
+        bounds = new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        );
+
+        formMap = new google.maps.Map(document.getElementById('centerFormMap'), {
+            center: mapCenter,
+            zoom: {{ zoom_level }},
+            mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            scaleControl: true
+        });
+
+        const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(formMap, safetyMapData, {
+            showBoundaryMask: true
+        });
+
+        formMap.fitBounds(bounds, 36);
+
+        formMap.addListener('click', function(event) {
+            setCenterLocation(event.latLng.lat(), event.latLng.lng());
+        });
+
+        // If editing, load existing location
+        {% if object %}
+            const existingLat = Number('{{ object.latitude }}');
+            const existingLon = Number('{{ object.longitude }}');
+            if (existingLat && existingLon) {
+                setCenterLocation(existingLat, existingLon);
+                formMap.panTo({lat: existingLat, lng: existingLon});
+            }
+        {% endif %}
+    }
+</script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initCenterFormMap"></script>
+{% else %}
+<script>
+    document.getElementById('centerFormMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}

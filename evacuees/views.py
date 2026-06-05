@@ -136,8 +136,18 @@ class EvacueeAssignmentView(LoginRequiredMixin, UserPassesTestMixin, SuccessMess
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        from emergency.views import get_safety_map_payload
+        from mapping.utils import get_barangay_center_and_bounds, get_zoom_level_for_bounds
+
         evacuee_id = self.kwargs.get("pk")
         context["evacuee"] = get_object_or_404(Evacuee, pk=evacuee_id)
+
+        location_data = get_barangay_center_and_bounds()
+        context["map_center"] = location_data["center"]
+        context["map_bounds"] = location_data["bounds"]
+        context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = get_safety_map_payload()
         return context
 
     def form_valid(self, form):

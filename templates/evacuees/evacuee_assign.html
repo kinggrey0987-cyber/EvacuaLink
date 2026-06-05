@@ -1,31 +1,265 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Assign Evacuee | EvacuaLink{% endblock %}
 
+{% block extra_css %}
+<style>
+    #assignmentMap {
+        height: 450px;
+        border-radius: 8px;
+    }
+
+    .assignment-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    @media (max-width: 1024px) {
+        .assignment-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-card {
+        background: var(--ev-surface);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius);
+        padding: 1.5rem;
+        box-shadow: var(--ev-shadow-soft);
+    }
+
+    .map-card {
+        background: var(--ev-surface);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius);
+        box-shadow: var(--ev-shadow-soft);
+        overflow: hidden;
+    }
+
+    .map-card .card-header {
+        background: #e7f5ff;
+        border-bottom: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius) var(--ev-radius) 0 0;
+        font-weight: 600;
+        padding: 1rem 1.25rem;
+        color: #0c8599;
+    }
+
+    .map-card .card-body {
+        padding: 1rem 1.25rem;
+    }
+
+    .center-info-box {
+        background: var(--ev-surface-soft);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius-sm);
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .center-info-box p {
+        margin-bottom: 0.5rem;
+        font-size: 0.93rem;
+    }
+
+    .center-info-box strong {
+        color: var(--ev-primary);
+    }
+
+    .form-section h6 {
+        font-weight: 700;
+        color: var(--ev-text);
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #0d6efd;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-top: 1.5rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-7">
-        <div class="card shadow-sm">
-            <div class="card-header bg-success text-white">
-                <h1 class="h4 mb-0"><i class="bi bi-check-square"></i> Assign Evacuee</h1>
+<div class="mb-4">
+    <h1 class="page-title">
+        <i class="bi bi-check-square"></i> Assign Evacuee
+    </h1>
+    <p class="text-muted mb-0">
+        Select an evacuation center on the map or form to assign <strong>{{ evacuee.full_name }}</strong>.
+    </p>
+</div>
+
+<div class="assignment-container">
+    <!-- Assignment Form -->
+    <div class="form-card">
+        <div class="center-info-box">
+            <p><strong>Evacuee:</strong> {{ evacuee.full_name }}</p>
+            <p class="mb-0"><strong>Family:</strong> {{ evacuee.family }}</p>
+        </div>
+
+        <form method="post" novalidate>
+            {% csrf_token %}
+
+            <div class="form-section mb-4">
+                <h6><i class="bi bi-building"></i> Select Evacuation Center</h6>
+
+                <div class="mb-3">
+                    <label for="{{ form.evacuation_center.id_for_label }}" class="form-label">
+                        Center <span class="text-danger">*</span>
+                    </label>
+                    {{ form.evacuation_center }}
+                    <small class="form-text text-muted d-block mt-2">
+                        Only open centers with available space are shown.
+                    </small>
+                    {% if form.evacuation_center.errors %}
+                        <div class="alert alert-danger small mt-2 mb-0">
+                            {{ form.evacuation_center.errors.0 }}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="card-body">
-                <p class="text-muted">
-                    Assign <strong>{{ evacuee.full_name }}</strong> to an open evacuation center.
-                </p>
-                <form method="post" novalidate>
-                    {% include "includes/form_fields.html" %}
-                    <div class="btn-group-wrap mt-4">
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-check-lg"></i> Assign Center
-                        </button>
-                        <a href="{% url 'evacuee-detail' evacuee.pk %}" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </a>
-                    </div>
-                </form>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-check-lg"></i> Assign to Center
+                </button>
+                <a href="{% url 'evacuee-detail' evacuee.pk %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </a>
             </div>
+        </form>
+    </div>
+
+    <!-- Map Section -->
+    <div class="map-card">
+        <div class="card-header">
+            <i class="bi bi-map me-2"></i>Center Locations Map
+        </div>
+        <div class="card-body">
+            <div id="assignmentMap" class="ev-map-frame"></div>
+            <small class="text-muted d-block mt-3">
+                <i class="bi bi-info-circle"></i>
+                Click on any center marker to see details. Green markers = available space, Yellow = near capacity, Red = full.
+            </small>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260605-assign-map"></script>
+<script>
+    const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
+    const mapCenter = {
+        lat: Number({{ map_center.latitude }}),
+        lng: Number({{ map_center.longitude }})
+    };
+    const mapBounds = {
+        north: Number({{ map_bounds.north }}),
+        south: Number({{ map_bounds.south }}),
+        east: Number({{ map_bounds.east }}),
+        west: Number({{ map_bounds.west }})
+    };
+
+    let assignmentMap = null;
+    let bounds = null;
+    let centerMarkers = [];
+
+    function initAssignmentMap() {
+        bounds = new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        );
+
+        assignmentMap = new google.maps.Map(document.getElementById('assignmentMap'), {
+            center: mapCenter,
+            zoom: {{ zoom_level }},
+            mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            scaleControl: true
+        });
+
+        // Add safety overlays (boundaries, hazard zones, safe zones)
+        const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(assignmentMap, safetyMapData, {
+            showBoundaryMask: true
+        });
+
+        assignmentMap.fitBounds(bounds, 36);
+
+        // Add center markers with color coding
+        safetyMapData.evacuationCenters.forEach(function(center) {
+            const position = {
+                lat: Number(center.latitude),
+                lng: Number(center.longitude)
+            };
+
+            // Determine marker color based on capacity
+            let markerColor = '#198754'; // Green = available
+            let label = '✓';
+
+            if (center.current_occupancy >= center.capacity) {
+                markerColor = '#dc3545'; // Red = full
+                label = '✕';
+            } else if (center.current_occupancy > (center.capacity * 0.8)) {
+                markerColor = '#ffc107'; // Yellow = near capacity
+                label = '!';
+            }
+
+            const marker = new google.maps.Marker({
+                position: position,
+                map: assignmentMap,
+                title: center.name,
+                label: label,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: markerColor,
+                    fillOpacity: 0.95,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 3,
+                    scale: 12
+                }
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: `
+                    <div style="font-size: 13px; width: 220px;">
+                        <strong>${center.name}</strong><br>
+                        <small style="color: #666;">${center.address}</small><br>
+                        <br>
+                        <strong>Capacity:</strong> ${center.current_occupancy}/${center.capacity}<br>
+                        <strong>Available:</strong> ${center.capacity - center.current_occupancy}<br>
+                        <strong>Status:</strong> ${center.current_occupancy >= center.capacity ? '⚠️ FULL' : '✓ AVAILABLE'}
+                    </div>
+                `
+            });
+
+            marker.addListener('click', function() {
+                infoWindow.open(assignmentMap, marker);
+            });
+
+            centerMarkers.push({marker: marker, infoWindow: infoWindow, center: center});
+        });
+    }
+</script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initAssignmentMap"></script>
+{% else %}
+<script>
+    document.getElementById('assignmentMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}
