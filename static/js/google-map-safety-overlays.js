@@ -156,7 +156,10 @@
         const infoWindow = new google.maps.InfoWindow();
         const overlays = {
             bounds: new google.maps.LatLngBounds(),
-            markerCount: 0
+            markerCount: 0,
+            boundaryDrawn: false,
+            heatmapDrawn: false,
+            errors: []
         };
         const settings = Object.assign({
             showBoundaryMask: true,
@@ -171,21 +174,27 @@
         }, options || {});
 
         if (payload.boundary) {
-            map.data.addGeoJson({
-                type: "Feature",
-                properties: { name: "Barangay Alicante" },
-                geometry: payload.boundary
-            });
-            map.data.setStyle({
-                strokeColor: "#0066cc",
-                strokeOpacity: 0.9,
-                strokeWeight: 4,
-                fillColor: "#0066cc",
-                fillOpacity: 0
-            });
+            try {
+                map.data.addGeoJson({
+                    type: "Feature",
+                    properties: { name: "Barangay Alicante" },
+                    geometry: payload.boundary
+                });
+                map.data.setStyle({
+                    strokeColor: "#0066cc",
+                    strokeOpacity: 0.9,
+                    strokeWeight: 4,
+                    fillColor: "#0066cc",
+                    fillOpacity: 0
+                });
+                overlays.boundaryDrawn = true;
 
-            if (settings.showBoundaryMask) {
-                addOutsideBoundaryMask(map, payload.boundary);
+                if (settings.showBoundaryMask) {
+                    addOutsideBoundaryMask(map, payload.boundary);
+                }
+            } catch (error) {
+                overlays.errors.push("boundary: " + error.message);
+                console.warn("EvacuaLink map boundary failed", error);
             }
         }
 
@@ -208,21 +217,31 @@
             });
 
             if (heatPoints.length > 0) {
-                new google.maps.visualization.HeatmapLayer({
-                    map: map,
-                    data: heatPoints,
-                    radius: settings.heatmapRadius,
-                    opacity: settings.heatmapOpacity,
-                    dissipating: true,
-                    gradient: [
-                        "rgba(0, 255, 0, 0)",
-                        "rgba(70, 255, 0, 0.48)",
-                        "rgba(190, 255, 0, 0.64)",
-                        "rgba(255, 230, 0, 0.78)",
-                        "rgba(255, 128, 0, 0.88)",
-                        "rgba(255, 0, 0, 0.96)"
-                    ]
-                });
+                try {
+                    if (google.maps.visualization && google.maps.visualization.HeatmapLayer) {
+                        new google.maps.visualization.HeatmapLayer({
+                            map: map,
+                            data: heatPoints,
+                            radius: settings.heatmapRadius,
+                            opacity: settings.heatmapOpacity,
+                            dissipating: true,
+                            gradient: [
+                                "rgba(0, 255, 0, 0)",
+                                "rgba(70, 255, 0, 0.48)",
+                                "rgba(190, 255, 0, 0.64)",
+                                "rgba(255, 230, 0, 0.78)",
+                                "rgba(255, 128, 0, 0.88)",
+                                "rgba(255, 0, 0, 0.96)"
+                            ]
+                        });
+                        overlays.heatmapDrawn = true;
+                    } else {
+                        overlays.errors.push("heatmap: visualization library unavailable");
+                    }
+                } catch (error) {
+                    overlays.errors.push("heatmap: " + error.message);
+                    console.warn("EvacuaLink map heatmap failed", error);
+                }
             }
         }
 
@@ -315,6 +334,7 @@
             });
         }
 
+        window.__evacuaLinkLastSafetyOverlays = overlays;
         return overlays;
     }
 

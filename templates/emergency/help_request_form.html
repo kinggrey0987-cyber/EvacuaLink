@@ -356,7 +356,7 @@
 
 {% block extra_js %}
 {{ safety_map_payload|json_script:"safety-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260605-help-map"></script>
 <script>
     const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
     const mapCenter = {
@@ -570,9 +570,7 @@
         const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData, {
             showBoundaryMask: true
         });
-        if (safetyOverlays.markerCount > 0) {
-            helpMap.fitBounds(bounds, 36);
-        }
+        helpMap.fitBounds(bounds, 36);
         helpMap.addListener('click', function(event) {
             setHelpLocation(event.latLng.lat(), event.latLng.lng(), 'MAP_PIN');
         });
