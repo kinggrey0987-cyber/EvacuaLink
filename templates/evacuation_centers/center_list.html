@@ -3,7 +3,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3">Evacuation Centers</h1>
-    <a class="btn btn-primary" href="{% url 'evacuation-center-add' %}">Add Center</a>
+    {% if request.user.is_emergency_responder %}
+        <a class="btn btn-primary" href="{% url 'evacuation-center-add' %}">Add Center</a>
+    {% endif %}
 </div>
 <div class="card shadow-sm">
     <div class="table-responsive">
@@ -22,8 +24,12 @@
                     <td>{{ center.available_space }}</td>
                     <td><span class="badge bg-secondary">{{ center.get_status_display }}</span></td>
                     <td>
-                        <a class="btn btn-sm btn-outline-primary" href="{% url 'evacuation-center-edit' center.pk %}">Edit</a>
-                        <a class="btn btn-sm btn-outline-danger" href="{% url 'evacuation-center-delete' center.pk %}">Delete</a>
+                        {% if request.user.is_emergency_responder %}
+                            <a class="btn btn-sm btn-outline-primary" href="{% url 'evacuation-center-edit' center.pk %}">Edit</a>
+                        {% endif %}
+                        {% if request.user.is_operational_admin %}
+                            <a class="btn btn-sm btn-outline-danger" href="{% url 'evacuation-center-delete' center.pk %}">Delete</a>
+                        {% endif %}
                     </td>
                 </tr>
             {% empty %}

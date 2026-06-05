@@ -1086,23 +1086,61 @@
                 return;
             }
 
-            new google.maps.Polygon({
-                map: map,
-                paths: [
-                    [
-                        { lat: -85, lng: -180 },
-                        { lat: 85, lng: -180 },
-                        { lat: 85, lng: 180 },
-                        { lat: -85, lng: 180 }
-                    ],
-                    boundaryPath
-                ],
-                strokeOpacity: 0,
-                fillColor: '#eef3f8',
-                fillOpacity: 0.78,
-                clickable: false,
-                zIndex: 2
-            });
+            const overlay = new google.maps.OverlayView();
+
+            overlay.onAdd = function() {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                svg.style.height = '1px';
+                svg.style.left = '0';
+                svg.style.overflow = 'visible';
+                svg.style.pointerEvents = 'none';
+                svg.style.position = 'absolute';
+                svg.style.top = '0';
+                svg.style.width = '1px';
+                path.setAttribute('fill', '#eef3f8');
+                path.setAttribute('fill-opacity', '0.82');
+                path.setAttribute('fill-rule', 'evenodd');
+                svg.appendChild(path);
+                this.svg = svg;
+                this.path = path;
+                this.getPanes().overlayLayer.appendChild(svg);
+            };
+
+            overlay.draw = function() {
+                const bounds = map.getBounds();
+                const projection = this.getProjection();
+
+                if (!bounds || !projection || !this.path) {
+                    return;
+                }
+
+                const northEast = projection.fromLatLngToDivPixel(bounds.getNorthEast());
+                const southWest = projection.fromLatLngToDivPixel(bounds.getSouthWest());
+                const viewport = [
+                    `M ${southWest.x} ${northEast.y}`,
+                    `L ${northEast.x} ${northEast.y}`,
+                    `L ${northEast.x} ${southWest.y}`,
+                    `L ${southWest.x} ${southWest.y}`,
+                    'Z'
+                ].join(' ');
+                const boundary = boundaryPath.map(function(point, index) {
+                    const pixel = projection.fromLatLngToDivPixel(new google.maps.LatLng(point.lat, point.lng));
+                    return `${index === 0 ? 'M' : 'L'} ${pixel.x} ${pixel.y}`;
+                }).join(' ') + ' Z';
+
+                this.path.setAttribute('d', viewport + ' ' + boundary);
+            };
+
+            overlay.onRemove = function() {
+                if (this.svg) {
+                    this.svg.remove();
+                    this.svg = null;
+                    this.path = null;
+                }
+            };
+
+            overlay.setMap(map);
         }
 
         function initLandingMap() {
@@ -1147,7 +1185,7 @@
                     strokeOpacity: 0.9,
                     strokeWeight: 4,
                     fillColor: '#0066cc',
-                    fillOpacity: 0.08
+                    fillOpacity: 0
                 });
                 addOutsideBoundaryMask(map, landingMapData.boundary);
             }

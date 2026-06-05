@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}{{ incident.title }} - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="page-title">
+            <i class="bi bi-exclamation-triangle"></i> {{ incident.title }}
+        </h1>
+        <p class="text-muted mb-0">Reported {{ incident.reported_at|date:"M d, Y H:i" }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'emergency-incident-list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <a href="{% url 'emergency-incident-edit' incident.pk %}" class="btn btn-warning">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-card-text"></i> Incident Summary</h5>
+            </div>
+            <div class="card-body">
+                <p class="lead">{{ incident.description }}</p>
+                <div class="row g-3 mt-2">
+                    <div class="col-md-6">
+                        <span class="text-muted small d-block">Location</span>
+                        <strong>{{ incident.location }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted small d-block">Evacuation Center</span>
+                        <strong>{{ incident.evacuation_center|default:"Not linked" }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted small d-block">Reported By</span>
+                        <strong>{{ incident.reported_by|default:"Unknown" }}</strong>
+                    </div>
+                    <div class="col-md-6">
+                        <span class="text-muted small d-block">Resolved At</span>
+                        <strong>{{ incident.resolved_at|date:"M d, Y H:i"|default:"Not resolved" }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-activity"></i> Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="text-muted small d-block">Severity</span>
+                    {% if incident.severity == 'CRITICAL' %}
+                        <span class="badge bg-danger fs-6">{{ incident.get_severity_display }}</span>
+                    {% elif incident.severity == 'HIGH' %}
+                        <span class="badge bg-warning text-dark fs-6">{{ incident.get_severity_display }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary fs-6">{{ incident.get_severity_display }}</span>
+                    {% endif %}
+                </div>
+                <div>
+                    <span class="text-muted small d-block">Current Status</span>
+                    <span class="badge bg-info fs-6">{{ incident.get_status_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -10,11 +10,13 @@
         </h1>
         <p class="text-muted">{{ total_families }} total families | {{ pending_families }} pending | {{ partial_families }} partially reunified | {{ reunified_families }} reunified</p>
     </div>
-    <div class="col-md-4 text-end">
-        <a href="{% url 'family-register' %}" class="btn btn-primary btn-lg">
-            <i class="bi bi-plus-circle"></i> Register Family
-        </a>
-    </div>
+    {% if request.user.is_emergency_responder %}
+        <div class="col-md-4 text-end">
+            <a href="{% url 'family-register' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Register Family
+            </a>
+        </div>
+    {% endif %}
 </div>
 
 <!-- Filters -->
@@ -104,15 +106,19 @@
                                 <a href="{% url 'family-detail' family.pk %}" class="btn btn-info" title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'family-edit' family.pk %}" class="btn btn-warning" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a href="{% url 'family-reunification' family.pk %}" class="btn btn-primary" title="Reunification">
-                                    <i class="bi bi-arrow-repeat"></i>
-                                </a>
-                                <a href="{% url 'family-delete' family.pk %}" class="btn btn-danger" title="Delete">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                {% if request.user.is_emergency_responder %}
+                                    <a href="{% url 'family-edit' family.pk %}" class="btn btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'family-reunification' family.pk %}" class="btn btn-primary" title="Reunification">
+                                        <i class="bi bi-arrow-repeat"></i>
+                                    </a>
+                                {% endif %}
+                                {% if request.user.is_operational_admin %}
+                                    <a href="{% url 'family-delete' family.pk %}" class="btn btn-danger" title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

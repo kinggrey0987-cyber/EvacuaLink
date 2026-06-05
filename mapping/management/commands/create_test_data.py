@@ -103,7 +103,8 @@ class Command(BaseCommand):
 
         for user_data in users:
             username = user_data['username']
-            if not User.objects.filter(username=username).exists():
+            user = User.objects.filter(username=username).first()
+            if user is None:
                 user = User.objects.create_user(
                     username=user_data['username'],
                     email=user_data['email'],
@@ -114,7 +115,13 @@ class Command(BaseCommand):
                 )
                 self.stdout.write(self.style.SUCCESS(f"  Created user: {username}"))
             else:
-                self.stdout.write(f"  User {username} already exists")
+                user.email = user_data['email']
+                user.first_name = user_data['first_name']
+                user.last_name = user_data['last_name']
+                user.role = user_data['role']
+                user.set_password(user_data['password'])
+                user.save()
+                self.stdout.write(self.style.SUCCESS(f"  Refreshed user: {username}"))
 
     def generate_random_point_in_boundary(self, boundary):
         """Generate random coordinates within Barangay boundary"""

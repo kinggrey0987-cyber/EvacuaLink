@@ -90,7 +90,9 @@
                         <p>Register, assign, and monitor individual evacuee status.</p>
                         <div class="module-actions">
                             <a href="{% url 'evacuee-dashboard' %}" class="btn btn-sm btn-outline-primary">Dashboard</a>
-                            <a href="{% url 'evacuee-register' %}" class="btn btn-sm btn-primary">Register</a>
+                            {% if user.is_emergency_responder %}
+                                <a href="{% url 'evacuee-register' %}" class="btn btn-sm btn-primary">Register</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -103,7 +105,9 @@
                         <p>Track family groups and reunification progress.</p>
                         <div class="module-actions">
                             <a href="{% url 'family-dashboard' %}" class="btn btn-sm btn-outline-success">Dashboard</a>
-                            <a href="{% url 'family-register' %}" class="btn btn-sm btn-success">Register</a>
+                            {% if user.is_emergency_responder %}
+                                <a href="{% url 'family-register' %}" class="btn btn-sm btn-success">Register</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -116,7 +120,9 @@
                         <p>Manage center availability, status, and occupancy.</p>
                         <div class="module-actions">
                             <a href="{% url 'evacuation-center-list' %}" class="btn btn-sm btn-outline-info">View Centers</a>
-                            <a href="{% url 'evacuation-center-add' %}" class="btn btn-sm btn-info text-white">Add Center</a>
+                            {% if user.is_emergency_responder %}
+                                <a href="{% url 'evacuation-center-add' %}" class="btn btn-sm btn-info text-white">Add Center</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

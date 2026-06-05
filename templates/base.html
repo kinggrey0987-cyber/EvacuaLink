@@ -372,10 +372,10 @@
                             </a>
                         </li>
                     {% endif %}
-                    {% if request.user.role == 'ADMIN' %}
+                    {% if request.user.is_operational_admin %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'evacualink_admin:index' %}">
-                                <i class="bi bi-gear"></i> Admin
+                            <a class="nav-link {% if 'users' in request.path %}active{% endif %}" href="{% url 'user_list' %}">
+                                <i class="bi bi-people"></i> Users
                             </a>
                         </li>
                     {% endif %}
@@ -396,7 +396,7 @@
                             <li><a class="dropdown-item" href="{% url 'user_edit' request.user.pk %}">
                                 <i class="bi bi-pencil"></i> Edit Profile
                             </a></li>
-                            {% if request.user.role == 'ADMIN' %}
+                            {% if request.user.is_operational_admin %}
                                 <li><hr class="dropdown-divider"></li>
                                 <li><a class="dropdown-item" href="{% url 'user_list' %}">
                                     <i class="bi bi-people"></i> Manage Users

@@ -82,8 +82,8 @@ With test data loaded, you can test:
 
 1. ✅ **User Authentication** - Login with different roles
 2. ✅ **Evacuation Center Management** - View `/evacuation-centers/`
-3. ✅ **Evacuee Registration** - See registered evacuees at `/evacuees/list/`
-4. ✅ **Family Management** - View families at `/families/list/`
+3. ✅ **Evacuee Registration** - See registered evacuees at `/evacuees/`
+4. ✅ **Family Management** - View families at `/families/`
 5. ✅ **Evacuee Tracking** - Check status updates `/evacuees/dashboard/`
 6. ✅ **Family Reunification** - Monitor reunion progress `/families/dashboard/`
 7. ✅ **Mapping & Boundaries** - View hazard/safe zones on `/mapping/`
@@ -112,8 +112,8 @@ python manage.py runserver
 ### 4. Test Each Module
 - **Dashboard** → `/dashboard/` (Shows statistics)
 - **Maps** → `/mapping/` (View boundary, zones)
-- **Evacuees** → `/evacuees/list/` (30+ test evacuees)
-- **Families** → `/families/list/` (6 test families)
+- **Evacuees** → `/evacuees/` (30+ test evacuees)
+- **Families** → `/families/` (6 test families)
 - **Reports** → `/reports/` (Generate sample reports)
 - **Emergency** → `/emergency/help-requests/` (4 requests)
 

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Emergency Incidents - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="page-title">
+            <i class="bi bi-exclamation-triangle"></i> Emergency Incidents
+        </h1>
+        <p class="text-muted mb-0">Track reported incidents, severity, and response status.</p>
+    </div>
+    <div class="col-md-4 text-end">
+        <a href="{% url 'emergency-incident-create' %}" class="btn btn-danger btn-lg">
+            <i class="bi bi-plus-circle"></i> Report Incident
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0"><i class="bi bi-funnel"></i> Filter Incidents</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    {% for value, label in statuses %}
+                        <option value="{{ value }}" {% if current_status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Severity</label>
+                <select name="severity" class="form-select">
+                    <option value="">All Severities</option>
+                    {% for value, label in severities %}
+                        <option value="{{ value }}" {% if current_severity == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0"><i class="bi bi-list-ul"></i> Incidents ({{ page_obj.paginator.count }})</h5>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Title</th>
+                    <th>Location</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Reported</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incident in incidents %}
+                    <tr>
+                        <td><a href="{% url 'emergency-incident-detail' incident.pk %}"><strong>{{ incident.title }}</strong></a></td>
+                        <td>{{ incident.location }}</td>
+                        <td>
+                            {% if incident.severity == 'CRITICAL' %}
+                                <span class="badge bg-danger">{{ incident.get_severity_display }}</span>
+                            {% elif incident.severity == 'HIGH' %}
+                                <span class="badge bg-warning text-dark">{{ incident.get_severity_display }}</span>
+                            {% else %}
+                                <span class="badge bg-secondary">{{ incident.get_severity_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-info">{{ incident.get_status_display }}</span></td>
+                        <td><small class="text-muted">{{ incident.reported_at|date:"M d, Y H:i" }}</small></td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'emergency-incident-detail' incident.pk %}" class="btn btn-info" title="View">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'emergency-incident-edit' incident.pk %}" class="btn btn-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox"></i> No incidents found
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+{% endblock %}

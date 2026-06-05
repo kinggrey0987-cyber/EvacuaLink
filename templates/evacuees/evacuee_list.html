@@ -10,11 +10,13 @@
         </h1>
         <p class="text-muted">{{ total_evacuees }} total evacuees | {{ checked_in }} checked in | {{ special_needs_count }} with special needs</p>
     </div>
-    <div class="col-md-4 text-end">
-        <a href="{% url 'evacuee-register' %}" class="btn btn-primary btn-lg">
-            <i class="bi bi-plus-circle"></i> Register Evacuee
-        </a>
-    </div>
+    {% if request.user.is_emergency_responder %}
+        <div class="col-md-4 text-end">
+            <a href="{% url 'evacuee-register' %}" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Register Evacuee
+            </a>
+        </div>
+    {% endif %}
 </div>
 
 <!-- Filters -->
@@ -148,18 +150,20 @@
                                 <a href="{% url 'evacuee-detail' evacuee.pk %}" class="btn btn-info" title="View">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                {% if evacuee.status == 'REGISTERED' %}
-                                    <a href="{% url 'evacuee-assign' evacuee.pk %}" class="btn btn-success" title="Assign">
-                                        <i class="bi bi-check-square"></i>
+                                {% if request.user.is_emergency_responder %}
+                                    {% if evacuee.status == 'REGISTERED' %}
+                                        <a href="{% url 'evacuee-assign' evacuee.pk %}" class="btn btn-success" title="Assign">
+                                            <i class="bi bi-check-square"></i>
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'evacuee-edit' evacuee.pk %}" class="btn btn-warning" title="Edit">
+                                        <i class="bi bi-pencil"></i>
                                     </a>
-                                {% endif %}
-                                <a href="{% url 'evacuee-edit' evacuee.pk %}" class="btn btn-warning" title="Edit">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                {% if evacuee.evacuation_center %}
-                                    <a href="{% url 'evacuee-transfer' evacuee.pk %}" class="btn btn-primary" title="Transfer">
-                                        <i class="bi bi-arrow-left-right"></i>
-                                    </a>
+                                    {% if evacuee.evacuation_center %}
+                                        <a href="{% url 'evacuee-transfer' evacuee.pk %}" class="btn btn-primary" title="Transfer">
+                                            <i class="bi bi-arrow-left-right"></i>
+                                        </a>
+                                    {% endif %}
                                 {% endif %}
                             </div>
                         </td>
