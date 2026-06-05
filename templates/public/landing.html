@@ -1095,7 +1095,7 @@
                         { lat: 85, lng: 180 },
                         { lat: -85, lng: 180 }
                     ],
-                    boundaryPath.slice().reverse()
+                    boundaryPath
                 ],
                 strokeOpacity: 0,
                 fillColor: '#eef3f8',
@@ -1103,22 +1103,6 @@
                 clickable: false,
                 zIndex: 2
             });
-        }
-
-        function evacuationCenterIcon() {
-            const svg = [
-                '<svg xmlns="http://www.w3.org/2000/svg" width="42" height="48" viewBox="0 0 42 48">',
-                '<path d="M21 46s15-15.4 15-28A15 15 0 0 0 6 18c0 12.6 15 28 15 28Z" fill="#0d6efd" stroke="#fff" stroke-width="3"/>',
-                '<circle cx="21" cy="18" r="7" fill="#fff"/>',
-                '<path d="M16 20.5h10v-6l-5-3.6-5 3.6v6Z" fill="#0d6efd"/>',
-                '</svg>'
-            ].join('');
-
-            return {
-                url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
-                scaledSize: new google.maps.Size(34, 39),
-                anchor: new google.maps.Point(17, 37)
-            };
         }
 
         function initLandingMap() {
@@ -1270,7 +1254,14 @@
                     map: map,
                     position: positionFrom(centerItem),
                     title: centerItem.name,
-                    icon: evacuationCenterIcon(),
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: '#0d6efd',
+                        fillOpacity: 1,
+                        strokeColor: '#ffffff',
+                        strokeWeight: 4,
+                        scale: 12
+                    },
                     zIndex: 1000
                 });
                 marker.addListener('click', function() {
