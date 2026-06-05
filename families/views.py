@@ -22,6 +22,7 @@ from families.forms import (
     FamilyReunificationForm,
 )
 from families.models import Family
+from families.models import FamilyReunificationLog
 
 
 class FamilyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -30,7 +31,7 @@ class FamilyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
     template_name = "families/family_dashboard.html"
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -117,6 +118,7 @@ class FamilyDetailView(LoginRequiredMixin, DetailView):
 
         # Get evacuation centers
         context["centers"] = family.get_evacuation_centers()
+        context["reunification_logs"] = family.reunification_logs.select_related("updated_by")[:10]
 
         # Calculate reunification percentage
         if family.member_count > 0:
@@ -176,7 +178,22 @@ class FamilyReunificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, Suc
             if family.member_count > 0
             else 0
         )
+        context["reunification_logs"] = family.reunification_logs.select_related("updated_by")[:10]
         return context
+
+    def form_valid(self, form):
+        old_family = Family.objects.get(pk=self.object.pk)
+        response = super().form_valid(form)
+        notes = form.cleaned_data.get("notes", "")
+        if old_family.reunification_status != self.object.reunification_status or notes:
+            FamilyReunificationLog.objects.create(
+                family=self.object,
+                old_status=old_family.reunification_status,
+                new_status=self.object.reunification_status,
+                notes=notes,
+                updated_by=self.request.user,
+            )
+        return response
 
 
 class FamilyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
@@ -187,7 +204,7 @@ class FamilyDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     success_url = reverse_lazy("family-list")
 
     def test_func(self):
-        return self.request.user.role == "ADMIN"
+        return self.request.user.is_emergency_responder
 
     def delete(self, request, *args, **kwargs):
         family = self.get_object()

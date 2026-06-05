@@ -103,9 +103,18 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
 
     class Meta:
         model = EmergencyHelpRequest
-        fields = ["status", "resolved_at"]
+        fields = ["status", "priority", "assigned_to", "response_notes", "resolved_at"]
         widgets = {
             "status": forms.Select(attrs={"class": "form-select"}),
+            "priority": forms.Select(attrs={"class": "form-select"}),
+            "assigned_to": forms.Select(attrs={"class": "form-select"}),
+            "response_notes": forms.Textarea(
+                attrs={
+                    "class": "form-control",
+                    "rows": 4,
+                    "placeholder": "Actions taken, responder notes, or follow-up needed",
+                }
+            ),
             "resolved_at": forms.DateTimeInput(
                 attrs={
                     "class": "form-control",
@@ -117,6 +126,15 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["status"].label = "Request Status"
+        self.fields["priority"].label = "Priority"
+        self.fields["assigned_to"].label = "Assigned Staff"
+        self.fields["assigned_to"].required = False
+        self.fields["assigned_to"].queryset = self.fields["assigned_to"].queryset.filter(
+            role__in=["ADMIN", "STAFF"],
+            is_active=True,
+        ).order_by("first_name", "last_name", "username")
+        self.fields["response_notes"].label = "Response Notes"
+        self.fields["response_notes"].required = False
         self.fields["resolved_at"].label = "Resolved At"
         self.fields["resolved_at"].required = False
 

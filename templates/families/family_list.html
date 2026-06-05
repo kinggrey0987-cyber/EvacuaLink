@@ -114,7 +114,7 @@
                                         <i class="bi bi-arrow-repeat"></i>
                                     </a>
                                 {% endif %}
-                                {% if request.user.is_operational_admin %}
+                                {% if request.user.is_emergency_responder %}
                                     <a href="{% url 'family-delete' family.pk %}" class="btn btn-danger" title="Delete">
                                         <i class="bi bi-trash"></i>
                                     </a>

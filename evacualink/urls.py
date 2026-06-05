@@ -12,7 +12,7 @@ urlpatterns = [
     # Public Landing Page (no login required)
     path("", PublicLandingPageView.as_view(), name="home"),
 
-    # Operational Dashboard (for ADMIN, COORDINATOR, VOLUNTEER, STAFF)
+    # Operational Dashboard (for ADMIN and STAFF)
     path("dashboard/", OperationalDashboardView.as_view(), name="dashboard"),
 
     # Django Admin (TECHNICAL_ADMIN only)

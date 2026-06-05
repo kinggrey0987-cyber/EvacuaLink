@@ -22,7 +22,7 @@ from django.utils import timezone
 from django.db.models import Q
 import json
 
-from emergency.models import EmergencyHelpRequest, EmergencyIncident
+from emergency.models import EmergencyHelpRequest, EmergencyHelpRequestStatusLog, EmergencyIncident
 from emergency.forms import (
     EmergencyHelpRequestForm,
     EmergencyHelpRequestStatusForm,
@@ -104,10 +104,10 @@ class HelpRequestListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     paginate_by = 20
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_queryset(self):
-        queryset = EmergencyHelpRequest.objects.all().order_by("-created_at")
+        queryset = EmergencyHelpRequest.objects.select_related("assigned_to").order_by("-created_at")
 
         # Filter by status if provided
         status_filter = self.request.GET.get("status")
@@ -133,7 +133,7 @@ class HelpRequestDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView)
     context_object_name = "request"
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
 
 class HelpRequestUpdateStatusView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
@@ -153,6 +153,27 @@ class HelpRequestUpdateStatusView(LoginRequiredMixin, UserPassesTestMixin, Succe
         context["help_request"] = self.get_object()
         return context
 
+    def form_valid(self, form):
+        old_request = EmergencyHelpRequest.objects.get(pk=self.object.pk)
+        response = super().form_valid(form)
+        notes = form.cleaned_data.get("response_notes", "")
+        if (
+            old_request.status != self.object.status
+            or old_request.priority != self.object.priority
+            or old_request.assigned_to_id != self.object.assigned_to_id
+            or notes
+        ):
+            EmergencyHelpRequestStatusLog.objects.create(
+                help_request=self.object,
+                old_status=old_request.status,
+                new_status=self.object.status,
+                priority=self.object.priority,
+                assigned_to=self.object.assigned_to,
+                notes=notes,
+                updated_by=self.request.user,
+            )
+        return response
+
 
 class EmergencyIncidentListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """List all emergency incidents (responders only)"""
@@ -163,7 +184,7 @@ class EmergencyIncidentListView(LoginRequiredMixin, UserPassesTestMixin, ListVie
     paginate_by = 20
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_queryset(self):
         queryset = EmergencyIncident.objects.all().order_by("-reported_at")
@@ -199,7 +220,7 @@ class EmergencyIncidentDetailView(LoginRequiredMixin, UserPassesTestMixin, Detai
     context_object_name = "incident"
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
 
 class EmergencyIncidentCreateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, CreateView):
@@ -238,7 +259,7 @@ class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
     template_name = "emergency/emergency_dashboard.html"
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -302,8 +323,11 @@ class EmergencyIncidentJSONListView(View):
         return JsonResponse({"incidents": incidents})
 
 
-class HelpRequestJSONListView(View):
+class HelpRequestJSONListView(LoginRequiredMixin, UserPassesTestMixin, View):
     """API endpoint returning help requests as JSON"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get(self, request):
         """Return help requests as JSON for map display"""

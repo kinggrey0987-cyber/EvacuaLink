@@ -68,28 +68,20 @@ class Command(BaseCommand):
 
         users = [
             {
+                'username': 'techadmin',
+                'email': 'techadmin@evacualink.local',
+                'password': 'techadmin123',
+                'first_name': 'Technical',
+                'last_name': 'Admin',
+                'role': 'TECHNICAL_ADMIN',
+            },
+            {
                 'username': 'admin',
                 'email': 'admin@evacualink.local',
                 'password': 'admin123',
                 'first_name': 'Emergency',
                 'last_name': 'Admin',
                 'role': 'ADMIN',
-            },
-            {
-                'username': 'coordinator',
-                'email': 'coordinator@evacualink.local',
-                'password': 'coordinator123',
-                'first_name': 'Juan',
-                'last_name': 'Coordinator',
-                'role': 'COORDINATOR',
-            },
-            {
-                'username': 'volunteer',
-                'email': 'volunteer@evacualink.local',
-                'password': 'volunteer123',
-                'first_name': 'Maria',
-                'last_name': 'Volunteer',
-                'role': 'VOLUNTEER',
             },
             {
                 'username': 'staff',
@@ -345,7 +337,7 @@ class Command(BaseCommand):
             },
         ]
 
-        user = User.objects.filter(role__in=['ADMIN', 'COORDINATOR']).first()
+        user = User.objects.filter(role='STAFF').first() or User.objects.filter(role='ADMIN').first()
 
         for incident_data in incidents:
             if not EmergencyIncident.objects.filter(title=incident_data['title']).exists():

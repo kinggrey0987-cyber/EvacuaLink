@@ -60,6 +60,17 @@ class FamilyUpdateForm(forms.ModelForm):
 class FamilyReunificationForm(forms.ModelForm):
     """Form for updating family reunification status"""
 
+    notes = forms.CharField(
+        required=False,
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Record where members were found, who confirmed reunification, or what remains unresolved.",
+            }
+        ),
+    )
+
     class Meta:
         model = Family
         fields = ["reunification_status"]

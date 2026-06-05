@@ -31,9 +31,8 @@ class CustomUserAdmin(UserAdmin):
     @admin.display(description="Role", ordering="role")
     def get_role_badge(self, obj):
         colors = {
+            "TECHNICAL_ADMIN": "#343a40",
             "ADMIN": "#dc3545",
-            "COORDINATOR": "#0d6efd",
-            "VOLUNTEER": "#17a2b8",
             "STAFF": "#6c757d",
         }
         color = colors.get(obj.role, "#6c757d")

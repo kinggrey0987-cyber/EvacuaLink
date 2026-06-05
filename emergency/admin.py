@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import EmergencyHelpRequest, EmergencyIncident
+from .models import EmergencyHelpRequest, EmergencyHelpRequestStatusLog, EmergencyIncident
 
 
 @admin.register(EmergencyIncident)
@@ -14,17 +14,13 @@ class EmergencyIncidentAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("Incident Information", {
-            "fields": ("title", "description", "location", "latitude", "longitude")
+            "fields": ("title", "description", "location", "evacuation_center")
         }),
         ("Classification", {
             "fields": ("severity", "status")
         }),
         ("Reporting", {
-            "fields": ("reported_by", "reported_at", "affected_population")
-        }),
-        ("Response Details", {
-            "fields": ("response_actions", "resolution_notes"),
-            "classes": ("collapse",)
+            "fields": ("reported_by", "reported_at", "resolved_at")
         }),
     )
 
@@ -68,9 +64,9 @@ class EmergencyIncidentAdmin(admin.ModelAdmin):
 
 @admin.register(EmergencyHelpRequest)
 class EmergencyHelpRequestAdmin(admin.ModelAdmin):
-    list_display = ("requester_name", "contact_number", "get_status_badge", "location_display", "location_source", "has_photo", "created_at", "resolution_time")
-    search_fields = ("requester_name", "contact_number", "location_description", "message")
-    list_filter = ("status", "location_source", "created_at", "resolved_at")
+    list_display = ("requester_name", "contact_number", "get_priority_badge", "get_status_badge", "assigned_to", "location_display", "location_source", "has_photo", "created_at", "resolution_time")
+    search_fields = ("requester_name", "contact_number", "location_description", "message", "response_notes")
+    list_filter = ("priority", "status", "assigned_to", "location_source", "created_at", "resolved_at")
     ordering = ("-created_at",)
 
     fieldsets = (
@@ -84,11 +80,27 @@ class EmergencyHelpRequestAdmin(admin.ModelAdmin):
             "fields": ("message", "photo", "photo_preview")
         }),
         ("Status & Resolution", {
-            "fields": ("status", "created_at", "resolved_at", "resolution_time"),
+            "fields": ("priority", "status", "assigned_to", "response_notes", "created_at", "resolved_at", "resolution_time"),
             "classes": ("collapse",)
         }),
     )
     readonly_fields = ("created_at", "resolution_time", "photo_preview")
+
+    @admin.display(description="Priority", ordering="priority")
+    def get_priority_badge(self, obj):
+        colors = {
+            "LOW": "#6c757d",
+            "NORMAL": "#0d6efd",
+            "HIGH": "#ff6c00",
+            "CRITICAL": "#dc3545",
+        }
+        color = colors.get(obj.priority, "#6c757d")
+        label = dict(EmergencyHelpRequest.Priority.choices).get(obj.priority, "Unknown")
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 5px 10px; border-radius: 4px;">{}</span>',
+            color,
+            label,
+        )
 
     @admin.display(description="Status", ordering="status")
     def get_status_badge(self, obj):
@@ -138,5 +150,12 @@ class EmergencyHelpRequestAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         """Optimize queryset"""
         queryset = super().get_queryset(request)
-        return queryset
+        return queryset.select_related("assigned_to")
 
+
+@admin.register(EmergencyHelpRequestStatusLog)
+class EmergencyHelpRequestStatusLogAdmin(admin.ModelAdmin):
+    list_display = ("help_request", "old_status", "new_status", "priority", "assigned_to", "updated_by", "created_at")
+    list_filter = ("new_status", "priority", "created_at")
+    search_fields = ("help_request__requester_name", "notes")
+    readonly_fields = ("created_at",)

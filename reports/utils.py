@@ -32,14 +32,14 @@ def generate_occupancy_report(date_from=None, date_to=None, evacuation_center=No
 
         center_data.append({
             "name": center.name,
-            "location": center.location,
+            "location": center.address,
             "address": center.address,
             "capacity": capacity,
             "occupancy": occupancy,
             "available": available,
             "occupancy_percentage": occupancy_percentage,
             "status": center.get_status_display(),
-            "contact": center.manager_contact,
+            "contact": "",
         })
 
         total_capacity += capacity
@@ -70,6 +70,8 @@ def generate_family_reunification_report(date_from=None, date_to=None, evacuatio
     """Generate family reunification status report"""
 
     families = Family.objects.all().prefetch_related("evacuees")
+    if evacuation_center:
+        families = families.filter(evacuees__evacuation_center=evacuation_center).distinct()
 
     family_data = []
 
@@ -134,6 +136,10 @@ def generate_special_needs_report(date_from=None, date_to=None, evacuation_cente
 
     if evacuation_center:
         evacuees = evacuees.filter(evacuation_center=evacuation_center)
+    if date_from:
+        evacuees = evacuees.filter(registered_at__date__gte=date_from)
+    if date_to:
+        evacuees = evacuees.filter(registered_at__date__lte=date_to)
 
     evacuee_data = []
 
@@ -178,6 +184,8 @@ def generate_incident_report(date_from=None, date_to=None, evacuation_center=Non
         incidents = incidents.filter(reported_at__gte=date_from)
     if date_to:
         incidents = incidents.filter(reported_at__lte=date_to)
+    if evacuation_center:
+        incidents = incidents.filter(evacuation_center=evacuation_center)
 
     incidents = incidents.order_by("-reported_at")
 
@@ -192,9 +200,8 @@ def generate_incident_report(date_from=None, date_to=None, evacuation_center=Non
             "status": incident.get_status_display(),
             "reported_at": incident.reported_at,
             "reported_by": incident.reported_by.get_full_name() if incident.reported_by else "Unknown",
-            "affected_population": incident.affected_population,
-            "response_actions": incident.response_actions,
-            "resolution_notes": incident.resolution_notes,
+            "evacuation_center": incident.evacuation_center.name if incident.evacuation_center else "Not linked",
+            "resolved_at": incident.resolved_at,
         })
 
     # Summary statistics

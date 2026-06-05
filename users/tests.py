@@ -50,6 +50,11 @@ class AuthenticationViewTests(TestCase):
 
 class OperationalDashboardRouteTests(TestCase):
     def setUp(self):
+        self.tech_admin = User.objects.create_user(
+            username="techadmin",
+            password="StrongerPass123!",
+            role=User.Role.TECHNICAL_ADMIN,
+        )
         self.admin = User.objects.create_user(
             username="admin",
             password="StrongerPass123!",
@@ -84,18 +89,16 @@ class OperationalDashboardRouteTests(TestCase):
             evacuation_center=self.center,
         )
 
-    def test_operational_admin_dashboard_routes_to_workflow_pages(self):
+    def test_admin_dashboard_routes_to_overview_pages(self):
         self.client.force_login(self.admin)
 
         url_names = [
             "dashboard",
-            "family-register",
-            "evacuee-register",
-            "evacuation-center-add",
+            "family-dashboard",
+            "evacuee-dashboard",
+            "evacuation-center-list",
             "emergency-incident-list",
-            "emergency-incident-create",
             "report-dashboard",
-            "user_list",
         ]
 
         for url_name in url_names:
@@ -103,27 +106,23 @@ class OperationalDashboardRouteTests(TestCase):
                 response = self.client.get(reverse(url_name))
                 self.assertEqual(response.status_code, 200)
 
-        detail_url_names = [
-            "emergency-incident-detail",
-            "emergency-incident-edit",
-        ]
+        response = self.client.get(reverse("emergency-incident-detail", args=[self.incident.pk]))
+        self.assertEqual(response.status_code, 200)
 
-        for url_name in detail_url_names:
-            with self.subTest(url_name=url_name):
-                response = self.client.get(reverse(url_name, args=[self.incident.pk]))
-                self.assertEqual(response.status_code, 200)
+        response = self.client.get(reverse("emergency-incident-edit", args=[self.incident.pk]))
+        self.assertEqual(response.status_code, 403)
 
-    def test_operational_admin_nav_does_not_link_to_technical_admin(self):
+    def test_admin_dashboard_does_not_link_to_user_management(self):
         self.client.force_login(self.admin)
 
         response = self.client.get(reverse("dashboard"))
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, reverse("evacualink_admin:index"))
-        self.assertContains(response, reverse("user_list"))
+        self.assertNotContains(response, reverse("user_list"))
 
-    def test_staff_dashboard_hides_responder_only_actions(self):
-        self.client.force_login(self.staff)
+    def test_admin_dashboard_hides_staff_write_actions(self):
+        self.client.force_login(self.admin)
 
         response = self.client.get(reverse("dashboard"))
 
@@ -132,7 +131,7 @@ class OperationalDashboardRouteTests(TestCase):
         self.assertNotContains(response, reverse("evacuee-register"))
         self.assertNotContains(response, reverse("evacuation-center-add"))
 
-    def test_staff_can_view_lists_but_cannot_open_restricted_create_pages(self):
+    def test_staff_can_manage_operational_pages_but_not_users(self):
         self.client.force_login(self.staff)
 
         allowed_url_names = [
@@ -140,13 +139,14 @@ class OperationalDashboardRouteTests(TestCase):
             "family-list",
             "evacuee-list",
             "evacuation-center-list",
-            "report-dashboard",
-        ]
-        forbidden_url_names = [
             "family-register",
             "evacuee-register",
             "evacuation-center-add",
             "emergency-incident-create",
+            "report-dashboard",
+        ]
+        forbidden_url_names = [
+            "user_list",
         ]
 
         for url_name in allowed_url_names:
@@ -159,15 +159,25 @@ class OperationalDashboardRouteTests(TestCase):
                 response = self.client.get(reverse(url_name))
                 self.assertEqual(response.status_code, 403)
 
-    def test_test_data_command_refreshes_existing_admin_account_role(self):
-        self.admin.role = User.Role.TECHNICAL_ADMIN
-        self.admin.set_password("OldPass123!")
-        self.admin.save()
+    def test_technical_admin_can_manage_user_accounts(self):
+        self.client.force_login(self.tech_admin)
+
+        response = self.client.get(reverse("user_list"))
+
+        self.assertEqual(response.status_code, 200)
+
+    def test_test_data_command_refreshes_existing_accounts_with_three_roles(self):
+        self.tech_admin.set_password("OldPass123!")
+        self.tech_admin.save()
 
         call_command("create_test_data", verbosity=0)
 
+        self.tech_admin.refresh_from_db()
         self.admin.refresh_from_db()
+        self.staff.refresh_from_db()
+        self.assertEqual(self.tech_admin.role, User.Role.TECHNICAL_ADMIN)
+        self.assertTrue(self.tech_admin.is_staff)
+        self.assertTrue(self.tech_admin.is_superuser)
+        self.assertTrue(self.tech_admin.check_password("techadmin123"))
         self.assertEqual(self.admin.role, User.Role.ADMIN)
-        self.assertFalse(self.admin.is_staff)
-        self.assertFalse(self.admin.is_superuser)
-        self.assertTrue(self.admin.check_password("admin123"))
+        self.assertEqual(self.staff.role, User.Role.STAFF)

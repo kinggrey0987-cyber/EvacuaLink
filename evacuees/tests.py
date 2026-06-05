@@ -16,12 +16,12 @@ class EvacueeAssignmentTransferTests(TestCase):
         self.responder = User.objects.create_user(
             username="responder",
             password="StrongerPass123!",
-            role=User.Role.VOLUNTEER,
-        )
-        self.staff = User.objects.create_user(
-            username="staff",
-            password="StrongerPass123!",
             role=User.Role.STAFF,
+        )
+        self.admin_viewer = User.objects.create_user(
+            username="admin_viewer",
+            password="StrongerPass123!",
+            role=User.Role.ADMIN,
         )
         self.family = Family.objects.create(
             family_code="FAM-001",
@@ -149,7 +149,7 @@ class EvacueeAssignmentTransferTests(TestCase):
         self.evacuee.evacuation_center = self.origin
         self.evacuee.status = Evacuee.Status.CHECKED_IN
         self.evacuee.save()
-        self.client.force_login(self.staff)
+        self.client.force_login(self.admin_viewer)
 
         response = self.client.get(reverse("evacuee-detail", args=[self.evacuee.pk]))
 
@@ -159,7 +159,7 @@ class EvacueeAssignmentTransferTests(TestCase):
         self.assertNotContains(response, reverse("evacuee-edit", args=[self.evacuee.pk]))
 
     def test_detail_view_shows_unassigned_message_without_center(self):
-        self.client.force_login(self.staff)
+        self.client.force_login(self.admin_viewer)
 
         response = self.client.get(reverse("evacuee-detail", args=[self.evacuee.pk]))
 

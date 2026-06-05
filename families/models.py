@@ -1,4 +1,5 @@
 from django.db import models
+from django.conf import settings
 
 
 class Family(models.Model):
@@ -75,4 +76,19 @@ class Family(models.Model):
     def get_family_members_list(self):
         """Get all family members with their details"""
         return self.evacuees.select_related("evacuation_center").order_by("last_name", "first_name")
+
+
+class FamilyReunificationLog(models.Model):
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="reunification_logs")
+    old_status = models.CharField(max_length=30, choices=Family.ReunificationStatus.choices, blank=True)
+    new_status = models.CharField(max_length=30, choices=Family.ReunificationStatus.choices)
+    notes = models.TextField(blank=True)
+    updated_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.family.family_code}: {self.old_status or 'NEW'} to {self.new_status}"
 

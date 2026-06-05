@@ -9,11 +9,10 @@ python manage.py create_test_data
 
 ## What Gets Created
 
-### Test Users (4 accounts)
-- **admin** / admin123 → ADMIN (Operational)
-- **coordinator** / coordinator123 → COORDINATOR
-- **volunteer** / volunteer123 → VOLUNTEER
-- **staff** / staff123 → STAFF
+### Test Users (3 accounts)
+- **techadmin** / techadmin123 → TECHNICAL_ADMIN (adds and manages admin/staff accounts)
+- **admin** / admin123 → ADMIN (overall system visibility)
+- **staff** / staff123 → STAFF (manages families, centers, maps, evacuees, and help requests)
 
 ### Geographic Data
 - **5 Evacuation Centers** - With random locations, capacity, and occupancy
@@ -118,8 +117,8 @@ python manage.py runserver
 - **Emergency** → `/emergency/help-requests/` (4 requests)
 
 ### 5. Test With Different Roles
-Try login with coordinator, volunteer, staff to verify
-role-based access control
+Try logging in as techadmin, admin, and staff to verify
+role-based access control.
 
 ## Sample Data Distribution
 

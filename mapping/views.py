@@ -72,7 +72,7 @@ class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     template_name = "mapping/admin_map.html"
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

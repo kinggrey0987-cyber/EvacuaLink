@@ -204,11 +204,13 @@
                     <i class="bi bi-exclamation-triangle"></i> Manage Incidents
                 </a>
             </div>
-            <div class="col-md-6 mb-2">
-                <a href="{% url 'emergency-incident-create' %}" class="btn btn-outline-danger btn-lg w-100">
-                    <i class="bi bi-plus-circle"></i> Report New Incident
-                </a>
-            </div>
+            {% if user.is_emergency_responder %}
+                <div class="col-md-6 mb-2">
+                    <a href="{% url 'emergency-incident-create' %}" class="btn btn-outline-danger btn-lg w-100">
+                        <i class="bi bi-plus-circle"></i> Report New Incident
+                    </a>
+                </div>
+            {% endif %}
             <div class="col-md-6 mb-2">
                 <a href="{% url 'public-map' %}" class="btn btn-outline-info btn-lg w-100">
                     <i class="bi bi-map"></i> View Map

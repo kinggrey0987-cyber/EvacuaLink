@@ -1,15 +1,16 @@
 """Django settings for the EvacuaLink project."""
 from pathlib import Path
 
-from decouple import config
+from decouple import Csv, config
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = "django-insecure-evacualink-development-key-change-before-production"
+SECRET_KEY = config("SECRET_KEY", default="django-insecure-evacualink-development-key-change-before-production")
 
-DEBUG = True
+DEBUG_VALUE = str(config("DEBUG", default="true")).strip().lower()
+DEBUG = DEBUG_VALUE not in {"0", "false", "no", "off", "prod", "production", "release"}
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="localhost,127.0.0.1", cast=Csv())
 
 GOOGLE_MAPS_API_KEY = config("GOOGLE_MAPS_API_KEY", default="")
 

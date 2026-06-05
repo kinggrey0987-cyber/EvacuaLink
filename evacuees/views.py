@@ -27,6 +27,7 @@ from evacuees.forms import (
     EvacueeTransferForm,
 )
 from evacuees.models import Evacuee, TransferRecord
+from evacuees.services import recalculate_centers_occupancy
 from families.models import Family
 
 
@@ -153,13 +154,7 @@ class EvacueeAssignmentView(LoginRequiredMixin, UserPassesTestMixin, SuccessMess
             evacuee.evacuation_center = center
             evacuee.status = "CHECKED_IN"
             evacuee.save()
-            center.current_occupancy = Evacuee.objects.filter(
-                evacuation_center=center,
-                status__in=["CHECKED_IN", "TRANSFERRED"],
-            ).count()
-            if center.current_occupancy >= center.capacity:
-                center.status = "FULL"
-            center.save(update_fields=["current_occupancy", "status", "updated_at"])
+            recalculate_centers_occupancy(center)
 
         messages.success(
             self.request,
@@ -179,6 +174,13 @@ class EvacueeStatusUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMe
 
     def test_func(self):
         return self.request.user.is_emergency_responder
+
+    def form_valid(self, form):
+        old_evacuee = Evacuee.objects.select_related("evacuation_center").get(pk=self.object.pk)
+        response = super().form_valid(form)
+        self.object.refresh_from_db()
+        recalculate_centers_occupancy(old_evacuee.evacuation_center, self.object.evacuation_center)
+        return response
 
 
 class EvacueeUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
@@ -235,16 +237,7 @@ class EvacueeTransferView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessag
             evacuee.status = "TRANSFERRED"
             evacuee.save()
 
-            for center in filter(None, [old_center, new_center]):
-                center.current_occupancy = Evacuee.objects.filter(
-                    evacuation_center=center,
-                    status__in=["CHECKED_IN", "TRANSFERRED"],
-                ).count()
-                if center.status == "FULL" and center.current_occupancy < center.capacity:
-                    center.status = "OPEN"
-                elif center.current_occupancy >= center.capacity:
-                    center.status = "FULL"
-                center.save(update_fields=["current_occupancy", "status", "updated_at"])
+            recalculate_centers_occupancy(old_center, new_center)
 
         messages.success(
             self.request,
@@ -267,12 +260,15 @@ class EvacueeDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     success_url = reverse_lazy("evacuee-list")
 
     def test_func(self):
-        return self.request.user.role == "ADMIN"
+        return self.request.user.is_emergency_responder
 
-    def delete(self, request, *args, **kwargs):
+    def form_valid(self, form):
         evacuee = self.get_object()
+        center = evacuee.evacuation_center
         messages.success(request, f"Evacuee '{evacuee.full_name}' deleted successfully.")
-        return super().delete(request, *args, **kwargs)
+        response = super().form_valid(form)
+        recalculate_centers_occupancy(center)
+        return response
 
 
 class EvacueeDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -281,7 +277,7 @@ class EvacueeDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView
     template_name = "evacuees/evacuee_dashboard.html"
 
     def test_func(self):
-        return self.request.user.is_emergency_responder
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

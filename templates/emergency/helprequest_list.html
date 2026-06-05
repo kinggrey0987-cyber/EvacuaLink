@@ -61,6 +61,8 @@
                     <th>Location Description</th>
                     <th>Location Source</th>
                     <th>Photo</th>
+                    <th>Priority</th>
+                    <th>Assigned</th>
                     <th>Status</th>
                     <th>Submitted</th>
                     <th>Actions</th>
@@ -96,6 +98,18 @@
                             {% endif %}
                         </td>
                         <td>
+                            {% if request.priority == 'CRITICAL' %}
+                                <span class="badge bg-danger">{{ request.get_priority_display }}</span>
+                            {% elif request.priority == 'HIGH' %}
+                                <span class="badge bg-warning text-dark">{{ request.get_priority_display }}</span>
+                            {% else %}
+                                <span class="badge bg-primary">{{ request.get_priority_display }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ request.assigned_to|default:"Unassigned" }}</small>
+                        </td>
+                        <td>
                             {% if request.status == 'PENDING' %}
                                 <span class="badge bg-danger">{{ request.get_status_display }}</span>
                             {% elif request.status == 'IN_PROGRESS' %}
@@ -114,15 +128,17 @@
                                 <a href="{% url 'help-request-detail' request.pk %}" class="btn btn-info" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning" title="Update Status">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
+                                {% if user.is_emergency_responder %}
+                                    <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning" title="Update Status">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="10" class="text-center text-muted py-4">
                             <i class="bi bi-inbox"></i> No help requests found
                         </td>
                     </tr>

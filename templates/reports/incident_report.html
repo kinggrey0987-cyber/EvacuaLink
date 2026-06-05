@@ -200,12 +200,9 @@
                                         <p class="mb-0"><strong>Reporter:</strong> {{ incident.reported_by }}</p>
                                     </div>
                                     <div class="col-md-6">
-                                        <p class="mb-1"><strong>Affected Population:</strong> {{ incident.affected_population|default:"Not specified" }}</p>
-                                        {% if incident.response_actions %}
-                                            <p class="mb-1"><strong>Actions Taken:</strong> {{ incident.response_actions }}</p>
-                                        {% endif %}
-                                        {% if incident.resolution_notes %}
-                                            <p class="mb-0"><strong>Resolution:</strong> {{ incident.resolution_notes }}</p>
+                                        <p class="mb-1"><strong>Evacuation Center:</strong> {{ incident.evacuation_center }}</p>
+                                        {% if incident.resolved_at %}
+                                            <p class="mb-0"><strong>Resolved:</strong> {{ incident.resolved_at|date:"M d, Y H:i" }}</p>
                                         {% endif %}
                                     </div>
                                 </div>

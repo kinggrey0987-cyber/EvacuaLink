@@ -123,7 +123,7 @@ class LogoutView(LoginRequiredMixin, View):
 class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     """
     Main operational dashboard for emergency responders and staff.
-    TECHNICAL_ADMIN users are redirected to Django admin instead.
+    TECHNICAL_ADMIN users are redirected to account/system administration.
     """
 
     template_name = "dashboard.html"
@@ -133,9 +133,9 @@ class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, Template
         return not self.request.user.is_technical_admin
 
     def handle_no_permission(self):
-        """Redirect technical admins to admin panel"""
+        """Redirect technical admins to account management."""
         if self.request.user.is_authenticated and self.request.user.is_technical_admin:
-            return redirect("evacualink_admin:index")
+            return redirect("user_list")
         return redirect("login")
 
     def get_context_data(self, **kwargs):
@@ -188,7 +188,7 @@ class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, Template
 
 
 class RegisterView(UserPassesTestMixin, CreateView):
-    """Handle user registration (operational admin only)"""
+    """Handle user registration (technical admin only)"""
 
     model = User
     form_class = CustomUserCreationForm
@@ -196,10 +196,10 @@ class RegisterView(UserPassesTestMixin, CreateView):
     success_url = reverse_lazy("user_list")
 
     def test_func(self):
-        """Only operational admins can create new users"""
+        """Only technical admins can create new users"""
         return (
             self.request.user.is_authenticated
-            and self.request.user.is_operational_admin
+            and self.request.user.is_technical_admin
         )
 
     def handle_no_permission(self):
@@ -212,7 +212,7 @@ class RegisterView(UserPassesTestMixin, CreateView):
 
 
 class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """List all users (operational admin only)"""
+    """List all users (technical admin only)"""
 
     model = User
     template_name = "users/user_list.html"
@@ -220,8 +220,8 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     paginate_by = 20
 
     def test_func(self):
-        """Only operational admins can view user list"""
-        return self.request.user.is_operational_admin
+        """Only technical admins can view user list"""
+        return self.request.user.is_technical_admin
 
     def get_queryset(self):
         return User.objects.all().order_by("username")
@@ -236,7 +236,7 @@ class UserDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         # Users can only view their own profile or admins can view anyone
-        if self.request.user.is_operational_admin:
+        if self.request.user.is_technical_admin:
             return User.objects.all()
         return User.objects.filter(pk=self.request.user.pk)
 
@@ -251,7 +251,7 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         # Users can only update their own profile or admins can update anyone
-        if self.request.user.is_operational_admin:
+        if self.request.user.is_technical_admin:
             return User.objects.all()
         return User.objects.filter(pk=self.request.user.pk)
 

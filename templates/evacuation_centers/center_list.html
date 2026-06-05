@@ -27,7 +27,7 @@
                         {% if request.user.is_emergency_responder %}
                             <a class="btn btn-sm btn-outline-primary" href="{% url 'evacuation-center-edit' center.pk %}">Edit</a>
                         {% endif %}
-                        {% if request.user.is_operational_admin %}
+                        {% if request.user.is_emergency_responder %}
                             <a class="btn btn-sm btn-outline-danger" href="{% url 'evacuation-center-delete' center.pk %}">Delete</a>
                         {% endif %}
                     </td>

@@ -70,7 +70,7 @@ class EvacuationCenterDeleteView(LoginRequiredMixin, UserPassesTestMixin, Delete
     success_url = reverse_lazy("evacuation-center-list")
 
     def test_func(self):
-        return self.request.user.is_operational_admin
+        return self.request.user.is_emergency_responder
 
     def form_valid(self, form):
         messages.success(self.request, "Evacuation center deleted successfully.")

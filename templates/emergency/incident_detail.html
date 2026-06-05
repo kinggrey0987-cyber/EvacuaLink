@@ -14,9 +14,11 @@
         <a href="{% url 'emergency-incident-list' %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Back
         </a>
-        <a href="{% url 'emergency-incident-edit' incident.pk %}" class="btn btn-warning">
-            <i class="bi bi-pencil"></i> Edit
-        </a>
+        {% if user.is_emergency_responder %}
+            <a href="{% url 'emergency-incident-edit' incident.pk %}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+        {% endif %}
     </div>
 </div>
 

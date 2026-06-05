@@ -11,9 +11,11 @@
         <p class="text-muted mb-0">Submitted {{ request.created_at|date:"M d, Y H:i" }}</p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
-        <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning">
-            <i class="bi bi-pencil"></i> Update Status
-        </a>
+        {% if user.is_emergency_responder %}
+            <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Update Status
+            </a>
+        {% endif %}
         <a href="{% url 'help-request-list' %}" class="btn btn-outline-secondary">
             <i class="bi bi-arrow-left"></i> Back
         </a>
@@ -49,6 +51,20 @@
                         {% endif %}
                     </dd>
 
+                    <dt class="col-sm-4">Priority</dt>
+                    <dd class="col-sm-8">
+                        {% if request.priority == 'CRITICAL' %}
+                            <span class="badge bg-danger">{{ request.get_priority_display }}</span>
+                        {% elif request.priority == 'HIGH' %}
+                            <span class="badge bg-warning text-dark">{{ request.get_priority_display }}</span>
+                        {% else %}
+                            <span class="badge bg-primary">{{ request.get_priority_display }}</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-4">Assigned To</dt>
+                    <dd class="col-sm-8">{{ request.assigned_to|default:"Unassigned" }}</dd>
+
                     <dt class="col-sm-4">Location</dt>
                     <dd class="col-sm-8">{{ request.location_description }}</dd>
 
@@ -77,6 +93,40 @@
             </div>
             <div class="card-body">
                 <p class="mb-0">{{ request.message|linebreaksbr }}</p>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-journal-text"></i> Response Notes</h5>
+            </div>
+            <div class="card-body">
+                {% if request.response_notes %}
+                    <p class="mb-0">{{ request.response_notes|linebreaksbr }}</p>
+                {% else %}
+                    <p class="text-muted mb-0">No response notes recorded yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5>
+            </div>
+            <div class="card-body">
+                {% for log in request.status_logs.all %}
+                    <div class="border-bottom pb-2 mb-2">
+                        <div class="fw-semibold">{{ log.get_old_status_display|default:"New" }} to {{ log.get_new_status_display }}</div>
+                        <div class="small text-muted">
+                            {{ log.created_at|date:"M d, Y H:i" }}
+                            {% if log.updated_by %}by {{ log.updated_by }}{% endif %}
+                            {% if log.assigned_to %} - assigned to {{ log.assigned_to }}{% endif %}
+                        </div>
+                        {% if log.notes %}<div class="small mt-1">{{ log.notes|linebreaksbr }}</div>{% endif %}
+                    </div>
+                {% empty %}
+                    <p class="text-muted mb-0">No status updates recorded yet.</p>
+                {% endfor %}
             </div>
         </div>
     </div>

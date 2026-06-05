@@ -264,11 +264,10 @@
         {% if user.is_operational_admin %}
             <div class="col-md-6">
                 <div class="card h-100 admin-card">
-                    <div class="card-header"><i class="bi bi-tools me-2 text-warning"></i>Administrator Functions</div>
+                    <div class="card-header"><i class="bi bi-tools me-2 text-warning"></i>Administrator View</div>
                     <div class="card-body">
-                        <p class="text-muted mb-3">Full access to accounts, reports, emergency records, and operational monitoring.</p>
+                        <p class="text-muted mb-3">Overall visibility for reports, emergency records, maps, families, and evacuation status.</p>
                         <div class="d-flex flex-wrap gap-2">
-                            <a href="{% url 'user_list' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-people"></i> Manage Users</a>
                             <a href="{% url 'report-dashboard' %}" class="btn btn-sm btn-primary"><i class="bi bi-file-earmark-text"></i> View Reports</a>
                         </div>
                     </div>
@@ -281,8 +280,11 @@
                 <div class="card h-100 admin-card">
                     <div class="card-header"><i class="bi bi-gear me-2 text-secondary"></i>Technical Administration</div>
                     <div class="card-body">
-                        <p class="text-muted mb-3">Technical administrators have direct access to the Django admin panel.</p>
-                        <a href="{% url 'evacualink_admin:index' %}" class="btn btn-dark"><i class="bi bi-gear"></i> Go to Django Admin</a>
+                        <p class="text-muted mb-3">Technical administrators manage admin and staff accounts.</p>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'user_list' %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-people"></i> Manage Users</a>
+                            <a href="{% url 'evacualink_admin:index' %}" class="btn btn-sm btn-dark"><i class="bi bi-gear"></i> Django Admin</a>
+                        </div>
                     </div>
                 </div>
             </div>

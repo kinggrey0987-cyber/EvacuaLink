@@ -4,10 +4,8 @@ from django.db import models
 
 class User(AbstractUser):
     class Role(models.TextChoices):
-        TECHNICAL_ADMIN = "TECHNICAL_ADMIN", "Technical Administrator"  # System config only
-        ADMIN = "ADMIN", "Operational Administrator"  # Emergency management
-        COORDINATOR = "COORDINATOR", "Coordinator"
-        VOLUNTEER = "VOLUNTEER", "Volunteer"
+        TECHNICAL_ADMIN = "TECHNICAL_ADMIN", "Technical Administrator"
+        ADMIN = "ADMIN", "Administrator"
         STAFF = "STAFF", "Staff"
 
     role = models.CharField(max_length=30, choices=Role.choices, default=Role.STAFF)
@@ -19,27 +17,22 @@ class User(AbstractUser):
         return self.get_full_name() or self.username
 
     def save(self, *args, **kwargs):
-        """Auto-sync role with Django is_staff/is_superuser"""
-        if self.role == self.Role.TECHNICAL_ADMIN:
-            self.is_staff = True
-            self.is_superuser = True
-        else:
-            # Operational roles should NOT have Django admin access
-            self.is_staff = False
-            self.is_superuser = False
+        """Auto-sync Django admin access for technical administrators."""
+        self.is_staff = self.role == self.Role.TECHNICAL_ADMIN
+        self.is_superuser = self.role == self.Role.TECHNICAL_ADMIN
         super().save(*args, **kwargs)
 
     @property
     def is_technical_admin(self):
-        """Check if user has technical admin access (Django admin)"""
+        """Check if user manages system accounts and technical admin tools."""
         return self.role == self.Role.TECHNICAL_ADMIN
 
     @property
     def is_emergency_responder(self):
-        """Check if user has emergency responder access (Operational)"""
-        return self.role in {self.Role.ADMIN, self.Role.COORDINATOR, self.Role.VOLUNTEER}
+        """Check if user can manage operational evacuation workflows."""
+        return self.role == self.Role.STAFF
 
     @property
     def is_operational_admin(self):
-        """Check if user is operational admin"""
+        """Check if user can view the overall operational system."""
         return self.role == self.Role.ADMIN
