@@ -3,6 +3,7 @@ Views for mapping app - manages evacuation centers, hazard zones, and safe zones
 """
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse_lazy
@@ -52,6 +53,15 @@ class PublicMapView(TemplateView):
         context["map_center"] = location_data["center"]
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["public_map_payload"] = {
+            "center": location_data["center"],
+            "bounds": location_data["bounds"],
+            "boundary": boundary_geojson,
+            "evacuationCenters": evacuation_centers,
+            "hazardZones": hazard_zones,
+            "safeZones": safe_zones,
+        }
 
         return context
 
