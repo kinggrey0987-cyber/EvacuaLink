@@ -30,6 +30,34 @@ from emergency.forms import (
 )
 
 
+def get_safety_map_payload():
+    from evacuation_centers.models import EvacuationCenter
+    from mapping.models import HazardZone, SafeZone
+    from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds
+
+    location_data = get_barangay_center_and_bounds()
+    evacuation_centers = list(
+        EvacuationCenter.objects.all().values("id", "name", "latitude", "longitude", "address")
+    )
+    hazard_zones = list(
+        HazardZone.objects.all().values(
+            "id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"
+        )
+    )
+    safe_zones = list(
+        SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description")
+    )
+
+    return {
+        "center": location_data["center"],
+        "bounds": location_data["bounds"],
+        "boundary": get_barangay_boundary_geojson(),
+        "evacuationCenters": evacuation_centers,
+        "hazardZones": hazard_zones,
+        "safeZones": safe_zones,
+    }
+
+
 class PublicHelpRequestView(CreateView):
     """Public form for submitting emergency help requests"""
 
@@ -47,6 +75,7 @@ class PublicHelpRequestView(CreateView):
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = get_safety_map_payload()
         return context
 
 
@@ -240,6 +269,7 @@ class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
             Q(status="OPEN") & Q(severity__in=["CRITICAL", "HIGH"])
         ).order_by("-reported_at")[:10]
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = get_safety_map_payload()
 
         return context
 

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Emergency Dashboard - EvacuaLink{% endblock %}
 
@@ -220,7 +221,10 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
 <script>
+    const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
     const activeHelpRequests = {{ active_help_request_markers|safe }};
     const defaultCenter = {lat: 10.878900, lng: 123.018100};
 
@@ -245,6 +249,8 @@
         });
         const infoWindow = new google.maps.InfoWindow();
         const bounds = new google.maps.LatLngBounds();
+        const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(activeMap, safetyMapData);
+        let markerCount = 0;
 
         activeHelpRequests.forEach(function(request) {
             const position = {
@@ -280,15 +286,18 @@
                 infoWindow.open(activeMap, marker);
             });
             bounds.extend(position);
+            markerCount += 1;
         });
 
-        if (activeHelpRequests.length > 0) {
+        if (markerCount > 0) {
             activeMap.fitBounds(bounds, 40);
+        } else if (safetyOverlays.markerCount > 0) {
+            activeMap.fitBounds(safetyOverlays.bounds, 40);
         }
     }
 </script>
 {% if google_maps_api_key %}
-<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initActiveHelpRequestsMap"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initActiveHelpRequestsMap"></script>
 {% else %}
 <script>
     document.getElementById('activeHelpRequestsMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';

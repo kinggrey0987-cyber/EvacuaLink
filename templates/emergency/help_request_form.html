@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Request Emergency Help - EvacuaLink{% endblock %}
 
@@ -356,7 +357,10 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
 <script>
+    const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
     const mapCenter = {
         lat: Number({{ map_center.latitude }}),
         lng: Number({{ map_center.longitude }})
@@ -427,6 +431,7 @@
             map: helpMap,
             position: point,
             title: markerTitle,
+            zIndex: 2000,
             icon: {
                 path: google.maps.SymbolPath.CIRCLE,
                 fillColor: source === 'AUTO_GPS' ? '#0d6efd' : '#dc3545',
@@ -576,6 +581,7 @@
         });
 
         helpMap.fitBounds(bounds, 24);
+        EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData);
         helpMap.addListener('click', function(event) {
             setHelpLocation(event.latLng.lat(), event.latLng.lng(), 'MAP_PIN');
         });
@@ -584,7 +590,7 @@
     }
 </script>
 {% if google_maps_api_key %}
-<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initHelpRequestMap"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initHelpRequestMap"></script>
 {% else %}
 <script>
     document.getElementById('helpMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';

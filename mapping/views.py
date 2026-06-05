@@ -86,13 +86,13 @@ class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
         hazard_zones = list(
             HazardZone.objects.all().values(
-                "id", "name", "latitude", "longitude", "hazard_type", "risk_level"
+                "id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"
             )
         )
 
         safe_zones = list(
             SafeZone.objects.all().values(
-                "id", "name", "latitude", "longitude"
+                "id", "name", "latitude", "longitude", "description"
             )
         )
 
@@ -108,6 +108,14 @@ class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["admin_map_payload"] = {
+            "center": location_data["center"],
+            "bounds": location_data["bounds"],
+            "boundary": boundary_geojson,
+            "evacuationCenters": evacuation_centers,
+            "hazardZones": hazard_zones,
+            "safeZones": safe_zones,
+        }
 
         return context
 
