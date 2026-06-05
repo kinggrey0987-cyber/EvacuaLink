@@ -22,13 +22,7 @@
                 </h5>
             </div>
             <div class="card-body">
-                {% if not weasyprint_available %}
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle"></i>
-                        <strong>Note:</strong> PDF export is not available. Install WeasyPrint to enable PDF generation:
-                        <code>pip install WeasyPrint</code>
-                    </div>
-                {% endif %}
+
 
                 {% if error %}
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -119,9 +113,6 @@
                                             <i class="bi bi-eye"></i> {{ radio.choice_label }}
                                         {% else %}
                                             <i class="bi bi-filetype-pdf"></i> {{ radio.choice_label }}
-                                            {% if not weasyprint_available %}
-                                                <span class="badge bg-warning">Not Available</span>
-                                            {% endif %}
                                         {% endif %}
                                     </label>
                                 </div>
