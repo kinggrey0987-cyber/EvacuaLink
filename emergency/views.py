@@ -239,6 +239,7 @@ class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         context["alerts"] = incidents.filter(
             Q(status="OPEN") & Q(severity__in=["CRITICAL", "HIGH"])
         ).order_by("-reported_at")[:10]
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
 
         return context
 

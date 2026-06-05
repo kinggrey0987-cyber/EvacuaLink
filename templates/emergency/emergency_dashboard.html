@@ -3,7 +3,6 @@
 {% block title %}Emergency Dashboard - EvacuaLink{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <style>
     #activeHelpRequestsMap {
         min-height: 420px;
@@ -221,18 +220,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
     const activeHelpRequests = {{ active_help_request_markers|safe }};
-    const defaultCenter = [10.878900, 123.018100];
-    const activeMap = L.map('activeHelpRequestsMap').setView(defaultCenter, 14);
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19
-    }).addTo(activeMap);
-
-    const markerGroup = L.featureGroup().addTo(activeMap);
+    const defaultCenter = {lat: 10.878900, lng: 123.018100};
 
     function getRequestColor(status) {
         if (status === 'PENDING') {
@@ -244,32 +234,64 @@
         return '#6c757d';
     }
 
-    activeHelpRequests.forEach(function(request) {
-        const lat = Number(request.latitude);
-        const lon = Number(request.longitude);
-        const color = getRequestColor(request.status);
-        const marker = L.circleMarker([lat, lon], {
-            radius: 9,
-            color: '#fff',
-            weight: 2,
-            fillColor: color,
-            fillOpacity: 0.9
-        }).addTo(markerGroup);
+    function initActiveHelpRequestsMap() {
+        const activeMap = new google.maps.Map(document.getElementById('activeHelpRequestsMap'), {
+            center: defaultCenter,
+            zoom: 14,
+            mapTypeId: 'roadmap',
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true
+        });
+        const infoWindow = new google.maps.InfoWindow();
+        const bounds = new google.maps.LatLngBounds();
 
-        const accuracyText = request.location_accuracy ? `${request.location_accuracy}m` : 'Not provided';
-        marker.bindPopup(`
-            <strong>${request.requester_name}</strong><br>
-            <span>Status: ${request.status.replace('_', ' ')}</span><br>
-            <span>Contact: <a href="tel:${request.contact_number}">${request.contact_number}</a></span><br>
-            <span>Location: ${request.location_description}</span><br>
-            <span>Source: ${request.location_source.replace('_', ' ')}</span><br>
-            <span>Accuracy: ${accuracyText}</span><br>
-            <a href="/emergency/help-requests/${request.id}/" class="btn btn-sm btn-primary mt-2">View Details</a>
-        `);
-    });
+        activeHelpRequests.forEach(function(request) {
+            const position = {
+                lat: Number(request.latitude),
+                lng: Number(request.longitude)
+            };
+            const color = getRequestColor(request.status);
+            const marker = new google.maps.Marker({
+                map: activeMap,
+                position: position,
+                title: request.requester_name,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: color,
+                    fillOpacity: 0.95,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 3,
+                    scale: 10
+                }
+            });
 
-    if (activeHelpRequests.length > 0) {
-        activeMap.fitBounds(markerGroup.getBounds(), { padding: [40, 40] });
+            const accuracyText = request.location_accuracy ? `${request.location_accuracy}m` : 'Not provided';
+            marker.addListener('click', function() {
+                infoWindow.setContent(`
+                    <strong>${request.requester_name}</strong><br>
+                    <span>Status: ${request.status.replace('_', ' ')}</span><br>
+                    <span>Contact: <a href="tel:${request.contact_number}">${request.contact_number}</a></span><br>
+                    <span>Location: ${request.location_description}</span><br>
+                    <span>Source: ${request.location_source.replace('_', ' ')}</span><br>
+                    <span>Accuracy: ${accuracyText}</span><br>
+                    <a href="/emergency/help-requests/${request.id}/" class="btn btn-sm btn-primary mt-2">View Details</a>
+                `);
+                infoWindow.open(activeMap, marker);
+            });
+            bounds.extend(position);
+        });
+
+        if (activeHelpRequests.length > 0) {
+            activeMap.fitBounds(bounds, 40);
+        }
     }
 </script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initActiveHelpRequestsMap"></script>
+{% else %}
+<script>
+    document.getElementById('activeHelpRequestsMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}

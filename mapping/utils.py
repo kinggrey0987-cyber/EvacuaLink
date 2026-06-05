@@ -104,7 +104,7 @@ def get_barangay_center_and_bounds():
 
 def get_zoom_level_for_bounds():
     """
-    Get appropriate Leaflet zoom level for displaying barangay.
+    Get appropriate map zoom level for displaying barangay.
 
     Returns:
         int: Zoom level (13-14 for barangay view)

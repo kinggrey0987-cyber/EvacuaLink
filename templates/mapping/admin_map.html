@@ -3,9 +3,6 @@
 {% block title %}Admin Map - EvacuaLink{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.min.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.min.css" />
 <style>
     #map {
         height: 600px;
@@ -305,162 +302,162 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.min.js"></script>
 <script>
-    // Initialize map
-    const mapCenter = [{{ map_center.latitude }}, {{ map_center.longitude }}];
+    const mapCenter = {
+        lat: Number({{ map_center.latitude }}),
+        lng: Number({{ map_center.longitude }})
+    };
     const mapBounds = {
-        north: {{ map_bounds.north }},
-        south: {{ map_bounds.south }},
-        east: {{ map_bounds.east }},
-        west: {{ map_bounds.west }}
+        north: Number({{ map_bounds.north }}),
+        south: Number({{ map_bounds.south }}),
+        east: Number({{ map_bounds.east }}),
+        west: Number({{ map_bounds.west }})
     };
 
-    // Define boundary constraints
-    const maxBounds = L.latLngBounds(
-        [mapBounds.south, mapBounds.west],
-        [mapBounds.north, mapBounds.east]
-    );
-
-    const map = L.map('map', {
-        maxBounds: maxBounds,
-        maxBoundsViscosity: 1.0  // Maximum viscosity (prevent panning outside)
-    }).setView(mapCenter, {{ zoom_level }});
-
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; OpenStreetMap contributors',
-        maxZoom: 19,
-        minZoom: 11
-    }).addTo(map);
-
-    // Add barangay boundary
-    {% if boundary_geojson %}
-        const boundaryStyle = {
-            color: '#0066cc',
-            weight: 3,
-            opacity: 0.8,
-            fillColor: '#0066cc',
-            fillOpacity: 0.1
+    function markerIcon(color, scale) {
+        return {
+            path: google.maps.SymbolPath.CIRCLE,
+            fillColor: color,
+            fillOpacity: 0.92,
+            strokeColor: '#ffffff',
+            strokeWeight: 3,
+            scale: scale
         };
-
-        L.geoJSON({{ boundary_geojson|safe }}, {
-            style: boundaryStyle,
-            onEachFeature: function(feature, layer) {
-                if (feature.properties && feature.properties.name) {
-                    layer.bindPopup('<strong>' + feature.properties.name + '</strong><br>' +
-                        feature.properties.municipality + ', ' + feature.properties.province);
-                }
-            }
-        }).addTo(map);
-
-        // Fit map to barangay bounds
-        const bounds = L.latLngBounds(
-            [mapBounds.south, mapBounds.west],
-            [mapBounds.north, mapBounds.east]
-        );
-        map.fitBounds(bounds, {padding: [50, 50]});
-    {% endif %}
-
-    // Create marker clusters
-    const evacuationCentersCluster = L.markerClusterGroup();
-    const allMarkers = [];
-
-    // Evacuation Centers (Red)
-    {% for center in evacuation_centers %}
-        const markerE{{ center.id }} = L.circleMarker(
-            [{{ center.latitude }}, {{ center.longitude }}],
-            {
-                radius: 10,
-                fillColor: '#dc3545',
-                color: '#fff',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.8
-            }
-        );
-        markerE{{ center.id }}.bindPopup(
-            '<div class="popup-content">' +
-            '<strong>{{ center.name }}</strong><br>' +
-            '<small><i class="bi bi-building"></i> Evacuation Center</small><br>' +
-            '{% if center.description %}<p>{{ center.description }}</p>{% endif %}' +
-            '</div>'
-        );
-        evacuationCentersCluster.addLayer(markerE{{ center.id }});
-        allMarkers.push(markerE{{ center.id }});
-    {% endfor %}
-
-    // Hazard Zones (Color-coded by risk)
-    {% for zone in hazard_zones %}
-        {% if zone.risk_level == 'CRITICAL' %}
-            const colorH{{ zone.id }} = '#ff6b6b';
-        {% elif zone.risk_level == 'HIGH' %}
-            const colorH{{ zone.id }} = '#ffc107';
-        {% elif zone.risk_level == 'MODERATE' %}
-            const colorH{{ zone.id }} = '#fd7e14';
-        {% else %}
-            const colorH{{ zone.id }} = '#20c997';
-        {% endif %}
-
-        const markerH{{ zone.id }} = L.circleMarker(
-            [{{ zone.latitude }}, {{ zone.longitude }}],
-            {
-                radius: 8,
-                fillColor: colorH{{ zone.id }},
-                color: '#fff',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.7
-            }
-        );
-        markerH{{ zone.id }}.bindPopup(
-            '<div class="popup-content">' +
-            '<strong>{{ zone.name }}</strong><br>' +
-            '<small><i class="bi bi-exclamation-triangle"></i> Hazard Zone</small><br>' +
-            '<strong>Type:</strong> {{ zone.hazard_type }}<br>' +
-            '<strong>Risk Level:</strong> {{ zone.risk_level }}<br>' +
-            '{% if zone.description %}<p>{{ zone.description }}</p>{% endif %}' +
-            '</div>'
-        );
-        map.addLayer(markerH{{ zone.id }});
-        allMarkers.push(markerH{{ zone.id }});
-    {% endfor %}
-
-    // Safe Zones (Green)
-    {% for zone in safe_zones %}
-        const markerS{{ zone.id }} = L.circleMarker(
-            [{{ zone.latitude }}, {{ zone.longitude }}],
-            {
-                radius: 9,
-                fillColor: '#28a745',
-                color: '#fff',
-                weight: 2,
-                opacity: 0.8,
-                fillOpacity: 0.8
-            }
-        );
-        markerS{{ zone.id }}.bindPopup(
-            '<div class="popup-content">' +
-            '<strong>{{ zone.name }}</strong><br>' +
-            '<small><i class="bi bi-shield-check"></i> Safe Zone</small><br>' +
-            '{% if zone.description %}<p>{{ zone.description }}</p>{% endif %}' +
-            '</div>'
-        );
-        map.addLayer(markerS{{ zone.id }});
-        allMarkers.push(markerS{{ zone.id }});
-    {% endfor %}
-
-    // Add cluster group for evacuation centers
-    map.addLayer(evacuationCentersCluster);
-
-    // Fit all markers in view if available
-    if (allMarkers.length > 0) {
-        const group = new L.featureGroup(allMarkers);
-        map.fitBounds(group.getBounds(), {padding: [50, 50]});
     }
 
-    // Add scale control
-    L.control.scale().addTo(map);
+    function initAdminMap() {
+        const bounds = new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        );
+        const map = new google.maps.Map(document.getElementById('map'), {
+            center: mapCenter,
+            zoom: {{ zoom_level }},
+            mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            scaleControl: true
+        });
+        const infoWindow = new google.maps.InfoWindow();
+        const markerBounds = new google.maps.LatLngBounds();
+        let markerCount = 0;
+
+        {% if boundary_geojson %}
+            map.data.addGeoJson({
+                type: 'Feature',
+                properties: { name: 'Barangay Alicante' },
+                geometry: {{ boundary_geojson|safe }}
+            });
+            map.data.setStyle({
+                strokeColor: '#0066cc',
+                strokeOpacity: 0.8,
+                strokeWeight: 3,
+                fillColor: '#0066cc',
+                fillOpacity: 0.1
+            });
+        {% endif %}
+
+        {% for center in evacuation_centers %}
+            {
+                const position = {lat: Number({{ center.latitude }}), lng: Number({{ center.longitude }})};
+                const marker = new google.maps.Marker({
+                    map: map,
+                    position: position,
+                    title: '{{ center.name|escapejs }}',
+                    icon: markerIcon('#dc3545', 10),
+                    zIndex: 1000
+                });
+                marker.addListener('click', function() {
+                    infoWindow.setContent(
+                        '<div class="popup-content">' +
+                        '<strong>{{ center.name|escapejs }}</strong><br>' +
+                        '<small><i class="bi bi-building"></i> Evacuation Center</small><br>' +
+                        '{% if center.description %}<p>{{ center.description|escapejs }}</p>{% endif %}' +
+                        '</div>'
+                    );
+                    infoWindow.open(map, marker);
+                });
+                markerBounds.extend(position);
+                markerCount += 1;
+            }
+        {% endfor %}
+
+        {% for zone in hazard_zones %}
+            {
+                {% if zone.risk_level == 'CRITICAL' %}
+                    const color = '#ff6b6b';
+                {% elif zone.risk_level == 'HIGH' %}
+                    const color = '#ffc107';
+                {% elif zone.risk_level == 'MODERATE' %}
+                    const color = '#fd7e14';
+                {% else %}
+                    const color = '#20c997';
+                {% endif %}
+                const position = {lat: Number({{ zone.latitude }}), lng: Number({{ zone.longitude }})};
+                const marker = new google.maps.Marker({
+                    map: map,
+                    position: position,
+                    title: '{{ zone.name|escapejs }}',
+                    icon: markerIcon(color, 8)
+                });
+                marker.addListener('click', function() {
+                    infoWindow.setContent(
+                        '<div class="popup-content">' +
+                        '<strong>{{ zone.name|escapejs }}</strong><br>' +
+                        '<small><i class="bi bi-exclamation-triangle"></i> Hazard Zone</small><br>' +
+                        '<strong>Type:</strong> {{ zone.hazard_type|escapejs }}<br>' +
+                        '<strong>Risk Level:</strong> {{ zone.risk_level|escapejs }}<br>' +
+                        '{% if zone.description %}<p>{{ zone.description|escapejs }}</p>{% endif %}' +
+                        '</div>'
+                    );
+                    infoWindow.open(map, marker);
+                });
+                markerBounds.extend(position);
+                markerCount += 1;
+            }
+        {% endfor %}
+
+        {% for zone in safe_zones %}
+            {
+                const position = {lat: Number({{ zone.latitude }}), lng: Number({{ zone.longitude }})};
+                const marker = new google.maps.Marker({
+                    map: map,
+                    position: position,
+                    title: '{{ zone.name|escapejs }}',
+                    icon: markerIcon('#28a745', 9)
+                });
+                marker.addListener('click', function() {
+                    infoWindow.setContent(
+                        '<div class="popup-content">' +
+                        '<strong>{{ zone.name|escapejs }}</strong><br>' +
+                        '<small><i class="bi bi-shield-check"></i> Safe Zone</small><br>' +
+                        '{% if zone.description %}<p>{{ zone.description|escapejs }}</p>{% endif %}' +
+                        '</div>'
+                    );
+                    infoWindow.open(map, marker);
+                });
+                markerBounds.extend(position);
+                markerCount += 1;
+            }
+        {% endfor %}
+
+        if (markerCount > 0) {
+            map.fitBounds(markerBounds, 50);
+        } else {
+            map.fitBounds(bounds, 50);
+        }
+    }
 </script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initAdminMap"></script>
+{% else %}
+<script>
+    document.getElementById('map').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}
