@@ -54,10 +54,9 @@ http://localhost:8000/login/
 ```
 
 ### Test Accounts
-1. **admin / admin123** - See full operational features
-2. **coordinator / coordinator123** - Limited access
-3. **volunteer / volunteer123** - Basic access
-4. **staff / staff123** - Field staff access
+1. **techadmin / techadmin123** - Manage admin and staff accounts
+2. **admin / admin123** - View the overall system, reports, maps, families, centers, incidents, and help requests
+3. **staff / staff123** - Manage families, evacuees, evacuation centers, safe/hazard areas, incidents, and citizen help requests
 
 ### Dashboard Access
 ```
@@ -138,10 +137,9 @@ Hazard Zones
 Families (6 total)
 └─ Each with 2-5 evacuees
 
-Test Users (4)
+Test Users (3)
+├─ Technical Admin
 ├─ Admin
-├─ Coordinator
-├─ Volunteer
 └─ Staff
 ```
 
