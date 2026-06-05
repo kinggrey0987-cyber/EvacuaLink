@@ -93,12 +93,14 @@ class EvacueeDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         evacuee = self.get_object()
+        from emergency.views import get_safety_map_payload
 
         # Get transfer history
         context["transfers"] = evacuee.transfer_records.all()
         # Get family members
         context["family_members"] = evacuee.family.evacuees.exclude(id=evacuee.id)
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = get_safety_map_payload()
 
         return context
 

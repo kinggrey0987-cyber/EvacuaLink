@@ -95,7 +95,8 @@
             svg.style.position = "absolute";
             svg.style.top = "0";
             svg.style.width = "1px";
-            path.setAttribute("fill", "rgba(15, 35, 65, 0.16)");
+            path.setAttribute("fill", "#eef3f8");
+            path.setAttribute("fill-opacity", "0.82");
             path.setAttribute("fill-rule", "evenodd");
             path.setAttribute("stroke", "none");
             svg.appendChild(path);
@@ -178,9 +179,9 @@
             map.data.setStyle({
                 strokeColor: "#0066cc",
                 strokeOpacity: 0.9,
-                strokeWeight: 3,
+                strokeWeight: 4,
                 fillColor: "#0066cc",
-                fillOpacity: 0.04
+                fillOpacity: 0
             });
 
             if (settings.showBoundaryMask) {
@@ -289,7 +290,14 @@
                     map: map,
                     position: position,
                     title: centerItem.name,
-                    icon: markerIcon("#0d6efd", 12),
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: "#0d6efd",
+                        fillOpacity: 1,
+                        strokeColor: "#ffffff",
+                        strokeWeight: 4,
+                        scale: 12
+                    },
                     zIndex: 1000
                 });
                 marker.addListener("click", function() {

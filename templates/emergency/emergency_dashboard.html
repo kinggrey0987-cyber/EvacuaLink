@@ -225,7 +225,16 @@
 <script>
     const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
     const activeHelpRequests = {{ active_help_request_markers|safe }};
-    const defaultCenter = {lat: 10.878900, lng: 123.018100};
+    const defaultCenter = {
+        lat: Number(safetyMapData.center.latitude),
+        lng: Number(safetyMapData.center.longitude)
+    };
+    const mapBounds = {
+        north: Number(safetyMapData.bounds.north),
+        south: Number(safetyMapData.bounds.south),
+        east: Number(safetyMapData.bounds.east),
+        west: Number(safetyMapData.bounds.west)
+    };
 
     function getRequestColor(status) {
         if (status === 'PENDING') {
@@ -242,14 +251,16 @@
             center: defaultCenter,
             zoom: 14,
             mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
         });
         const infoWindow = new google.maps.InfoWindow();
-        const bounds = new google.maps.LatLngBounds();
-        const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(activeMap, safetyMapData);
-        let markerCount = 0;
+        EvacuaLinkMaps.addSafetyOverlays(activeMap, safetyMapData);
 
         activeHelpRequests.forEach(function(request) {
             const position = {
@@ -284,15 +295,12 @@
                 `);
                 infoWindow.open(activeMap, marker);
             });
-            bounds.extend(position);
-            markerCount += 1;
         });
 
-        if (markerCount > 0) {
-            activeMap.fitBounds(bounds, 40);
-        } else if (safetyOverlays.markerCount > 0) {
-            activeMap.fitBounds(safetyOverlays.bounds, 40);
-        }
+        activeMap.fitBounds(new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        ), 36);
     }
 </script>
 {% if google_maps_api_key %}

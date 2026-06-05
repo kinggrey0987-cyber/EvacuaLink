@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ evacuee.full_name }} | EvacuaLink{% endblock %}
 
 {% block extra_css %}
@@ -67,7 +68,17 @@
 
 {% block extra_js %}
 {% if evacuee.evacuation_center %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
 <script>
+    const safetyMapData = JSON.parse(document.getElementById("safety-map-data").textContent);
+    const mapBounds = {
+        north: Number(safetyMapData.bounds.north),
+        south: Number(safetyMapData.bounds.south),
+        east: Number(safetyMapData.bounds.east),
+        west: Number(safetyMapData.bounds.west)
+    };
+
     function initEvacueeCenterMap() {
         const centerLocation = {
             lat: Number({{ evacuee.evacuation_center.latitude }}),
@@ -77,14 +88,32 @@
             center: centerLocation,
             zoom: 16,
             mapTypeId: "roadmap",
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
         });
+        EvacuaLinkMaps.addSafetyOverlays(map, safetyMapData);
+        map.fitBounds(new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        ), 36);
         const marker = new google.maps.Marker({
             map: map,
             position: centerLocation,
-            title: "{{ evacuee.evacuation_center.name|escapejs }}"
+            title: "{{ evacuee.evacuation_center.name|escapejs }}",
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: "#0d6efd",
+                fillOpacity: 1,
+                strokeColor: "#ffffff",
+                strokeWeight: 4,
+                scale: 13
+            },
+            zIndex: 1200
         });
         const infoWindow = new google.maps.InfoWindow({
             content: "<strong>{{ evacuee.evacuation_center.name|escapejs }}</strong><br>{{ evacuee.evacuation_center.address|linebreaksbr|escapejs }}"
@@ -96,7 +125,7 @@
     }
 </script>
 {% if google_maps_api_key %}
-<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initEvacueeCenterMap"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initEvacueeCenterMap"></script>
 {% else %}
 <script>
     document.getElementById("evacueeCenterMap").innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';

@@ -345,13 +345,8 @@
             fullscreenControl: true,
             scaleControl: true
         });
-        const overlays = EvacuaLinkMaps.addSafetyOverlays(map, adminMapData);
-
-        if (overlays.markerCount > 0) {
-            map.fitBounds(overlays.bounds, 50);
-        } else {
-            map.fitBounds(bounds, 50);
-        }
+        EvacuaLinkMaps.addSafetyOverlays(map, adminMapData);
+        map.fitBounds(bounds, 36);
     }
 </script>
 {% if google_maps_api_key %}

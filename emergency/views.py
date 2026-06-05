@@ -32,7 +32,7 @@ from emergency.forms import (
 
 def get_safety_map_payload():
     from evacuation_centers.models import EvacuationCenter
-    from mapping.models import HazardZone, SafeZone
+    from mapping.models import BarangayBoundary, HazardZone, SafeZone
     from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds
 
     location_data = get_barangay_center_and_bounds()
@@ -47,6 +47,16 @@ def get_safety_map_payload():
     safe_zones = list(
         SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description")
     )
+    boundary = BarangayBoundary.objects.first()
+
+    def inside_boundary(item):
+        if not boundary:
+            return True
+        return boundary.contains_point(float(item["latitude"]), float(item["longitude"]))
+
+    evacuation_centers = [center for center in evacuation_centers if inside_boundary(center)]
+    hazard_zones = [zone for zone in hazard_zones if inside_boundary(zone)]
+    safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
 
     return {
         "center": location_data["center"],

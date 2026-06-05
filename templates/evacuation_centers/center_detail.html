@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}{{ center.name }} | EvacuaLink{% endblock %}
 
 {% block extra_css %}
@@ -58,7 +59,17 @@
 {% endblock %}
 
 {% block extra_js %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
 <script>
+    const safetyMapData = JSON.parse(document.getElementById("safety-map-data").textContent);
+    const mapBounds = {
+        north: Number(safetyMapData.bounds.north),
+        south: Number(safetyMapData.bounds.south),
+        east: Number(safetyMapData.bounds.east),
+        west: Number(safetyMapData.bounds.west)
+    };
+
     function initCenterLocationMap() {
         const centerLocation = {
             lat: Number({{ center.latitude }}),
@@ -68,14 +79,32 @@
             center: centerLocation,
             zoom: 16,
             mapTypeId: "roadmap",
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
         });
+        EvacuaLinkMaps.addSafetyOverlays(map, safetyMapData);
+        map.fitBounds(new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        ), 36);
         const marker = new google.maps.Marker({
             map: map,
             position: centerLocation,
-            title: "{{ center.name|escapejs }}"
+            title: "{{ center.name|escapejs }}",
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: "#0d6efd",
+                fillOpacity: 1,
+                strokeColor: "#ffffff",
+                strokeWeight: 4,
+                scale: 13
+            },
+            zIndex: 1200
         });
         const infoWindow = new google.maps.InfoWindow({
             content: "<strong>{{ center.name|escapejs }}</strong><br>{{ center.address|linebreaksbr|escapejs }}"
@@ -87,7 +116,7 @@
     }
 </script>
 {% if google_maps_api_key %}
-<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initCenterLocationMap"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initCenterLocationMap"></script>
 {% else %}
 <script>
     document.getElementById("centerLocationMap").innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';

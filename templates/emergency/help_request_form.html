@@ -501,10 +501,7 @@
                 const lon = position.coords.longitude;
                 const accuracy = position.coords.accuracy;
 
-                if (setHelpLocation(lat, lon, 'AUTO_GPS', accuracy)) {
-                    helpMap.setCenter({lat: lat, lng: lon});
-                    helpMap.setZoom(17);
-                }
+                setHelpLocation(lat, lon, 'AUTO_GPS', accuracy);
 
                 useCurrentLocationBtn.disabled = false;
                 useCurrentLocationBtn.innerHTML = '<i class="bi bi-crosshair"></i> Use My Current Location';
@@ -578,7 +575,7 @@
             scaleControl: true
         });
 
-        helpMap.fitBounds(bounds, 24);
+        helpMap.fitBounds(bounds, 36);
         EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData, {
             showBoundaryMask: true
         });
