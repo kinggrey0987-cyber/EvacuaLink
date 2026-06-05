@@ -7,7 +7,6 @@
 <style>
     #activeHelpRequestsMap {
         min-height: 420px;
-        border-radius: 8px;
     }
 </style>
 {% endblock %}
@@ -93,7 +92,7 @@
         </h5>
     </div>
     <div class="card-body">
-        <div id="activeHelpRequestsMap"></div>
+        <div id="activeHelpRequestsMap" class="ev-map-frame"></div>
         <small class="text-muted d-block mt-2">
             Shows pending and in-progress requests only. Exact coordinates are visible to authorized responders.
         </small>

@@ -4,9 +4,7 @@
 {% block extra_css %}
 <style>
     .center-location-map {
-        border-radius: var(--ev-radius);
         height: 360px;
-        overflow: hidden;
         width: 100%;
     }
 
@@ -52,7 +50,7 @@
                 <i class="bi bi-geo-alt"></i> Center Location
             </div>
             <div class="card-body">
-                <div id="centerLocationMap" class="center-location-map" aria-label="Map showing {{ center.name }}"></div>
+                <div id="centerLocationMap" class="center-location-map ev-map-frame" aria-label="Map showing {{ center.name }}"></div>
             </div>
         </div>
     </div>

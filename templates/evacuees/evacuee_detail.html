@@ -4,9 +4,7 @@
 {% block extra_css %}
 <style>
     .evacuee-center-map {
-        border-radius: var(--ev-radius);
         height: 360px;
-        overflow: hidden;
         width: 100%;
     }
 
@@ -55,7 +53,7 @@
             </div>
             <div class="card-body">
                 {% if evacuee.evacuation_center %}
-                    <div id="evacueeCenterMap" class="evacuee-center-map" aria-label="Map showing {{ evacuee.evacuation_center.name }}"></div>
+                    <div id="evacueeCenterMap" class="evacuee-center-map ev-map-frame" aria-label="Map showing {{ evacuee.evacuation_center.name }}"></div>
                 {% else %}
                     <div class="detail-panel text-muted">
                         This evacuee is not assigned to an evacuation center yet.

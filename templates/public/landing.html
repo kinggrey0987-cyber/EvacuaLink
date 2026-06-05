@@ -428,12 +428,8 @@
 
         .map-container {
             background: var(--ev-surface);
-            border: 1px solid var(--ev-border);
-            border-radius: var(--ev-radius);
-            box-shadow: var(--ev-shadow-soft);
             height: 520px;
             margin-bottom: 1rem;
-            overflow: hidden;
         }
 
         #map {
@@ -607,12 +603,8 @@
         }
 
         .quick-map {
-            border: 1px solid var(--ev-border);
-            border-radius: var(--ev-radius);
-            box-shadow: var(--ev-shadow-soft);
             height: 320px;
             margin-top: 0.75rem;
-            overflow: hidden;
             width: 100%;
         }
 
@@ -881,7 +873,7 @@
         </div>
         <div class="row mt-3">
             <div class="col-lg-8">
-                <div class="map-container">
+                <div class="map-container ev-map-frame">
                     <div id="map"></div>
                 </div>
             </div>
@@ -984,7 +976,7 @@
                             <div id="quickLocationStatus" class="quick-location-status alert-info mt-2">
                                 <i class="bi bi-crosshair"></i> Opening this form will ask your device for GPS location. You can also click the map to place the pin.
                             </div>
-                            <div id="quickMap" class="quick-map" aria-label="Map for placing your emergency help request location"></div>
+                            <div id="quickMap" class="quick-map ev-map-frame" aria-label="Map for placing your emergency help request location"></div>
                             <div class="d-flex flex-wrap gap-2 mt-2">
                                 <button type="button" id="quickLocationBtn" class="btn btn-outline-primary btn-sm">
                                     <i class="bi bi-crosshair"></i> Use Device Location
