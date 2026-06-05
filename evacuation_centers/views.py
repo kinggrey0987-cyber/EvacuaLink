@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.conf import settings
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
@@ -17,6 +18,11 @@ class EvacuationCenterDetailView(LoginRequiredMixin, DetailView):
     model = EvacuationCenter
     template_name = "evacuation_centers/center_detail.html"
     context_object_name = "center"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        return context
 
 
 class EvacuationCenterCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):

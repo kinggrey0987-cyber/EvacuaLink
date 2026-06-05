@@ -3,13 +3,19 @@
 {% block title %}Request Emergency Help - EvacuaLink{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
 <style>
     #helpMap {
-        height: 400px;
+        height: 520px;
         border-radius: 8px;
         margin-bottom: 1rem;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .help-request-header {
+        align-items: start;
+        display: flex;
+        gap: 1rem;
+        justify-content: space-between;
     }
 
     .map-instructions {
@@ -78,7 +84,11 @@
 
     @media (max-width: 768px) {
         #helpMap {
-            height: 320px;
+            height: 380px;
+        }
+
+        .help-request-header {
+            flex-direction: column;
         }
 
         .page-title {
@@ -103,13 +113,20 @@
 {% block content %}
 <div class="row mb-4">
     <div class="col-12">
-        <h1 class="page-title">
-            <i class="bi bi-exclamation-circle"></i> Emergency Help Request
-        </h1>
-        <p class="text-muted">
-            If you are in an emergency and need help, please fill out this form and mark your location on the map.
-            Your information will be sent to emergency responders immediately.
-        </p>
+        <div class="help-request-header">
+            <div>
+                <h1 class="page-title">
+                    <i class="bi bi-exclamation-circle"></i> Emergency Help Request
+                </h1>
+                <p class="text-muted mb-0">
+                    If you are in an emergency and need help, please fill out this form and mark your location on the map.
+                    Your information will be sent to emergency responders immediately.
+                </p>
+            </div>
+            <a href="{% url 'home' %}" class="btn btn-outline-secondary flex-shrink-0">
+                <i class="bi bi-arrow-left"></i> Back to Public Safety Page
+            </a>
+        </div>
     </div>
 </div>
 
@@ -339,40 +356,19 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-    // Initialize map
-    const mapCenter = [{{ map_center.latitude }}, {{ map_center.longitude }}];
-    const mapBounds = {
-        north: {{ map_bounds.north }},
-        south: {{ map_bounds.south }},
-        east: {{ map_bounds.east }},
-        west: {{ map_bounds.west }}
+    const mapCenter = {
+        lat: Number({{ map_center.latitude }}),
+        lng: Number({{ map_center.longitude }})
     };
-
-    const helpMap = L.map('helpMap', {
-        maxBoundsViscosity: 1.0,
-        zoomSnap: 0.25,
-        wheelPxPerZoomLevel: 90
-    }).setView(mapCenter, {{ zoom_level }});
-
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-        minZoom: 13
-    }).addTo(helpMap);
-
-    // Define max bounds to restrict panning
-    const bounds = L.latLngBounds(
-        [mapBounds.south, mapBounds.west],
-        [mapBounds.north, mapBounds.east]
-    );
-    helpMap.setMaxBounds(bounds);
-    helpMap.fitBounds(bounds, {padding: [24, 24]});
-    helpMap.setMinZoom(helpMap.getBoundsZoom(bounds, true) - 0.25);
-
-    // Store the help location marker and location metadata
+    const mapBounds = {
+        north: Number({{ map_bounds.north }}),
+        south: Number({{ map_bounds.south }}),
+        east: Number({{ map_bounds.east }}),
+        west: Number({{ map_bounds.west }})
+    };
+    let helpMap = null;
+    let bounds = null;
     let helpMarker = null;
     let accuracyCircle = null;
     const locationStatus = document.getElementById('locationStatus');
@@ -389,12 +385,12 @@
 
     function clearLocation() {
         if (helpMarker) {
-            helpMap.removeLayer(helpMarker);
+            helpMarker.setMap(null);
             helpMarker = null;
         }
 
         if (accuracyCircle) {
-            helpMap.removeLayer(accuracyCircle);
+            accuracyCircle.setMap(null);
             accuracyCircle = null;
         }
 
@@ -410,7 +406,7 @@
     }
 
     function setHelpLocation(lat, lon, source = 'MAP_PIN', accuracy = null) {
-        const point = L.latLng(lat, lon);
+        const point = new google.maps.LatLng(lat, lon);
 
         if (!bounds.contains(point)) {
             alert('Location is outside Barangay Alicante. Please choose a location within the barangay.');
@@ -418,33 +414,48 @@
         }
 
         if (helpMarker) {
-            helpMap.removeLayer(helpMarker);
+            helpMarker.setMap(null);
         }
 
         if (accuracyCircle) {
-            helpMap.removeLayer(accuracyCircle);
+            accuracyCircle.setMap(null);
             accuracyCircle = null;
         }
 
-        helpMarker = L.circleMarker([lat, lon], {
-            radius: 10,
-            fillColor: source === 'AUTO_GPS' ? '#0d6efd' : '#dc3545',
-            color: '#fff',
-            weight: 2,
-            opacity: 0.8,
-            fillOpacity: 0.8
-        }).addTo(helpMap);
+        const markerTitle = source === 'AUTO_GPS' ? 'Your GPS Help Request Location' : 'Your Help Request Location';
+        helpMarker = new google.maps.Marker({
+            map: helpMap,
+            position: point,
+            title: markerTitle,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: source === 'AUTO_GPS' ? '#0d6efd' : '#dc3545',
+                fillOpacity: 0.95,
+                strokeColor: '#ffffff',
+                strokeWeight: 3,
+                scale: 10
+            }
+        });
 
-        helpMarker.bindPopup(source === 'AUTO_GPS' ? 'Your GPS Help Request Location' : 'Your Help Request Location').openPopup();
+        const infoWindow = new google.maps.InfoWindow({
+            content: `<strong>${markerTitle}</strong>`
+        });
+        helpMarker.addListener('click', function() {
+            infoWindow.open(helpMap, helpMarker);
+        });
+        infoWindow.open(helpMap, helpMarker);
 
         if (accuracy) {
-            accuracyCircle = L.circle([lat, lon], {
+            accuracyCircle = new google.maps.Circle({
+                map: helpMap,
+                center: point,
                 radius: accuracy,
-                color: '#0d6efd',
+                strokeColor: '#0d6efd',
+                strokeOpacity: 0.75,
+                strokeWeight: 1,
                 fillColor: '#0d6efd',
-                fillOpacity: 0.08,
-                weight: 1
-            }).addTo(helpMap);
+                fillOpacity: 0.08
+            });
         }
 
         document.getElementById('id_latitude').value = lat.toFixed(6);
@@ -467,13 +478,6 @@
         return true;
     }
 
-    // Handle map clicks to place help marker
-    helpMap.on('click', function(e) {
-        const lat = e.latlng.lat;
-        const lon = e.latlng.lng;
-        setHelpLocation(lat, lon, 'MAP_PIN');
-    });
-
     useCurrentLocationBtn.addEventListener('click', function() {
         requestCurrentLocation();
     });
@@ -495,7 +499,8 @@
                 const accuracy = position.coords.accuracy;
 
                 if (setHelpLocation(lat, lon, 'AUTO_GPS', accuracy)) {
-                    helpMap.setView([lat, lon], 17);
+                    helpMap.setCenter({lat: lat, lng: lon});
+                    helpMap.setZoom(17);
                 }
 
                 useCurrentLocationBtn.disabled = false;
@@ -520,12 +525,12 @@
 
     clearLocationBtn.addEventListener('click', clearLocation);
 
-    window.addEventListener('load', function() {
+    function requestInitialLocation() {
         if (!hasRequestedInitialLocation && navigator.geolocation) {
             hasRequestedInitialLocation = true;
             requestCurrentLocation();
         }
-    });
+    }
 
     photoInput?.addEventListener('change', function() {
         const file = photoInput.files?.[0];
@@ -540,13 +545,6 @@
         photoPreview.style.display = 'block';
     });
 
-    // Fit map to barangay geofence on load
-    helpMap.fitBounds(bounds, {padding: [24, 24]});
-
-    // Add scale control
-    L.control.scale().addTo(helpMap);
-
-    // Form validation
     document.getElementById('helpRequestForm').addEventListener('submit', function(e) {
         const lat = document.getElementById('id_latitude').value;
         const lon = document.getElementById('id_longitude').value;
@@ -556,5 +554,40 @@
             alert('Please use your current location or click on the map to mark your location before submitting.');
         }
     });
+
+    function initHelpRequestMap() {
+        bounds = new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        );
+
+        helpMap = new google.maps.Map(document.getElementById('helpMap'), {
+            center: mapCenter,
+            zoom: {{ zoom_level }},
+            mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            scaleControl: true
+        });
+
+        helpMap.fitBounds(bounds, 24);
+        helpMap.addListener('click', function(event) {
+            setHelpLocation(event.latLng.lat(), event.latLng.lng(), 'MAP_PIN');
+        });
+
+        requestInitialLocation();
+    }
 </script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initHelpRequestMap"></script>
+{% else %}
+<script>
+    document.getElementById('helpMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}

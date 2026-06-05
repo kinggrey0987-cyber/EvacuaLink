@@ -4,6 +4,7 @@ Includes public help requests and admin incident tracking.
 """
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.conf import settings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import JsonResponse
@@ -45,6 +46,7 @@ class PublicHelpRequestView(CreateView):
         context["map_center"] = location_data["center"]
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
         return context
 
 

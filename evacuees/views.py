@@ -4,6 +4,7 @@ Views for evacuee management system.
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.conf import settings
 from django.contrib.messages.views import SuccessMessageMixin
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
@@ -97,6 +98,7 @@ class EvacueeDetailView(LoginRequiredMixin, DetailView):
         context["transfers"] = evacuee.transfer_records.all()
         # Get family members
         context["family_members"] = evacuee.family.evacuees.exclude(id=evacuee.id)
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
 
         return context
 

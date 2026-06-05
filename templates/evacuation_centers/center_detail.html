@@ -2,7 +2,6 @@
 {% block title %}{{ center.name }} | EvacuaLink{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
     .center-location-map {
         border-radius: var(--ev-radius);
@@ -61,21 +60,39 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const centerLocation = [{{ center.latitude }}, {{ center.longitude }}];
-        const map = L.map("centerLocationMap", {
-            scrollWheelZoom: false
-        }).setView(centerLocation, 16);
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(map);
-
-        L.marker(centerLocation).addTo(map).bindPopup(
-            "<strong>{{ center.name|escapejs }}</strong><br>{{ center.address|linebreaksbr|escapejs }}"
-        ).openPopup();
-    });
+    function initCenterLocationMap() {
+        const centerLocation = {
+            lat: Number({{ center.latitude }}),
+            lng: Number({{ center.longitude }})
+        };
+        const map = new google.maps.Map(document.getElementById("centerLocationMap"), {
+            center: centerLocation,
+            zoom: 16,
+            mapTypeId: "roadmap",
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true
+        });
+        const marker = new google.maps.Marker({
+            map: map,
+            position: centerLocation,
+            title: "{{ center.name|escapejs }}"
+        });
+        const infoWindow = new google.maps.InfoWindow({
+            content: "<strong>{{ center.name|escapejs }}</strong><br>{{ center.address|linebreaksbr|escapejs }}"
+        });
+        marker.addListener("click", function() {
+            infoWindow.open(map, marker);
+        });
+        infoWindow.open(map, marker);
+    }
 </script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initCenterLocationMap"></script>
+{% else %}
+<script>
+    document.getElementById("centerLocationMap").innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}

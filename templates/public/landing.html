@@ -606,6 +606,16 @@
             padding: 0.75rem;
         }
 
+        .quick-map {
+            border: 1px solid var(--ev-border);
+            border-radius: var(--ev-radius);
+            box-shadow: var(--ev-shadow-soft);
+            height: 320px;
+            margin-top: 0.75rem;
+            overflow: hidden;
+            width: 100%;
+        }
+
         .photo-preview {
             display: none;
             margin-top: 0.75rem;
@@ -682,6 +692,10 @@
 
             .modal-body {
                 max-height: calc(100vh - 152px);
+            }
+
+            .quick-map {
+                height: 280px;
             }
         }
 
@@ -945,7 +959,7 @@
 
     <!-- Help Request Modal -->
     <div class="modal fade" id="helpRequestModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
                     <h5 class="modal-title">
@@ -968,11 +982,14 @@
                             <label class="form-label">Location/Address</label>
                             <input type="text" class="form-control" id="location" name="location_description" placeholder="Where are you?" autocomplete="street-address" required>
                             <div id="quickLocationStatus" class="quick-location-status alert-info mt-2">
-                                <i class="bi bi-crosshair"></i> Opening this form will ask your device for GPS location.
+                                <i class="bi bi-crosshair"></i> Opening this form will ask your device for GPS location. You can also click the map to place the pin.
                             </div>
-                            <button type="button" id="quickLocationBtn" class="btn btn-outline-primary btn-sm mt-2">
-                                <i class="bi bi-crosshair"></i> Use Device Location
-                            </button>
+                            <div id="quickMap" class="quick-map" aria-label="Map for placing your emergency help request location"></div>
+                            <div class="d-flex flex-wrap gap-2 mt-2">
+                                <button type="button" id="quickLocationBtn" class="btn btn-outline-primary btn-sm">
+                                    <i class="bi bi-crosshair"></i> Use Device Location
+                                </button>
+                            </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Describe Your Situation</label>
@@ -995,7 +1012,7 @@
                 </div>
                 <div class="modal-footer">
                     <a href="{% url 'help-request' %}" class="btn btn-outline-primary me-auto">
-                        <i class="bi bi-map"></i> Full Map Form
+                        <i class="bi bi-map"></i> View Full Map Form
                     </a>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-danger" id="quickSubmitBtn" onclick="submitHelpRequest()">
@@ -1033,6 +1050,8 @@
         };
         let map = null;
         let mapBounds = null;
+        let quickMap = null;
+        let quickMapBounds = null;
         let quickLocationMarker = null;
         let quickAccuracyCircle = null;
 
@@ -1189,6 +1208,7 @@
                 { lat: bounds.south, lng: bounds.west },
                 { lat: bounds.north, lng: bounds.east }
             );
+            quickMapBounds = bounds;
 
             map = new google.maps.Map(document.getElementById('map'), {
                 center: center,
@@ -1362,6 +1382,14 @@
         }
 
         function showQuickLocationOnMap(lat, lon, accuracy = null) {
+            if (!quickMap) {
+                initializeQuickMap();
+            }
+
+            if (!quickMap) {
+                return;
+            }
+
             if (quickLocationMarker) {
                 quickLocationMarker.setMap(null);
             }
@@ -1377,7 +1405,7 @@
                     '<small>This is the device location that will be sent with your help request.</small>'
             });
             quickLocationMarker = new google.maps.Marker({
-                map: map,
+                map: quickMap,
                 position: position,
                 title: 'Your captured location',
                 icon: {
@@ -1392,7 +1420,7 @@
 
             if (accuracy) {
                 quickAccuracyCircle = new google.maps.Circle({
-                    map: map,
+                    map: quickMap,
                     center: position,
                     radius: accuracy,
                     strokeColor: '#0d6efd',
@@ -1403,18 +1431,56 @@
                 });
             }
 
-            map.setCenter(position);
-            map.setZoom(Math.max(map.getZoom(), 16));
+            quickMap.setCenter(position);
+            quickMap.setZoom(Math.max(quickMap.getZoom(), 16));
             quickLocationMarker.addListener('click', function() {
-                infoWindow.open(map, quickLocationMarker);
+                infoWindow.open(quickMap, quickLocationMarker);
             });
-            infoWindow.open(map, quickLocationMarker);
+            infoWindow.open(quickMap, quickLocationMarker);
         }
 
-        function setQuickLocation(lat, lon, accuracy = null) {
+        function initializeQuickMap() {
+            if (!window.google || !google.maps || !quickMapBounds) {
+                return;
+            }
+
+            const center = {
+                lat: Number(landingMapData.center.latitude),
+                lng: Number(landingMapData.center.longitude)
+            };
+
+            if (!quickMap) {
+                quickMap = new google.maps.Map(document.getElementById('quickMap'), {
+                    center: center,
+                    zoom: 15,
+                    mapTypeId: 'roadmap',
+                    restriction: {
+                        latLngBounds: quickMapBounds,
+                        strictBounds: false
+                    },
+                    mapTypeControl: false,
+                    streetViewControl: false,
+                    fullscreenControl: true
+                });
+
+                quickMap.addListener('click', function(event) {
+                    setQuickLocation(
+                        event.latLng.lat(),
+                        event.latLng.lng(),
+                        null,
+                        'MANUAL_MAP'
+                    );
+                });
+            }
+
+            google.maps.event.trigger(quickMap, 'resize');
+            quickMap.setCenter(center);
+        }
+
+        function setQuickLocation(lat, lon, accuracy = null, source = 'AUTO_GPS') {
             if (!pointInsideBounds(lat, lon)) {
                 setQuickLocationStatus(
-                    '<i class="bi bi-exclamation-triangle"></i> Your GPS location appears outside Barangay Alicante. Use the full map form to place your location manually.',
+                    '<i class="bi bi-exclamation-triangle"></i> This location appears outside Barangay Alicante. Place the pin within the service area or use the full map form.',
                     'warning'
                 );
                 return false;
@@ -1422,13 +1488,20 @@
 
             document.getElementById('quickLatitude').value = lat.toFixed(6);
             document.getElementById('quickLongitude').value = lon.toFixed(6);
-            document.getElementById('quickLocationSource').value = 'AUTO_GPS';
+            document.getElementById('quickLocationSource').value = source;
             document.getElementById('quickLocationAccuracy').value = accuracy ? Number(accuracy).toFixed(2) : '';
             showQuickLocationOnMap(lat, lon, accuracy);
-            setQuickLocationStatus(
-                `<i class="bi bi-check-circle"></i> Device location captured${accuracy ? ` within about ${Number(accuracy).toFixed(0)} meters` : ''} and marked on the safety map.`,
-                'success'
-            );
+            if (source === 'MANUAL_MAP') {
+                setQuickLocationStatus(
+                    '<i class="bi bi-check-circle"></i> Map pin placed. This location will be sent with your help request.',
+                    'success'
+                );
+            } else {
+                setQuickLocationStatus(
+                    `<i class="bi bi-check-circle"></i> Device location captured${accuracy ? ` within about ${Number(accuracy).toFixed(0)} meters` : ''} and marked on the form map.`,
+                    'success'
+                );
+            }
             return true;
         }
 
@@ -1444,14 +1517,19 @@
 
             navigator.geolocation.getCurrentPosition(
                 function(position) {
-                    setQuickLocation(position.coords.latitude, position.coords.longitude, position.coords.accuracy);
+                    setQuickLocation(
+                        position.coords.latitude,
+                        position.coords.longitude,
+                        position.coords.accuracy,
+                        'AUTO_GPS'
+                    );
                     quickLocationBtn.disabled = false;
                     quickLocationBtn.innerHTML = '<i class="bi bi-crosshair"></i> Refresh Device Location';
                 },
                 function(error) {
                     const message = error.code === error.PERMISSION_DENIED
-                        ? 'Location permission was denied. Use the full map form to place your location manually.'
-                        : 'Could not capture GPS location. Use the full map form to place your location manually.';
+                        ? 'Location permission was denied. Click the map to place your location manually.'
+                        : 'Could not capture GPS location. Click the map to place your location manually.';
 
                     setQuickLocationStatus(`<i class="bi bi-exclamation-triangle"></i> ${message}`, 'warning');
                     quickLocationBtn.disabled = false;
@@ -1466,6 +1544,7 @@
         }
 
         helpRequestModal.addEventListener('shown.bs.modal', function() {
+            initializeQuickMap();
             if (!quickLocationRequested) {
                 quickLocationRequested = true;
                 requestQuickLocation();
@@ -1516,6 +1595,7 @@
     {% else %}
     <script>
         document.getElementById('map').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+        document.getElementById('quickMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Map is unavailable because the map API key is not configured.</div>';
     </script>
     {% endif %}
 </body>

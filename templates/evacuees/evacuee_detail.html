@@ -2,7 +2,6 @@
 {% block title %}{{ evacuee.full_name }} | EvacuaLink{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
     .evacuee-center-map {
         border-radius: var(--ev-radius);
@@ -70,22 +69,40 @@
 
 {% block extra_js %}
 {% if evacuee.evacuation_center %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        const centerLocation = [{{ evacuee.evacuation_center.latitude }}, {{ evacuee.evacuation_center.longitude }}];
-        const map = L.map("evacueeCenterMap", {
-            scrollWheelZoom: false
-        }).setView(centerLocation, 16);
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; OpenStreetMap contributors"
-        }).addTo(map);
-
-        L.marker(centerLocation).addTo(map).bindPopup(
-            "<strong>{{ evacuee.evacuation_center.name|escapejs }}</strong><br>{{ evacuee.evacuation_center.address|linebreaksbr|escapejs }}"
-        ).openPopup();
-    });
+    function initEvacueeCenterMap() {
+        const centerLocation = {
+            lat: Number({{ evacuee.evacuation_center.latitude }}),
+            lng: Number({{ evacuee.evacuation_center.longitude }})
+        };
+        const map = new google.maps.Map(document.getElementById("evacueeCenterMap"), {
+            center: centerLocation,
+            zoom: 16,
+            mapTypeId: "roadmap",
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true
+        });
+        const marker = new google.maps.Marker({
+            map: map,
+            position: centerLocation,
+            title: "{{ evacuee.evacuation_center.name|escapejs }}"
+        });
+        const infoWindow = new google.maps.InfoWindow({
+            content: "<strong>{{ evacuee.evacuation_center.name|escapejs }}</strong><br>{{ evacuee.evacuation_center.address|linebreaksbr|escapejs }}"
+        });
+        marker.addListener("click", function() {
+            infoWindow.open(map, marker);
+        });
+        infoWindow.open(map, marker);
+    }
 </script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&callback=initEvacueeCenterMap"></script>
+{% else %}
+<script>
+    document.getElementById("evacueeCenterMap").innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endif %}
 {% endblock %}
