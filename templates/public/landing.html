@@ -1464,11 +1464,19 @@
                         'MANUAL_MAP'
                     );
                 });
-                EvacuaLinkMaps.addSafetyOverlays(quickMap, landingMapData);
+                const quickOverlays = EvacuaLinkMaps.addSafetyOverlays(quickMap, landingMapData, {
+                    showBoundaryMask: true
+                });
+
+                if (quickOverlays.markerCount > 0) {
+                    quickMap.fitBounds(new google.maps.LatLngBounds(
+                        { lat: quickMapBounds.south, lng: quickMapBounds.west },
+                        { lat: quickMapBounds.north, lng: quickMapBounds.east }
+                    ), 28);
+                }
             }
 
             google.maps.event.trigger(quickMap, 'resize');
-            quickMap.setCenter(center);
         }
 
         function setQuickLocation(lat, lon, accuracy = null, source = 'AUTO_GPS') {

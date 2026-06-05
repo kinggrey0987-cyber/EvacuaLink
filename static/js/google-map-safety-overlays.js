@@ -162,7 +162,11 @@
             showHeatmap: true,
             showHazardMarkers: true,
             showSafeZones: true,
-            showEvacuationCenters: true
+            showEvacuationCenters: true,
+            hazardFillOpacity: 0.18,
+            hazardStrokeOpacity: 0.18,
+            heatmapOpacity: 0.88,
+            heatmapRadius: 72
         }, options || {});
 
         if (payload.boundary) {
@@ -195,10 +199,10 @@
                     center: position,
                     radius: style.radius,
                     strokeColor: style.color,
-                    strokeOpacity: 0.18,
+                    strokeOpacity: settings.hazardStrokeOpacity,
                     strokeWeight: 1,
                     fillColor: style.color,
-                    fillOpacity: 0.18
+                    fillOpacity: settings.hazardFillOpacity
                 });
             });
 
@@ -206,8 +210,8 @@
                 new google.maps.visualization.HeatmapLayer({
                     map: map,
                     data: heatPoints,
-                    radius: 72,
-                    opacity: 0.88,
+                    radius: settings.heatmapRadius,
+                    opacity: settings.heatmapOpacity,
                     dissipating: true,
                     gradient: [
                         "rgba(0, 255, 0, 0)",

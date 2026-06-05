@@ -579,7 +579,9 @@
         });
 
         helpMap.fitBounds(bounds, 24);
-        EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData);
+        EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData, {
+            showBoundaryMask: true
+        });
         helpMap.addListener('click', function(event) {
             setHelpLocation(event.latLng.lat(), event.latLng.lng(), 'MAP_PIN');
         });
