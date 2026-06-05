@@ -378,7 +378,6 @@
     const clearLocationBtn = document.getElementById('clearLocationBtn');
     const photoInput = document.getElementById('id_photo');
     const photoPreview = document.getElementById('photoPreview');
-    let hasRequestedInitialLocation = false;
 
     function setLocationStatus(message, type = 'info') {
         locationStatus.className = `location-status alert-${type}`;
@@ -525,13 +524,6 @@
 
     clearLocationBtn.addEventListener('click', clearLocation);
 
-    function requestInitialLocation() {
-        if (!hasRequestedInitialLocation && navigator.geolocation) {
-            hasRequestedInitialLocation = true;
-            requestCurrentLocation();
-        }
-    }
-
     photoInput?.addEventListener('change', function() {
         const file = photoInput.files?.[0];
 
@@ -575,15 +567,15 @@
             scaleControl: true
         });
 
-        helpMap.fitBounds(bounds, 36);
-        EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData, {
+        const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData, {
             showBoundaryMask: true
         });
+        if (safetyOverlays.markerCount > 0) {
+            helpMap.fitBounds(bounds, 36);
+        }
         helpMap.addListener('click', function(event) {
             setHelpLocation(event.latLng.lat(), event.latLng.lng(), 'MAP_PIN');
         });
-
-        requestInitialLocation();
     }
 </script>
 {% if google_maps_api_key %}
