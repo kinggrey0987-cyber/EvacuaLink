@@ -120,22 +120,19 @@ class LogoutView(LoginRequiredMixin, View):
         return redirect("login")
 
 
-class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     """
-    Main operational dashboard for emergency responders and staff.
-    TECHNICAL_ADMIN users are redirected to account/system administration.
+    Read-only operational dashboard for ADMIN users.
+    Shows overview metrics and report access only (no add/edit/delete actions).
     """
 
-    template_name = "dashboard.html"
+    template_name = "dashboards/admin_dashboard.html"
 
     def test_func(self):
-        """Only operational staff (not technical admins) can access this"""
-        return not self.request.user.is_technical_admin
+        """Only operational admins can access this"""
+        return self.request.user.is_operational_admin
 
     def handle_no_permission(self):
-        """Redirect technical admins to account management."""
-        if self.request.user.is_authenticated and self.request.user.is_technical_admin:
-            return redirect("user_list")
         return redirect("login")
 
     def get_context_data(self, **kwargs):
@@ -143,8 +140,6 @@ class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, Template
         user = self.request.user
         context["user"] = user
         context["user_role"] = user.get_role_display()
-        context["is_technical_admin"] = user.is_technical_admin
-        context["is_operational_admin"] = user.is_operational_admin
 
         # Import models for statistics
         from evacuees.models import Evacuee
@@ -185,6 +180,96 @@ class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, Template
         context["critical_incidents"] = EmergencyIncident.objects.filter(severity="CRITICAL").count()
 
         return context
+
+
+class StaffDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """
+    Full operational dashboard for STAFF users.
+    Shows all metrics with action buttons for managing evacuees, families, centers, zones, and incidents.
+    """
+
+    template_name = "dashboards/staff_dashboard.html"
+
+    def test_func(self):
+        """Only emergency responders (STAFF) can access this"""
+        return self.request.user.is_emergency_responder
+
+    def handle_no_permission(self):
+        return redirect("login")
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["user"] = user
+        context["user_role"] = user.get_role_display()
+
+        # Import models for statistics
+        from evacuees.models import Evacuee
+        from families.models import Family
+        from evacuation_centers.models import EvacuationCenter
+        from emergency.models import EmergencyHelpRequest, EmergencyIncident
+
+        # General Statistics
+        context["total_users"] = User.objects.count()
+        context["total_evacuees"] = Evacuee.objects.count()
+        context["total_families"] = Family.objects.count()
+        context["total_centers"] = EvacuationCenter.objects.count()
+
+        # Evacuee Status Statistics
+        context["evacuees_registered"] = Evacuee.objects.filter(status="REGISTERED").count()
+        context["evacuees_checked_in"] = Evacuee.objects.filter(status="CHECKED_IN").count()
+        context["evacuees_reunited"] = Evacuee.objects.filter(status="REUNITED").count()
+        context["evacuees_missing"] = Evacuee.objects.filter(status="MISSING").count()
+        context["evacuees_special_needs"] = Evacuee.objects.filter(special_needs=True).count()
+
+        # Family Statistics
+        context["families_pending"] = Family.objects.filter(reunification_status="PENDING").count()
+        context["families_partial"] = Family.objects.filter(reunification_status="PARTIAL").count()
+        context["families_reunified"] = Family.objects.filter(reunification_status="REUNIFIED").count()
+
+        # Center Occupancy
+        context["centers_open"] = EvacuationCenter.objects.filter(status="OPEN").count()
+        context["centers_full"] = EvacuationCenter.objects.filter(status="FULL").count()
+        context["centers_closed"] = EvacuationCenter.objects.filter(status="CLOSED").count()
+
+        # Emergency Statistics
+        context["total_help_requests"] = EmergencyHelpRequest.objects.count()
+        context["pending_requests"] = EmergencyHelpRequest.objects.filter(status="PENDING").count()
+        context["in_progress_requests"] = EmergencyHelpRequest.objects.filter(status="IN_PROGRESS").count()
+
+        context["total_incidents"] = EmergencyIncident.objects.count()
+        context["open_incidents"] = EmergencyIncident.objects.filter(status="OPEN").count()
+        context["critical_incidents"] = EmergencyIncident.objects.filter(severity="CRITICAL").count()
+
+        return context
+
+
+class OperationalDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """
+    Router view that redirects users to role-specific dashboards.
+    TECHNICAL_ADMIN users are redirected to account/system administration.
+    """
+
+    def test_func(self):
+        """Only operational staff (not technical admins) can access this"""
+        return not self.request.user.is_technical_admin
+
+    def handle_no_permission(self):
+        """Redirect technical admins to account management."""
+        if self.request.user.is_authenticated and self.request.user.is_technical_admin:
+            return redirect("user_list")
+        return redirect("login")
+
+    def get(self, request, *args, **kwargs):
+        """Route to appropriate dashboard based on user role"""
+        user = request.user
+
+        if user.is_operational_admin:
+            return redirect("admin-dashboard")
+        elif user.is_emergency_responder:
+            return redirect("staff-dashboard")
+        else:
+            return redirect("login")
 
 
 class RegisterView(UserPassesTestMixin, CreateView):

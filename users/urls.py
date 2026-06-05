@@ -5,6 +5,8 @@ from .views import (
     LogoutView,
     RegisterView,
     DashboardView,
+    AdminDashboardView,
+    StaffDashboardView,
     ProfileView,
     UserListView,
     UserDetailView,
@@ -19,6 +21,8 @@ urlpatterns = [
 
     # Dashboard and Profile
     path("dashboard/", DashboardView.as_view(), name="dashboard"),
+    path("dashboard/admin/", AdminDashboardView.as_view(), name="admin-dashboard"),
+    path("dashboard/staff/", StaffDashboardView.as_view(), name="staff-dashboard"),
     path("profile/", ProfileView.as_view(), name="user-profile"),
 
     # User Management

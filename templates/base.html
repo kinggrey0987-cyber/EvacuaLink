@@ -369,14 +369,16 @@
                             <i class="bi bi-house-door"></i> Dashboard
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if 'evacuation-centers' in request.path %}active{% endif %}" href="{% url 'evacuation-center-list' %}">
-                            <i class="bi bi-building"></i> Centers
-                        </a>
-                    </li>
+
+                    <!-- Shared modules for ADMIN and STAFF -->
                     <li class="nav-item">
                         <a class="nav-link {% if 'families' in request.path %}active{% endif %}" href="{% url 'family-list' %}">
                             <i class="bi bi-people"></i> Families
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if 'evacuation-centers' in request.path %}active{% endif %}" href="{% url 'evacuation-center-list' %}">
+                            <i class="bi bi-building"></i> Centers
                         </a>
                     </li>
                     <li class="nav-item">
@@ -384,13 +386,31 @@
                             <i class="bi bi-person-badge"></i> Evacuees
                         </a>
                     </li>
-                    {% if request.user.is_emergency_responder or request.user.is_operational_admin %}
+
+                    <!-- STAFF-only modules -->
+                    {% if request.user.is_emergency_responder %}
                         <li class="nav-item">
                             <a class="nav-link {% if 'emergency' in request.path %}active{% endif %}" href="{% url 'emergency-incident-list' %}">
                                 <i class="bi bi-exclamation-triangle"></i> Emergency
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'hazard-zone' in request.path or 'safe-zone' in request.path %}active{% endif %}" href="{% url 'hazard-zone-list' %}">
+                                <i class="bi bi-exclamation-circle"></i> Zones
+                            </a>
+                        </li>
                     {% endif %}
+
+                    <!-- ADMIN-only modules -->
+                    {% if request.user.is_operational_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if 'reports' in request.path %}active{% endif %}" href="{% url 'report-dashboard' %}">
+                                <i class="bi bi-file-earmark-text"></i> Reports
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <!-- TECHNICAL_ADMIN-only modules -->
                     {% if request.user.is_technical_admin %}
                         <li class="nav-item">
                             <a class="nav-link {% if 'users' in request.path %}active{% endif %}" href="{% url 'user_list' %}">

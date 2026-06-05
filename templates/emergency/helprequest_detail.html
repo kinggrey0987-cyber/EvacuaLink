@@ -1,6 +1,31 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Help Request Details - EvacuaLink{% endblock %}
+
+{% block extra_css %}
+<style>
+    #helpRequestDetailMap {
+        height: 450px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .map-section {
+        margin-top: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .incident-marker-info {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 12px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+        font-size: 0.93rem;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="row mb-4">
@@ -96,6 +121,21 @@
             </div>
         </div>
 
+        <div class="card mt-4 map-section">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-map"></i> Incident Location Map</h5>
+            </div>
+            <div class="card-body">
+                <div class="incident-marker-info">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <strong>Help Request Location:</strong> {{ request.location_description }}
+                    <br>
+                    <small>Coordinates: {{ request.latitude }}, {{ request.longitude }}</small>
+                </div>
+                <div id="helpRequestDetailMap" class="ev-map-frame"></div>
+            </div>
+        </div>
+
         <div class="card mt-4">
             <div class="card-header bg-primary text-white">
                 <h5 class="mb-0"><i class="bi bi-journal-text"></i> Response Notes</h5>
@@ -148,4 +188,94 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260605-detail-map"></script>
+<script>
+    const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
+    const mapCenter = {
+        lat: Number({{ map_center.latitude }}),
+        lng: Number({{ map_center.longitude }})
+    };
+    const mapBounds = {
+        north: Number({{ map_bounds.north }}),
+        south: Number({{ map_bounds.south }}),
+        east: Number({{ map_bounds.east }}),
+        west: Number({{ map_bounds.west }})
+    };
+    const requestLat = Number('{{ request.latitude }}');
+    const requestLng = Number('{{ request.longitude }}');
+    let detailMap = null;
+    let bounds = null;
+    let incidentMarker = null;
+
+    function initDetailRequestMap() {
+        bounds = new google.maps.LatLngBounds(
+            {lat: mapBounds.south, lng: mapBounds.west},
+            {lat: mapBounds.north, lng: mapBounds.east}
+        );
+
+        detailMap = new google.maps.Map(document.getElementById('helpRequestDetailMap'), {
+            center: mapCenter,
+            zoom: {{ zoom_level }},
+            mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            },
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            scaleControl: true
+        });
+
+        // Add safety overlays (boundaries, zones, centers, heatmaps)
+        const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(detailMap, safetyMapData, {
+            showBoundaryMask: true
+        });
+
+        // Add a marker for the incident location
+        if (requestLat && requestLng) {
+            incidentMarker = new google.maps.Marker({
+                map: detailMap,
+                position: {lat: requestLat, lng: requestLng},
+                title: 'Help Request Location',
+                zIndex: 2000,
+                icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    fillColor: '#dc3545',
+                    fillOpacity: 0.95,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 3,
+                    scale: 12
+                }
+            });
+
+            const infoWindow = new google.maps.InfoWindow({
+                content: '<strong>Help Request Location</strong><br>Click to expand'
+            });
+
+            incidentMarker.addListener('click', function() {
+                infoWindow.open(detailMap, incidentMarker);
+            });
+
+            // Open info window by default
+            infoWindow.open(detailMap, incidentMarker);
+
+            // Pan to incident location with padding
+            detailMap.panTo({lat: requestLat, lng: requestLng});
+        } else {
+            detailMap.fitBounds(bounds, 36);
+        }
+    }
+</script>
+{% if google_maps_api_key %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initDetailRequestMap"></script>
+{% else %}
+<script>
+    document.getElementById('helpRequestDetailMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}
