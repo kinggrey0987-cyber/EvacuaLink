@@ -62,3 +62,20 @@ class EvacuationCenterPermissionTests(TestCase):
         response = self.client.get(reverse("evacuation-center-delete", args=[self.center.pk]))
 
         self.assertEqual(response.status_code, 200)
+
+    def test_staff_detail_view_hides_edit_button_and_shows_map(self):
+        self.client.force_login(self.staff)
+
+        response = self.client.get(reverse("evacuation-center-detail", args=[self.center.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="centerLocationMap"')
+        self.assertNotContains(response, reverse("evacuation-center-edit", args=[self.center.pk]))
+
+    def test_emergency_responder_detail_view_shows_edit_button(self):
+        self.client.force_login(self.volunteer)
+
+        response = self.client.get(reverse("evacuation-center-detail", args=[self.center.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, reverse("evacuation-center-edit", args=[self.center.pk]))

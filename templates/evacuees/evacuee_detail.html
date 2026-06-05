@@ -1,8 +1,91 @@
 {% extends "base.html" %}
 {% block title %}{{ evacuee.full_name }} | EvacuaLink{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+    .evacuee-center-map {
+        border-radius: var(--ev-radius);
+        height: 360px;
+        overflow: hidden;
+        width: 100%;
+    }
+
+    .detail-panel {
+        background: var(--ev-surface-soft);
+        border: 1px solid var(--ev-border);
+        border-radius: var(--ev-radius-sm);
+        padding: 1rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3"><h1 class="h3">{{ evacuee.full_name }}</h1><div><a class="btn btn-outline-secondary" href="{% url 'evacuee-list' %}">Back</a> <a class="btn btn-primary" href="{% url 'evacuee-edit' evacuee.pk %}">Edit</a></div></div>
-<div class="card shadow-sm"><div class="card-body">
-    <p><strong>Age:</strong> {{ evacuee.age }}</p><p><strong>Gender:</strong> {{ evacuee.get_gender_display }}</p><p><strong>Family:</strong> {{ evacuee.family }}</p><p><strong>Assigned Center:</strong> {{ evacuee.evacuation_center|default:'Unassigned' }}</p><p><strong>Special Needs:</strong> {% if evacuee.special_needs %}Yes{% else %}No{% endif %}</p><p><strong>Special Needs Description:</strong> {{ evacuee.special_needs_description|default:'None' }}</p><p><strong>Medical Condition:</strong> {{ evacuee.medical_condition|default:'None' }}</p><p><strong>Status:</strong> {{ evacuee.get_status_display }}</p><p><strong>Registered At:</strong> {{ evacuee.registered_at }}</p>
-</div></div>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3">{{ evacuee.full_name }}</h1>
+    <div>
+        <a class="btn btn-outline-secondary" href="{% url 'evacuee-list' %}">Back</a>
+        {% if request.user.is_emergency_responder %}
+            <a class="btn btn-primary" href="{% url 'evacuee-edit' evacuee.pk %}">Edit</a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="detail-panel mb-3">
+                    <p class="mb-2"><strong>Assigned Center:</strong> {{ evacuee.evacuation_center|default:'Unassigned' }}</p>
+                    <p class="mb-0"><strong>Status:</strong> {{ evacuee.get_status_display }}</p>
+                </div>
+                <p><strong>Age:</strong> {{ evacuee.age }}</p>
+                <p><strong>Gender:</strong> {{ evacuee.get_gender_display }}</p>
+                <p><strong>Family:</strong> {{ evacuee.family }}</p>
+                <p><strong>Special Needs:</strong> {% if evacuee.special_needs %}Yes{% else %}No{% endif %}</p>
+                <p><strong>Special Needs Description:</strong> {{ evacuee.special_needs_description|default:'None' }}</p>
+                <p><strong>Medical Condition:</strong> {{ evacuee.medical_condition|default:'None' }}</p>
+                <p class="mb-0"><strong>Registered At:</strong> {{ evacuee.registered_at }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="bi bi-geo-alt"></i> Assigned Center Location
+            </div>
+            <div class="card-body">
+                {% if evacuee.evacuation_center %}
+                    <div id="evacueeCenterMap" class="evacuee-center-map" aria-label="Map showing {{ evacuee.evacuation_center.name }}"></div>
+                {% else %}
+                    <div class="detail-panel text-muted">
+                        This evacuee is not assigned to an evacuation center yet.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if evacuee.evacuation_center %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const centerLocation = [{{ evacuee.evacuation_center.latitude }}, {{ evacuee.evacuation_center.longitude }}];
+        const map = L.map("evacueeCenterMap", {
+            scrollWheelZoom: false
+        }).setView(centerLocation, 16);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+
+        L.marker(centerLocation).addTo(map).bindPopup(
+            "<strong>{{ evacuee.evacuation_center.name|escapejs }}</strong><br>{{ evacuee.evacuation_center.address|linebreaksbr|escapejs }}"
+        ).openPopup();
+    });
+</script>
+{% endif %}
 {% endblock %}

@@ -18,6 +18,11 @@ class EvacueeAssignmentTransferTests(TestCase):
             password="StrongerPass123!",
             role=User.Role.VOLUNTEER,
         )
+        self.staff = User.objects.create_user(
+            username="staff",
+            password="StrongerPass123!",
+            role=User.Role.STAFF,
+        )
         self.family = Family.objects.create(
             family_code="FAM-001",
             family_name="Dela Cruz",
@@ -139,3 +144,25 @@ class EvacueeAssignmentTransferTests(TestCase):
         self.assertEqual(self.origin.current_occupancy, 1)
         self.assertEqual(self.full_center.current_occupancy, 1)
         self.assertFalse(TransferRecord.objects.filter(evacuee=self.evacuee, to_center=self.full_center).exists())
+
+    def test_staff_detail_view_hides_edit_button_and_shows_assigned_center_map(self):
+        self.evacuee.evacuation_center = self.origin
+        self.evacuee.status = Evacuee.Status.CHECKED_IN
+        self.evacuee.save()
+        self.client.force_login(self.staff)
+
+        response = self.client.get(reverse("evacuee-detail", args=[self.evacuee.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'id="evacueeCenterMap"')
+        self.assertContains(response, self.origin.name)
+        self.assertNotContains(response, reverse("evacuee-edit", args=[self.evacuee.pk]))
+
+    def test_detail_view_shows_unassigned_message_without_center(self):
+        self.client.force_login(self.staff)
+
+        response = self.client.get(reverse("evacuee-detail", args=[self.evacuee.pk]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "not assigned to an evacuation center")
+        self.assertNotContains(response, 'id="evacueeCenterMap"')
