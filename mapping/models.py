@@ -6,6 +6,52 @@ from shapely.geometry import Point, shape
 from evacuation_centers.models import EvacuationCenter
 
 
+class SystemSettings(models.Model):
+    """Global system configuration settings"""
+
+    is_geofencing_enabled = models.BooleanField(
+        default=True,
+        help_text="When enabled, restricts help requests to the barangay boundaries.",
+    )
+    emergency_hotline = models.CharField(
+        max_length=100,
+        default="911",
+        help_text="The primary emergency contact number shown to the public.",
+    )
+    default_map_latitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        default=10.8286,  # Default for Talisay / Alicante roughly
+        help_text="Default map center latitude.",
+    )
+    default_map_longitude = models.DecimalField(
+        max_digits=9,
+        decimal_places=6,
+        default=122.9733,
+        help_text="Default map center longitude.",
+    )
+    default_map_zoom = models.IntegerField(
+        default=14,
+        help_text="Default map zoom level.",
+    )
+
+    class Meta:
+        verbose_name = "System Settings"
+        verbose_name_plural = "System Settings"
+
+    def __str__(self):
+        return "Global System Settings"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_settings(cls):
+        settings, created = cls.objects.get_or_create(pk=1)
+        return settings
+
+
 class MapLocation(models.Model):
     class LocationType(models.TextChoices):
         EVACUATION_CENTER = "EVACUATION_CENTER", "Evacuation Center"

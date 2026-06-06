@@ -55,6 +55,10 @@ class PublicLandingPageView(TemplateView):
         hazard_zones = [zone for zone in hazard_zones if inside_boundary(zone)]
         safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
 
+        from mapping.models import SystemSettings
+        settings_obj = SystemSettings.get_settings()
+
+        context["emergency_hotline"] = settings_obj.emergency_hotline
         context["evacuation_centers"] = evacuation_centers
         context["hazard_zones"] = hazard_zones
         context["safe_zones"] = safe_zones
@@ -78,6 +82,7 @@ class PublicLandingPageView(TemplateView):
             "evacuationCenters": [{**c, "latitude": float(c["latitude"]), "longitude": float(c["longitude"])} for c in evacuation_centers],
             "hazardZones": [{**z, "latitude": float(z["latitude"]), "longitude": float(z["longitude"])} for z in hazard_zones],
             "safeZones": [{**z, "latitude": float(z["latitude"]), "longitude": float(z["longitude"])} for z in safe_zones],
+            "isGeofencingEnabled": settings_obj.is_geofencing_enabled,
         }
 
         return context

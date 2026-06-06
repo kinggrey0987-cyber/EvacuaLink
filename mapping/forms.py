@@ -134,3 +134,23 @@ class SafeZoneForm(forms.ModelForm):
                 self.add_error(None, e.message)
 
         return cleaned_data
+
+
+from mapping.models import SystemSettings
+
+class SystemSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SystemSettings
+        fields = [
+            "is_geofencing_enabled",
+            "emergency_hotline",
+            "default_map_latitude",
+            "default_map_longitude",
+            "default_map_zoom",
+        ]
+        widgets = {
+            "emergency_hotline": forms.TextInput(attrs={"class": "form-control"}),
+            "default_map_latitude": forms.NumberInput(attrs={"class": "form-control", "step": "0.000001"}),
+            "default_map_longitude": forms.NumberInput(attrs={"class": "form-control", "step": "0.000001"}),
+            "default_map_zoom": forms.NumberInput(attrs={"class": "form-control"}),
+        }

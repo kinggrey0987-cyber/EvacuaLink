@@ -103,6 +103,9 @@ def get_safety_map_payload():
 
     # Convert all coordinates to plain Python floats for reliable JSON serialization.
     safe_location = _make_center_bounds_safe(location_data)
+    
+    from mapping.models import SystemSettings
+    is_geofencing_enabled = SystemSettings.get_settings().is_geofencing_enabled
 
     return {
         "center": safe_location["center"],
@@ -111,6 +114,7 @@ def get_safety_map_payload():
         "evacuationCenters": _make_json_safe(evacuation_centers),
         "hazardZones": _make_json_safe(hazard_zones),
         "safeZones": _make_json_safe(safe_zones),
+        "isGeofencingEnabled": is_geofencing_enabled,
     }
 
 
@@ -365,8 +369,11 @@ class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         return context
 
 
-class EmergencyIncidentJSONListView(View):
+class EmergencyIncidentJSONListView(LoginRequiredMixin, UserPassesTestMixin, View):
     """API endpoint returning emergency incidents as JSON"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get(self, request):
         """Return incidents as JSON for map display"""

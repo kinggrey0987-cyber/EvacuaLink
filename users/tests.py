@@ -92,10 +92,14 @@ class OperationalDashboardRouteTests(TestCase):
     def test_admin_dashboard_routes_to_overview_pages(self):
         self.client.force_login(self.admin)
 
+        # Check dashboard redirects to admin-dashboard
+        response = self.client.get(reverse("dashboard"))
+        self.assertRedirects(response, reverse("admin-dashboard"), fetch_redirect_response=False)
+
         url_names = [
-            "dashboard",
-            "family-dashboard",
-            "evacuee-dashboard",
+            "admin-dashboard",
+            "family-list",
+            "evacuee-list",
             "evacuation-center-list",
             "emergency-incident-list",
             "report-dashboard",
@@ -115,7 +119,7 @@ class OperationalDashboardRouteTests(TestCase):
     def test_admin_dashboard_does_not_link_to_user_management(self):
         self.client.force_login(self.admin)
 
-        response = self.client.get(reverse("dashboard"))
+        response = self.client.get(reverse("admin-dashboard"))
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, reverse("evacualink_admin:index"))
@@ -124,7 +128,7 @@ class OperationalDashboardRouteTests(TestCase):
     def test_admin_dashboard_hides_staff_write_actions(self):
         self.client.force_login(self.admin)
 
-        response = self.client.get(reverse("dashboard"))
+        response = self.client.get(reverse("admin-dashboard"))
 
         self.assertEqual(response.status_code, 200)
         self.assertNotContains(response, reverse("family-register"))
@@ -134,8 +138,12 @@ class OperationalDashboardRouteTests(TestCase):
     def test_staff_can_manage_operational_pages_but_not_users(self):
         self.client.force_login(self.staff)
 
+        # Check dashboard redirects to staff-dashboard
+        response = self.client.get(reverse("dashboard"))
+        self.assertRedirects(response, reverse("staff-dashboard"), fetch_redirect_response=False)
+
         allowed_url_names = [
-            "dashboard",
+            "staff-dashboard",
             "family-list",
             "evacuee-list",
             "evacuation-center-list",
@@ -143,10 +151,10 @@ class OperationalDashboardRouteTests(TestCase):
             "evacuee-register",
             "evacuation-center-add",
             "emergency-incident-create",
-            "report-dashboard",
         ]
         forbidden_url_names = [
             "user_list",
+            "report-dashboard",
         ]
 
         for url_name in allowed_url_names:

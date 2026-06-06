@@ -10,9 +10,25 @@ from django.urls import reverse_lazy
 from django.views import View
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView, TemplateView
 
-from mapping.models import MapLocation, HazardZone, SafeZone, BarangayBoundary
-from mapping.forms import MapLocationForm, HazardZoneForm, SafeZoneForm
+from mapping.models import MapLocation, HazardZone, SafeZone, BarangayBoundary, SystemSettings
+from mapping.forms import MapLocationForm, HazardZoneForm, SafeZoneForm, SystemSettingsForm
 from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds, get_zoom_level_for_bounds
+
+
+class SystemSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    """Update global system settings (Technical Admin only)"""
+    
+    model = SystemSettings
+    form_class = SystemSettingsForm
+    template_name = "mapping/system_settings.html"
+    success_url = reverse_lazy("system-settings")
+
+    def test_func(self):
+        return self.request.user.is_authenticated and self.request.user.is_technical_admin
+
+    def get_object(self, queryset=None):
+        return SystemSettings.get_settings()
+
 
 
 class PublicMapView(TemplateView):
@@ -120,8 +136,11 @@ class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return context
 
 
-class MapLocationListView(LoginRequiredMixin, ListView):
+class MapLocationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """List all map locations"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = MapLocation
     template_name = "mapping/maplocation_list.html"
@@ -156,8 +175,11 @@ class MapLocationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
         return self.request.user.is_emergency_responder
 
 
-class HazardZoneListView(LoginRequiredMixin, ListView):
+class HazardZoneListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """List all hazard zones"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = HazardZone
     template_name = "mapping/hazardzone_list.html"
@@ -203,8 +225,11 @@ class HazardZoneDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
         return self.request.user.is_emergency_responder
 
 
-class SafeZoneListView(LoginRequiredMixin, ListView):
+class SafeZoneListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """List all safe zones"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = SafeZone
     template_name = "mapping/safezone_list.html"

@@ -15,9 +15,12 @@ from .views import (
     SafeZoneUpdateView,
     SafeZoneDeleteView,
     MapAPIView,
+    SystemSettingsUpdateView,
 )
 
 urlpatterns = [
+    path("settings/", SystemSettingsUpdateView.as_view(), name="system-settings"),
+    
     # Public Maps
     path("", PublicMapView.as_view(), name="public-map"),
     path("admin/", AdminMapView.as_view(), name="admin-map"),

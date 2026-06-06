@@ -19,6 +19,11 @@ def is_within_barangay_boundary(latitude, longitude):
         bool: True if point is inside barangay polygon, False otherwise
     """
     try:
+        from mapping.models import SystemSettings, BarangayBoundary
+        settings = SystemSettings.get_settings()
+        if not settings.is_geofencing_enabled:
+            return True
+
         boundary = BarangayBoundary.objects.first()
         if not boundary:
             # If boundary doesn't exist, accept the coordinates
@@ -72,9 +77,48 @@ def get_barangay_center_and_bounds():
         dict: Contains 'center' and 'bounds' with latitude/longitude values
     """
     try:
+        from mapping.models import SystemSettings, BarangayBoundary
+        settings = SystemSettings.get_settings()
+        
+        default_data = {
+            "center": {
+                "latitude": float(settings.default_map_latitude),
+                "longitude": float(settings.default_map_longitude)
+            },
+            "bounds": {
+                "north": float(settings.default_map_latitude) + 0.015,
+                "south": float(settings.default_map_latitude) - 0.015,
+                "east": float(settings.default_map_longitude) + 0.015,
+                "west": float(settings.default_map_longitude) - 0.015,
+            },
+        }
+
         boundary = BarangayBoundary.objects.first()
         if not boundary:
-            # Default coordinates if boundary doesn't exist
+            return default_data
+
+        return {
+            "center": boundary.get_center(),
+            "bounds": boundary.get_bounds(),
+        }
+    except Exception as e:
+        print(f"Error getting barangay center and bounds: {e}")
+        try:
+            from mapping.models import SystemSettings
+            settings = SystemSettings.get_settings()
+            return {
+                "center": {
+                    "latitude": float(settings.default_map_latitude),
+                    "longitude": float(settings.default_map_longitude)
+                },
+                "bounds": {
+                    "north": float(settings.default_map_latitude) + 0.015,
+                    "south": float(settings.default_map_latitude) - 0.015,
+                    "east": float(settings.default_map_longitude) + 0.015,
+                    "west": float(settings.default_map_longitude) - 0.015,
+                },
+            }
+        except:
             return {
                 "center": {"latitude": 10.3233, "longitude": 122.8933},
                 "bounds": {
@@ -85,22 +129,6 @@ def get_barangay_center_and_bounds():
                 },
             }
 
-        return {
-            "center": boundary.get_center(),
-            "bounds": boundary.get_bounds(),
-        }
-    except Exception as e:
-        print(f"Error getting barangay center and bounds: {e}")
-        return {
-            "center": {"latitude": 10.3233, "longitude": 122.8933},
-            "bounds": {
-                "north": 10.3550,
-                "south": 10.3000,
-                "east": 122.9100,
-                "west": 122.8700,
-            },
-        }
-
 
 def get_zoom_level_for_bounds():
     """
@@ -109,7 +137,11 @@ def get_zoom_level_for_bounds():
     Returns:
         int: Zoom level (13-14 for barangay view)
     """
-    return 13
+    try:
+        from mapping.models import SystemSettings
+        return SystemSettings.get_settings().default_map_zoom
+    except:
+        return 13
 
 
 class BarangayBoundaryValidator:
