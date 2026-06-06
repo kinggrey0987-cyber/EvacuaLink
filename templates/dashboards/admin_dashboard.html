@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}Admin Dashboard - EvacuaLink{% endblock %}
 
@@ -157,17 +158,26 @@
             <div class="card h-100">
                 <div class="card-header"><i class="bi bi-person-badge me-2 text-primary"></i>Evacuee Status Overview</div>
                 <div class="card-body">
-                    <div class="status-grid">
-                        <div class="status-item"><strong class="text-success">{{ evacuees_checked_in }}</strong><span>Checked In</span></div>
-                        <div class="status-item"><strong class="text-primary">{{ evacuees_reunited }}</strong><span>Reunited</span></div>
-                        <div class="status-item"><strong class="text-warning">{{ evacuees_registered }}</strong><span>Registered</span></div>
-                        <div class="status-item"><strong class="text-danger">{{ evacuees_missing }}</strong><span>Missing</span></div>
-                    </div>
-                    {% if evacuees_special_needs %}
-                        <div class="alert alert-warning mb-0 mt-3">
-                            <i class="bi bi-exclamation-circle"></i> <strong>{{ evacuees_special_needs }}</strong> evacuees with special needs
+                    <div class="row align-items-center h-100">
+                        <div class="col-md-5 text-center mb-3 mb-md-0">
+                            <div style="position: relative; height: 180px; width: 100%;">
+                                <canvas id="evacueeChart"></canvas>
+                            </div>
                         </div>
-                    {% endif %}
+                        <div class="col-md-7">
+                            <div class="status-grid">
+                                <div class="status-item"><strong class="text-success">{{ evacuees_checked_in }}</strong><span>Checked In</span></div>
+                                <div class="status-item"><strong class="text-primary">{{ evacuees_reunited }}</strong><span>Reunited</span></div>
+                                <div class="status-item"><strong class="text-warning">{{ evacuees_registered }}</strong><span>Registered</span></div>
+                                <div class="status-item"><strong class="text-danger">{{ evacuees_missing }}</strong><span>Missing</span></div>
+                            </div>
+                            {% if evacuees_special_needs %}
+                                <div class="alert alert-warning mb-0 mt-3 small py-2">
+                                    <i class="bi bi-exclamation-circle"></i> <strong>{{ evacuees_special_needs }}</strong> evacuees with special needs
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -175,10 +185,19 @@
             <div class="card h-100">
                 <div class="card-header"><i class="bi bi-people me-2 text-success"></i>Family Reunification Progress</div>
                 <div class="card-body">
-                    <div class="status-grid three">
-                        <div class="status-item"><strong class="text-warning">{{ families_pending }}</strong><span>Pending</span></div>
-                        <div class="status-item"><strong class="text-info">{{ families_partial }}</strong><span>Partial</span></div>
-                        <div class="status-item"><strong class="text-success">{{ families_reunified }}</strong><span>Reunified</span></div>
+                    <div class="row align-items-center h-100">
+                        <div class="col-md-5 text-center mb-3 mb-md-0">
+                            <div style="position: relative; height: 180px; width: 100%;">
+                                <canvas id="familyChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="status-grid three">
+                                <div class="status-item"><strong class="text-warning">{{ families_pending }}</strong><span>Pending</span></div>
+                                <div class="status-item"><strong class="text-info">{{ families_partial }}</strong><span>Partial</span></div>
+                                <div class="status-item"><strong class="text-success">{{ families_reunified }}</strong><span>Reunified</span></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,12 +211,21 @@
                     <span><i class="bi bi-building me-2 text-info"></i>Evacuation Center Capacity</span>
                 </div>
                 <div class="card-body">
-                    <div class="status-grid three">
-                        <div class="status-item"><strong class="text-success">{{ centers_open }}</strong><span>Open Centers</span></div>
-                        <div class="status-item"><strong class="text-warning">{{ centers_full }}</strong><span>Full Centers</span></div>
-                        <div class="status-item"><strong class="text-secondary">{{ centers_closed }}</strong><span>Closed Centers</span></div>
+                    <div class="row align-items-center h-100">
+                        <div class="col-md-5 text-center mb-3 mb-md-0">
+                            <div style="position: relative; height: 160px; width: 100%;">
+                                <canvas id="centerChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-7">
+                            <div class="status-grid three">
+                                <div class="status-item"><strong class="text-success">{{ centers_open }}</strong><span>Open Centers</span></div>
+                                <div class="status-item"><strong class="text-warning">{{ centers_full }}</strong><span>Full Centers</span></div>
+                                <div class="status-item"><strong class="text-secondary">{{ centers_closed }}</strong><span>Closed Centers</span></div>
+                            </div>
+                            <p class="text-muted small mt-3 mb-0"><i class="bi bi-info-circle"></i> STAFF manages center operations. Contact them for capacity updates.</p>
+                        </div>
                     </div>
-                    <p class="text-muted small mt-3 mb-0"><i class="bi bi-info-circle"></i> STAFF manages center operations. Contact them for capacity updates.</p>
                 </div>
             </div>
         </div>
@@ -212,6 +240,19 @@
                         <div><span>Last Login</span><strong>{{ user.last_login|date:"M d, Y H:i"|default:"First login" }}</strong></div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mini Safety Map -->
+    <section class="mb-4">
+        <div class="card h-100">
+            <div class="card-header d-flex align-items-center justify-content-between gap-3">
+                <span><i class="bi bi-map me-2 text-danger"></i>Live Safety Map Overview</span>
+                <a href="{% url 'public-map' %}" class="btn btn-sm btn-outline-danger">Full View</a>
+            </div>
+            <div class="card-body p-0">
+                <div id="adminMiniMap" style="height: 350px; width: 100%; border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;"></div>
             </div>
         </div>
     </section>
@@ -491,4 +532,129 @@
         }
     }
 </style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Evacuee Status Chart
+    const evacCtx = document.getElementById('evacueeChart').getContext('2d');
+    new Chart(evacCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Checked In', 'Reunited', 'Registered', 'Missing'],
+            datasets: [{
+                data: [{{ evacuees_checked_in|default:0 }}, {{ evacuees_reunited|default:0 }}, {{ evacuees_registered|default:0 }}, {{ evacuees_missing|default:0 }}],
+                backgroundColor: ['#198754', '#0d6efd', '#ffc107', '#dc3545'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Family Reunification Chart
+    const famCtx = document.getElementById('familyChart').getContext('2d');
+    new Chart(famCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Pending', 'Partial', 'Reunified'],
+            datasets: [{
+                data: [{{ families_pending|default:0 }}, {{ families_partial|default:0 }}, {{ families_reunified|default:0 }}],
+                backgroundColor: ['#ffc107', '#0dcaf0', '#198754'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            }
+        }
+    });
+
+    // Center Capacity Chart
+    const centerCtx = document.getElementById('centerChart').getContext('2d');
+    new Chart(centerCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Open', 'Full', 'Closed'],
+            datasets: [{
+                label: 'Centers',
+                data: [{{ centers_open|default:0 }}, {{ centers_full|default:0 }}, {{ centers_closed|default:0 }}],
+                backgroundColor: ['#198754', '#ffc107', '#6c757d'],
+                borderRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: { stepSize: 1 }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% if google_maps_api_key %}
+{{ public_map_payload|json_script:"public-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script>
+    function initAdminMiniMap() {
+        const publicMapData = JSON.parse(document.getElementById('public-map-data').textContent);
+        const center = {
+            lat: Number(publicMapData.center.latitude),
+            lng: Number(publicMapData.center.longitude)
+        };
+        const bounds = {
+            north: Number(publicMapData.bounds.north),
+            south: Number(publicMapData.bounds.south),
+            east: Number(publicMapData.bounds.east),
+            west: Number(publicMapData.bounds.west)
+        };
+        const mapBounds = new google.maps.LatLngBounds(
+            { lat: bounds.south, lng: bounds.west },
+            { lat: bounds.north, lng: bounds.east }
+        );
+        const map = new google.maps.Map(document.getElementById('adminMiniMap'), {
+            center: center,
+            zoom: 13,
+            mapTypeId: 'roadmap',
+            restriction: {
+                latLngBounds: bounds,
+                strictBounds: false
+            },
+            fullscreenControl: false,
+            mapTypeControl: false,
+            streetViewControl: false,
+            zoomControl: true
+        });
+
+        EvacuaLinkMaps.addSafetyOverlays(map, publicMapData);
+        map.fitBounds(mapBounds, 20);
+    }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initAdminMiniMap"></script>
+{% else %}
+<script>
+    document.getElementById('adminMiniMap').innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted p-4 text-center">Google Maps API key is not configured.</div>';
+</script>
+{% endif %}
 {% endblock %}

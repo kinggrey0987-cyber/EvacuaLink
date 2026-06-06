@@ -192,6 +192,26 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context["open_incidents"] = EmergencyIncident.objects.filter(status="OPEN").count()
         context["critical_incidents"] = EmergencyIncident.objects.filter(severity="CRITICAL").count()
 
+        # Mini Safety Map Data
+        from mapping.models import HazardZone, SafeZone, MapLocation
+        from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds
+        
+        evacuation_centers = list(MapLocation.objects.filter(location_type="EVACUATION_CENTER", is_active=True).values("id", "name", "latitude", "longitude", "description"))
+        hazard_zones = list(HazardZone.objects.all().values("id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"))
+        safe_zones = list(SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description"))
+        
+        location_data = get_barangay_center_and_bounds()
+        context["map_center"] = location_data["center"]
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["public_map_payload"] = {
+            "center": location_data["center"],
+            "bounds": location_data["bounds"],
+            "boundary": get_barangay_boundary_geojson(),
+            "evacuationCenters": evacuation_centers,
+            "hazardZones": hazard_zones,
+            "safeZones": safe_zones,
+        }
+
         return context
 
 
