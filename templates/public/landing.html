@@ -1527,6 +1527,10 @@
             document.getElementById('quickLocationSource').value = source;
             document.getElementById('quickLocationAccuracy').value = accuracy ? Number(accuracy).toFixed(2) : '';
             showQuickLocationOnMap(lat, lon, accuracy);
+
+            // Auto-fill the Location/Address field via reverse geocoding.
+            reverseGeocodeQuick(lat, lon);
+
             if (source === 'MANUAL_MAP') {
                 setQuickLocationStatus(
                     '<i class="bi bi-check-circle"></i> Map pin placed. This location will be sent with your help request.',
@@ -1539,6 +1543,52 @@
                 );
             }
             return true;
+        }
+
+        /**
+         * Reverse-geocode lat/lng and auto-fill the Location/Address input.
+         * Only fills when the field is empty or was previously auto-filled
+         * (marked with a data attribute), so manual user input is never overwritten.
+         */
+        function reverseGeocodeQuick(lat, lon) {
+            var locationInput = document.getElementById('location');
+            if (!locationInput) return;
+
+            // Don't overwrite if the user has manually typed something.
+            if (locationInput.value && !locationInput.dataset.autoFilled) return;
+
+            if (!window.google || !google.maps || !google.maps.Geocoder) return;
+
+            var geocoder = new google.maps.Geocoder();
+            geocoder.geocode({ location: { lat: lat, lng: lon } }, function(results, status) {
+                // Only fill if still empty or previously auto-filled.
+                if (locationInput.value && !locationInput.dataset.autoFilled) return;
+
+                if (status === 'OK' && results && results.length > 0) {
+                    // Pick the most useful result (street address or route-level).
+                    var address = results[0].formatted_address;
+                    for (var i = 0; i < results.length; i++) {
+                        var types = results[i].types || [];
+                        if (types.indexOf('street_address') !== -1 ||
+                            types.indexOf('route') !== -1 ||
+                            types.indexOf('premise') !== -1 ||
+                            types.indexOf('sublocality') !== -1) {
+                            address = results[i].formatted_address;
+                            break;
+                        }
+                    }
+                    locationInput.value = address;
+                    locationInput.dataset.autoFilled = 'true';
+                }
+            });
+
+            // Clear the auto-filled flag when the user manually edits the field.
+            if (!locationInput.dataset.geocodeListenerAdded) {
+                locationInput.addEventListener('input', function() {
+                    delete locationInput.dataset.autoFilled;
+                });
+                locationInput.dataset.geocodeListenerAdded = 'true';
+            }
         }
 
         function requestQuickLocation() {

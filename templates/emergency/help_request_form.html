@@ -478,6 +478,9 @@
         document.getElementById('sourceDisplay').textContent = source === 'AUTO_GPS' ? 'Auto GPS' : 'Map Pin';
         document.getElementById('accuracyDisplay').textContent = accuracy ? `${Number(accuracy).toFixed(0)} meters` : '-';
 
+        // Auto-fill the Location Description field via reverse geocoding.
+        reverseGeocodeHelp(lat, lon);
+
         setLocationStatus(
             source === 'AUTO_GPS'
                 ? '<i class="bi bi-check-circle"></i> GPS location captured. You can still drag/click the map if this is not exact.'
@@ -486,6 +489,52 @@
         );
 
         return true;
+    }
+
+    /**
+     * Reverse-geocode lat/lng and auto-fill the Location Description input.
+     * Only fills when the field is empty or was previously auto-filled
+     * (marked with a data attribute), so manual user input is never overwritten.
+     */
+    function reverseGeocodeHelp(lat, lon) {
+        var locationInput = document.getElementById('id_location_description');
+        if (!locationInput) return;
+
+        // Don't overwrite if the user has manually typed something.
+        if (locationInput.value && !locationInput.dataset.autoFilled) return;
+
+        if (!window.google || !google.maps || !google.maps.Geocoder) return;
+
+        var geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ location: { lat: lat, lng: lon } }, function(results, status) {
+            // Only fill if still empty or previously auto-filled.
+            if (locationInput.value && !locationInput.dataset.autoFilled) return;
+
+            if (status === 'OK' && results && results.length > 0) {
+                // Pick the most useful result (street address or route-level).
+                var address = results[0].formatted_address;
+                for (var i = 0; i < results.length; i++) {
+                    var types = results[i].types || [];
+                    if (types.indexOf('street_address') !== -1 ||
+                        types.indexOf('route') !== -1 ||
+                        types.indexOf('premise') !== -1 ||
+                        types.indexOf('sublocality') !== -1) {
+                        address = results[i].formatted_address;
+                        break;
+                    }
+                }
+                locationInput.value = address;
+                locationInput.dataset.autoFilled = 'true';
+            }
+        });
+
+        // Clear the auto-filled flag when the user manually edits the field.
+        if (!locationInput.dataset.geocodeListenerAdded) {
+            locationInput.addEventListener('input', function() {
+                delete locationInput.dataset.autoFilled;
+            });
+            locationInput.dataset.geocodeListenerAdded = 'true';
+        }
     }
 
     useCurrentLocationBtn.addEventListener('click', function() {
