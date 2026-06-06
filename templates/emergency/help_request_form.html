@@ -356,9 +356,17 @@
 
 {% block extra_js %}
 {{ safety_map_payload|json_script:"safety-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260605-help-map"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260606-fix-overlays"></script>
 <script>
     const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
+    console.log('[EvacuaLink] safetyMapData loaded', {
+        hasBoundary: !!safetyMapData.boundary,
+        hazardZones: (safetyMapData.hazardZones || []).length,
+        safeZones: (safetyMapData.safeZones || []).length,
+        evacuationCenters: (safetyMapData.evacuationCenters || []).length,
+        center: safetyMapData.center,
+        bounds: safetyMapData.bounds
+    });
     const mapCenter = {
         lat: Number({{ map_center.latitude }}),
         lng: Number({{ map_center.longitude }})

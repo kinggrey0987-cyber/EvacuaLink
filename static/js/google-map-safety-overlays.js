@@ -153,15 +153,23 @@
     }
 
     function addSafetyOverlays(map, payload, options) {
-        const infoWindow = new google.maps.InfoWindow();
-        const overlays = {
+        console.log("[EvacuaLink] addSafetyOverlays called", {
+            hasBoundary: !!payload.boundary,
+            hazardZones: (payload.hazardZones || []).length,
+            safeZones: (payload.safeZones || []).length,
+            evacuationCenters: (payload.evacuationCenters || []).length,
+            options: options
+        });
+
+        var infoWindow = new google.maps.InfoWindow();
+        var overlays = {
             bounds: new google.maps.LatLngBounds(),
             markerCount: 0,
             boundaryDrawn: false,
             heatmapDrawn: false,
             errors: []
         };
-        const settings = Object.assign({
+        var settings = Object.assign({
             showBoundaryMask: true,
             showHeatmap: true,
             showHazardMarkers: true,
@@ -172,6 +180,7 @@
             heatmapOpacity: 0.88,
             heatmapRadius: 72
         }, options || {});
+
 
         if (payload.boundary) {
             try {
@@ -199,10 +208,10 @@
         }
 
         if (settings.showHeatmap) {
-            const heatPoints = [];
+            var heatPoints = [];
             (payload.hazardZones || []).forEach(function(zone) {
-                const style = riskStyles[zone.risk_level] || riskStyles.LOW;
-                const position = positionFrom(zone);
+                var style = riskStyles[zone.risk_level] || riskStyles.LOW;
+                var position = positionFrom(zone);
                 addHeatArea(heatPoints, position, style.radius, style.heatWeight);
                 new google.maps.Circle({
                     map: map,
@@ -217,6 +226,9 @@
             });
 
             if (heatPoints.length > 0) {
+                var heatmapCreated = false;
+
+                // Try the official HeatmapLayer first (may be deprecated in newer API versions).
                 try {
                     if (google.maps.visualization && google.maps.visualization.HeatmapLayer) {
                         new google.maps.visualization.HeatmapLayer({
@@ -234,13 +246,41 @@
                                 "rgba(255, 0, 0, 0.96)"
                             ]
                         });
+                        heatmapCreated = true;
                         overlays.heatmapDrawn = true;
-                    } else {
-                        overlays.errors.push("heatmap: visualization library unavailable");
                     }
-                } catch (error) {
-                    overlays.errors.push("heatmap: " + error.message);
-                    console.warn("EvacuaLink map heatmap failed", error);
+                } catch (ignored) {
+                    // HeatmapLayer is deprecated/unavailable — fall through to fallback.
+                }
+
+                // Fallback: concentric gradient circles per hazard zone.
+                if (!heatmapCreated) {
+                    (payload.hazardZones || []).forEach(function(zone) {
+                        var style = riskStyles[zone.risk_level] || riskStyles.LOW;
+                        var position = positionFrom(zone);
+                        var rings = [
+                            { ratio: 1.0,  opacity: 0.06 },
+                            { ratio: 0.75, opacity: 0.12 },
+                            { ratio: 0.50, opacity: 0.20 },
+                            { ratio: 0.30, opacity: 0.32 }
+                        ];
+                        rings.forEach(function(ring) {
+                            new google.maps.Circle({
+                                map: map,
+                                center: position,
+                                radius: style.radius * ring.ratio,
+                                strokeColor: style.color,
+                                strokeOpacity: 0,
+                                strokeWeight: 0,
+                                fillColor: style.color,
+                                fillOpacity: ring.opacity,
+                                clickable: false,
+                                zIndex: -1
+                            });
+                        });
+                    });
+                    overlays.heatmapDrawn = true;
+                    console.log("[EvacuaLink] Using circle-based heatmap fallback (HeatmapLayer deprecated)");
                 }
             }
         }
@@ -333,6 +373,13 @@
                 overlays.markerCount += 1;
             });
         }
+
+        console.log("[EvacuaLink] addSafetyOverlays done", {
+            boundaryDrawn: overlays.boundaryDrawn,
+            heatmapDrawn: overlays.heatmapDrawn,
+            markerCount: overlays.markerCount,
+            errors: overlays.errors
+        });
 
         window.__evacuaLinkLastSafetyOverlays = overlays;
         return overlays;

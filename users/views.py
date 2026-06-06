@@ -64,12 +64,20 @@ class PublicLandingPageView(TemplateView):
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
         context["landing_map_payload"] = {
-            "center": location_data["center"],
-            "bounds": location_data["bounds"],
+            "center": {
+                "latitude": float(location_data["center"].get("latitude", 10.3233)),
+                "longitude": float(location_data["center"].get("longitude", 122.8933)),
+            },
+            "bounds": {
+                "north": float(location_data["bounds"].get("north", 10.3550)),
+                "south": float(location_data["bounds"].get("south", 10.3000)),
+                "east": float(location_data["bounds"].get("east", 122.9100)),
+                "west": float(location_data["bounds"].get("west", 122.8700)),
+            },
             "boundary": boundary_geojson,
-            "evacuationCenters": evacuation_centers,
-            "hazardZones": hazard_zones,
-            "safeZones": safe_zones,
+            "evacuationCenters": [{**c, "latitude": float(c["latitude"]), "longitude": float(c["longitude"])} for c in evacuation_centers],
+            "hazardZones": [{**z, "latitude": float(z["latitude"]), "longitude": float(z["longitude"])} for z in hazard_zones],
+            "safeZones": [{**z, "latitude": float(z["latitude"]), "longitude": float(z["longitude"])} for z in safe_zones],
         }
 
         return context

@@ -30,6 +30,49 @@ from emergency.forms import (
 )
 
 
+def _to_float(value):
+    """Convert Decimal / numpy / any numeric type to a plain Python float."""
+    if value is None:
+        return None
+    return float(value)
+
+
+def _make_json_safe(items, coord_fields=("latitude", "longitude")):
+    """
+    Return a new list of dicts where every coordinate field is a plain float.
+
+    Django's `json_script` serialises Decimal as a *string* ("10.3233"),
+    and Shapely's numpy float64 may not be serialisable at all.  Converting
+    to plain Python floats avoids both problems.
+    """
+    result = []
+    for item in items:
+        clean = dict(item)
+        for field in coord_fields:
+            if field in clean:
+                clean[field] = _to_float(clean[field])
+        result.append(clean)
+    return result
+
+
+def _make_center_bounds_safe(location_data):
+    """Ensure center and bounds dicts contain plain Python floats."""
+    center = location_data.get("center") or {}
+    bounds = location_data.get("bounds") or {}
+    return {
+        "center": {
+            "latitude": _to_float(center.get("latitude", 10.3233)),
+            "longitude": _to_float(center.get("longitude", 122.8933)),
+        },
+        "bounds": {
+            "north": _to_float(bounds.get("north", 10.3550)),
+            "south": _to_float(bounds.get("south", 10.3000)),
+            "east": _to_float(bounds.get("east", 122.9100)),
+            "west": _to_float(bounds.get("west", 122.8700)),
+        },
+    }
+
+
 def get_safety_map_payload():
     from evacuation_centers.models import EvacuationCenter
     from mapping.models import BarangayBoundary, HazardZone, SafeZone
@@ -58,13 +101,16 @@ def get_safety_map_payload():
     hazard_zones = [zone for zone in hazard_zones if inside_boundary(zone)]
     safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
 
+    # Convert all coordinates to plain Python floats for reliable JSON serialization.
+    safe_location = _make_center_bounds_safe(location_data)
+
     return {
-        "center": location_data["center"],
-        "bounds": location_data["bounds"],
+        "center": safe_location["center"],
+        "bounds": safe_location["bounds"],
         "boundary": get_barangay_boundary_geojson(),
-        "evacuationCenters": evacuation_centers,
-        "hazardZones": hazard_zones,
-        "safeZones": safe_zones,
+        "evacuationCenters": _make_json_safe(evacuation_centers),
+        "hazardZones": _make_json_safe(hazard_zones),
+        "safeZones": _make_json_safe(safe_zones),
     }
 
 
@@ -81,8 +127,9 @@ class PublicHelpRequestView(CreateView):
         from mapping.utils import get_barangay_center_and_bounds, get_zoom_level_for_bounds
 
         location_data = get_barangay_center_and_bounds()
-        context["map_center"] = location_data["center"]
-        context["map_bounds"] = location_data["bounds"]
+        safe_location = _make_center_bounds_safe(location_data)
+        context["map_center"] = safe_location["center"]
+        context["map_bounds"] = safe_location["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
         context["safety_map_payload"] = get_safety_map_payload()
@@ -140,8 +187,9 @@ class HelpRequestDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView)
         from mapping.utils import get_barangay_center_and_bounds, get_zoom_level_for_bounds
 
         location_data = get_barangay_center_and_bounds()
-        context["map_center"] = location_data["center"]
-        context["map_bounds"] = location_data["bounds"]
+        safe_location = _make_center_bounds_safe(location_data)
+        context["map_center"] = safe_location["center"]
+        context["map_bounds"] = safe_location["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
         context["safety_map_payload"] = get_safety_map_payload()
