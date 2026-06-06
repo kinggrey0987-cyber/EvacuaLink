@@ -57,8 +57,11 @@ class FamilyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView)
         return context
 
 
-class FamilyListView(LoginRequiredMixin, ListView):
+class FamilyListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """List all families with filtering and statistics"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = Family
     template_name = "families/family_list.html"
@@ -98,8 +101,11 @@ class FamilyListView(LoginRequiredMixin, ListView):
         return context
 
 
-class FamilyDetailView(LoginRequiredMixin, DetailView):
+class FamilyDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """View detailed family information with member list"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = Family
     template_name = "families/family_detail.html"

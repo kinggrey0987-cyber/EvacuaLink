@@ -8,16 +8,22 @@ from .forms import EvacuationCenterForm
 from .models import EvacuationCenter
 
 
-class EvacuationCenterListView(LoginRequiredMixin, ListView):
+class EvacuationCenterListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = EvacuationCenter
     template_name = "evacuation_centers/center_list.html"
     context_object_name = "centers"
 
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
-class EvacuationCenterDetailView(LoginRequiredMixin, DetailView):
+
+class EvacuationCenterDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     model = EvacuationCenter
     template_name = "evacuation_centers/center_detail.html"
     context_object_name = "center"
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

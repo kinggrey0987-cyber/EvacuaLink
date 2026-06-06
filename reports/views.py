@@ -5,7 +5,7 @@ Uses ReportLab for PDF generation (no system dependencies required).
 
 import json
 from io import BytesIO
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.core.serializers.json import DjangoJSONEncoder
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404
@@ -99,8 +99,11 @@ def export_report_pdf(report_type, report_data):
         return HttpResponse(f"Error generating PDF: {str(e)}", status=500)
 
 
-class ReportDashboardView(LoginRequiredMixin, TemplateView):
+class ReportDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     """Dashboard for report selection and generation"""
+
+    def test_func(self):
+        return self.request.user.is_operational_admin
 
     template_name = "reports/dashboard.html"
 
@@ -112,8 +115,11 @@ class ReportDashboardView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ReportGeneratorView(LoginRequiredMixin, View):
+class ReportGeneratorView(LoginRequiredMixin, UserPassesTestMixin, View):
     """Generate, save, and display reports with optional PDF export"""
+
+    def test_func(self):
+        return self.request.user.is_operational_admin
 
     template_map = {
         "OCCUPANCY": "reports/occupancy_report.html",
@@ -185,8 +191,11 @@ class ReportGeneratorView(LoginRequiredMixin, View):
         })
 
 
-class ReportListView(LoginRequiredMixin, TemplateView):
+class ReportListView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
     """List all generated reports"""
+
+    def test_func(self):
+        return self.request.user.is_operational_admin
 
     template_name = "reports/report_list.html"
 
@@ -196,8 +205,11 @@ class ReportListView(LoginRequiredMixin, TemplateView):
         return context
 
 
-class ReportDetailView(LoginRequiredMixin, View):
+class ReportDetailView(LoginRequiredMixin, UserPassesTestMixin, View):
     """View details of a saved report with optional PDF export"""
+
+    def test_func(self):
+        return self.request.user.is_operational_admin
 
     template_map = {
         "OCCUPANCY": "reports/occupancy_report.html",
@@ -221,8 +233,11 @@ class ReportDetailView(LoginRequiredMixin, View):
         })
 
 
-class ReportDeleteView(LoginRequiredMixin, DeleteView):
+class ReportDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """Delete a generated report"""
     model = Report
     template_name = "reports/report_confirm_delete.html"
     success_url = reverse_lazy("report-list")
+
+    def test_func(self):
+        return self.request.user.is_operational_admin

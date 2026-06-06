@@ -31,8 +31,11 @@ from evacuees.services import recalculate_centers_occupancy
 from families.models import Family
 
 
-class EvacueeListView(LoginRequiredMixin, ListView):
+class EvacueeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     """List all evacuees with filtering options"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = Evacuee
     template_name = "evacuees/evacuee_list.html"
@@ -84,8 +87,11 @@ class EvacueeListView(LoginRequiredMixin, ListView):
         return context
 
 
-class EvacueeDetailView(LoginRequiredMixin, DetailView):
+class EvacueeDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
     """View detailed information about an evacuee"""
+
+    def test_func(self):
+        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
 
     model = Evacuee
     template_name = "evacuees/evacuee_detail.html"
