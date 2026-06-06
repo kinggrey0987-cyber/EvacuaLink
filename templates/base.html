@@ -397,7 +397,7 @@
                     <!-- STAFF-only modules -->
                     {% if request.user.is_emergency_responder %}
                         <li class="nav-item">
-                            <a class="nav-link {% if 'hazard-zone' in request.path or 'safe-zone' in request.path %}active{% endif %}" href="{% url 'hazard-zone-list' %}">
+                            <a class="nav-link {% if 'admin' in request.path and 'mapping' in request.path %}active{% endif %}" href="{% url 'admin-map' %}">
                                 <i class="bi bi-exclamation-circle"></i> Zones
                             </a>
                         </li>

@@ -47,3 +47,7 @@ temp/
 # Package manager locks (optional)
 package-lock.json
 yarn.lock
+
+# Test Data and Sample Users
+TEST_DATA_GUIDE.md
+mapping/management/commands/create_test_data.py
