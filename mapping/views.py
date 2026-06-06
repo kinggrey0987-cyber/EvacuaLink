@@ -29,8 +29,10 @@ class SystemSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
     def get_object(self, queryset=None):
         return SystemSettings.get_settings()
 
-
-
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        return context
 class PublicMapView(TemplateView):
     """Public-facing map showing evacuation centers, hazard zones, and safe zones"""
 

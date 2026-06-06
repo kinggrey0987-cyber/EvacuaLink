@@ -22,6 +22,12 @@
                     
                     {{ form|crispy }}
 
+                    <div class="mt-4 mb-3">
+                        <label class="form-label fw-bold">Select Default Map Center</label>
+                        <small class="text-muted d-block mb-2">Drag the map or click to set the default coordinates and zoom level for the public map.</small>
+                        <div id="settingsMap" style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                    </div>
+
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-save"></i> Save Settings
@@ -32,4 +38,75 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const latInput = document.getElementById('id_default_map_latitude');
+        const lngInput = document.getElementById('id_default_map_longitude');
+        const zoomInput = document.getElementById('id_default_map_zoom');
+        
+        let initialLat = parseFloat(latInput.value) || 10.886887;
+        let initialLng = parseFloat(lngInput.value) || 123.021553;
+        let initialZoom = parseInt(zoomInput.value) || 14;
+
+        const map = new google.maps.Map(document.getElementById('settingsMap'), {
+            center: { lat: initialLat, lng: initialLng },
+            zoom: initialZoom,
+            mapTypeId: 'roadmap',
+            streetViewControl: false
+        });
+
+        const marker = new google.maps.Marker({
+            position: { lat: initialLat, lng: initialLng },
+            map: map,
+            draggable: true,
+            icon: {
+                path: google.maps.SymbolPath.CIRCLE,
+                fillColor: '#0d6efd',
+                fillOpacity: 0.95,
+                strokeColor: '#ffffff',
+                strokeWeight: 3,
+                scale: 10
+            }
+        });
+
+        function updateInputs(lat, lng, zoom) {
+            latInput.value = lat.toFixed(6);
+            lngInput.value = lng.toFixed(6);
+            zoomInput.value = zoom;
+        }
+
+        map.addListener('click', function(e) {
+            marker.setPosition(e.latLng);
+            updateInputs(e.latLng.lat(), e.latLng.lng(), map.getZoom());
+        });
+
+        marker.addListener('dragend', function(e) {
+            updateInputs(e.latLng.lat(), e.latLng.lng(), map.getZoom());
+        });
+
+        map.addListener('zoom_changed', function() {
+            zoomInput.value = map.getZoom();
+        });
+
+        latInput.addEventListener('change', function() {
+            const pos = { lat: parseFloat(latInput.value) || 0, lng: parseFloat(lngInput.value) || 0 };
+            marker.setPosition(pos);
+            map.setCenter(pos);
+        });
+        
+        lngInput.addEventListener('change', function() {
+            const pos = { lat: parseFloat(latInput.value) || 0, lng: parseFloat(lngInput.value) || 0 };
+            marker.setPosition(pos);
+            map.setCenter(pos);
+        });
+
+        zoomInput.addEventListener('change', function() {
+            map.setZoom(parseInt(zoomInput.value) || 14);
+        });
+    });
+</script>
 {% endblock %}
