@@ -198,10 +198,12 @@
     function setCenterLocation(lat, lon) {
         const point = new google.maps.LatLng(lat, lon);
 
+        {% if is_geofencing_enabled %}
         if (!bounds.contains(point)) {
             alert('Location is outside Barangay Alicante. Please choose a location within the barangay.');
             return false;
         }
+        {% endif %}
 
         if (centerMarker) {
             centerMarker.setMap(null);

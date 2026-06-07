@@ -182,6 +182,14 @@ class MapContextMixin:
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        
+        try:
+            from mapping.models import SystemSettings
+            sys_settings = SystemSettings.get_settings()
+            context["is_geofencing_enabled"] = sys_settings.is_geofencing_enabled
+        except Exception:
+            context["is_geofencing_enabled"] = True
+            
         context["safety_map_payload"] = {
             "center": location_data["center"],
             "bounds": location_data["bounds"],
