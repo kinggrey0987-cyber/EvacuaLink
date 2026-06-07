@@ -194,7 +194,8 @@
                     strokeOpacity: 0.9,
                     strokeWeight: 4,
                     fillColor: "#0066cc",
-                    fillOpacity: 0
+                    fillOpacity: 0,
+                    clickable: false
                 });
                 overlays.boundaryDrawn = true;
 
