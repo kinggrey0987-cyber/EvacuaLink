@@ -144,6 +144,8 @@ class SystemSettingsForm(forms.ModelForm):
         fields = [
             "is_geofencing_enabled",
             "emergency_hotline",
+            "global_announcement",
+            "is_announcement_active",
             "default_map_latitude",
             "default_map_longitude",
             "default_map_zoom",

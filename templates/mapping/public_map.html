@@ -6,7 +6,8 @@
 {% block extra_css %}
 <style>
     #map {
-        height: 600px;
+        height: 100%;
+        min-height: 800px;
     }
 
     .map-legend {
@@ -159,24 +160,81 @@
         </div>
         <div class="d-flex flex-wrap gap-2">
             <span class="badge bg-primary-subtle text-primary px-3 py-2">{{ evacuation_centers|length }} Centers</span>
+
+    .popup-content strong {
+        color: #0066cc;
+    }
+
+    .map-hero {
+        background:
+            linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(238, 246, 255, 0.95)),
+            radial-gradient(circle at top right, rgba(28, 126, 214, 0.2), transparent 24rem);
+        border: 1px solid var(--ev-border);
+        border-radius: 24px;
+        box-shadow: var(--ev-shadow);
+        padding: clamp(1.25rem, 3vw, 2rem);
+    }
+
+    .map-shell .card {
+        overflow: hidden;
+    }
+
+    .quick-stat {
+        align-items: center;
+        background: var(--ev-surface-soft);
+        border: 1px solid var(--ev-border);
+        border-radius: 14px;
+        display: flex;
+        justify-content: space-between;
+        padding: 0.85rem 1rem;
+    }
+
+    .location-list .list-group-item {
+        border-color: var(--ev-border);
+        padding: 1rem 1.25rem;
+    }
+
+    @media (max-width: 768px) {
+        #map {
+            height: 400px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="map-shell">
+<section class="map-hero mb-4">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
+        <div>
+            <span class="page-kicker">Safety Operations</span>
+            <h1 class="page-title mt-2"><i class="bi bi-geo-alt"></i> Evacuation Map</h1>
+            <p class="text-muted mb-0">
+                View evacuation centers, hazard-prone areas, safe zones, and the Barangay Alicante service boundary.
+            </p>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <span class="badge bg-primary-subtle text-primary px-3 py-2">{{ evacuation_centers|length }} Centers</span>
             <span class="badge bg-warning-subtle text-warning px-3 py-2">{{ hazard_zones|length }} Hazards</span>
             <span class="badge bg-success-subtle text-success px-3 py-2">{{ safe_zones|length }} Safe Zones</span>
         </div>
     </div>
 </section>
 
-<div class="row">
-    <div class="col-lg-9 mb-4">
-        <div class="card ev-map-panel">
-            <div class="card-body p-0">
-                <div id="map" class="ev-map-frame"></div>
+<div class="row gx-4">
+    <!-- Map Side -->
+    <div class="col-lg-8 mb-4">
+        <div class="card h-100 ev-map-panel border-0 shadow-sm">
+            <div class="card-body p-0 position-relative">
+                <div id="map" class="ev-map-frame" style="height: 100%; min-height: 750px; border-radius: var(--ev-radius);"></div>
             </div>
         </div>
     </div>
 
-    <div class="col-lg-3 mb-4">
-        <div class="card">
-            <div class="card-header">
+    <!-- Information Sidebar -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header border-0 bg-white pt-4 pb-2">
                 <h5 class="mb-0">
                     <i class="bi bi-info-circle text-primary"></i> Map Legend
                 </h5>
@@ -217,8 +275,6 @@
                     </div>
                 </div>
 
-                <hr>
-
                 <div class="mt-4 d-grid gap-2">
                     <h6 class="mb-3">Quick Information</h6>
                     <div class="quick-stat">
@@ -236,14 +292,10 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Locations Details -->
-<div class="row">
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
+        <!-- Locations Details -->
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header border-0 bg-white pt-4 pb-2">
                 <h5 class="mb-0">
                     <i class="bi bi-building text-primary"></i> Evacuation Centers
                 </h5>
@@ -267,11 +319,9 @@
                 {% endfor %}
             </div>
         </div>
-    </div>
 
-    <div class="col-md-6 mb-4">
-        <div class="card">
-            <div class="card-header">
+        <div class="card shadow-sm border-0 mb-4">
+            <div class="card-header border-0 bg-white pt-4 pb-2">
                 <h5 class="mb-0">
                     <i class="bi bi-shield-check text-success"></i> Safe Zones
                 </h5>
@@ -295,13 +345,9 @@
                 {% endfor %}
             </div>
         </div>
-    </div>
-</div>
 
-<div class="row">
-    <div class="col-12 mb-4">
-        <div class="card">
-            <div class="card-header">
+        <div class="card shadow-sm border-0">
+            <div class="card-header border-0 bg-white pt-4 pb-2">
                 <h5 class="mb-0">
                     <i class="bi bi-exclamation-triangle text-warning"></i> Hazard Zones
                 </h5>
@@ -314,7 +360,6 @@
                             <th>Type</th>
                             <th>Risk Level</th>
                             <th>Location</th>
-                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -340,13 +385,10 @@
                                         {{ zone.latitude|floatformat:4 }}, {{ zone.longitude|floatformat:4 }}
                                     </small>
                                 </td>
-                                <td>
-                                    <small>{{ zone.description|truncatewords:10 }}</small>
-                                </td>
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
+                                <td colspan="4" class="text-center text-muted py-4">
                                     No hazard zones registered
                                 </td>
                             </tr>

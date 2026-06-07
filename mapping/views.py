@@ -84,10 +84,10 @@ class PublicMapView(TemplateView):
         return context
 
 
-class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
-    """Admin map for managing locations with add/edit capabilities"""
+class StaffMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
+    """Staff map for managing locations with add/edit capabilities"""
 
-    template_name = "mapping/admin_map.html"
+    template_name = "mapping/staff_map.html"
 
     def test_func(self):
         return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
@@ -126,7 +126,7 @@ class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         context["map_bounds"] = location_data["bounds"]
         context["zoom_level"] = get_zoom_level_for_bounds()
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
-        context["admin_map_payload"] = {
+        context["staff_map_payload"] = {
             "center": location_data["center"],
             "bounds": location_data["bounds"],
             "boundary": boundary_geojson,
@@ -138,19 +138,7 @@ class AdminMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         return context
 
 
-class MapLocationListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """List all map locations"""
 
-    def test_func(self):
-        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
-
-    model = MapLocation
-    template_name = "mapping/maplocation_list.html"
-    context_object_name = "locations"
-    paginate_by = 20
-
-    def get_queryset(self):
-        return MapLocation.objects.filter(is_active=True).order_by("name")
 
 
 class MapLocationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -159,7 +147,7 @@ class MapLocationCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView)
     model = MapLocation
     form_class = MapLocationForm
     template_name = "mapping/maplocation_form.html"
-    success_url = reverse_lazy("map-location-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
@@ -171,25 +159,13 @@ class MapLocationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
     model = MapLocation
     form_class = MapLocationForm
     template_name = "mapping/maplocation_form.html"
-    success_url = reverse_lazy("map-location-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
 
 
-class HazardZoneListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """List all hazard zones"""
 
-    def test_func(self):
-        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
-
-    model = HazardZone
-    template_name = "mapping/hazardzone_list.html"
-    context_object_name = "hazard_zones"
-    paginate_by = 20
-
-    def get_queryset(self):
-        return HazardZone.objects.all().order_by("name")
 
 
 class HazardZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -198,7 +174,7 @@ class HazardZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = HazardZone
     form_class = HazardZoneForm
     template_name = "mapping/hazardzone_form.html"
-    success_url = reverse_lazy("hazard-zone-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
@@ -210,7 +186,7 @@ class HazardZoneUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = HazardZone
     form_class = HazardZoneForm
     template_name = "mapping/hazardzone_form.html"
-    success_url = reverse_lazy("hazard-zone-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
@@ -221,25 +197,13 @@ class HazardZoneDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     model = HazardZone
     template_name = "mapping/hazardzone_confirm_delete.html"
-    success_url = reverse_lazy("hazard-zone-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
 
 
-class SafeZoneListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
-    """List all safe zones"""
 
-    def test_func(self):
-        return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
-
-    model = SafeZone
-    template_name = "mapping/safezone_list.html"
-    context_object_name = "safe_zones"
-    paginate_by = 20
-
-    def get_queryset(self):
-        return SafeZone.objects.all().order_by("name")
 
 
 class SafeZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -248,7 +212,7 @@ class SafeZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
     model = SafeZone
     form_class = SafeZoneForm
     template_name = "mapping/safezone_form.html"
-    success_url = reverse_lazy("safe-zone-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
@@ -260,7 +224,7 @@ class SafeZoneUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = SafeZone
     form_class = SafeZoneForm
     template_name = "mapping/safezone_form.html"
-    success_url = reverse_lazy("safe-zone-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder
@@ -271,7 +235,7 @@ class SafeZoneDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     model = SafeZone
     template_name = "mapping/safezone_confirm_delete.html"
-    success_url = reverse_lazy("safe-zone-list")
+    success_url = reverse_lazy("staff-map")
 
     def test_func(self):
         return self.request.user.is_emergency_responder

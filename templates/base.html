@@ -397,8 +397,8 @@
                     <!-- STAFF-only modules -->
                     {% if request.user.is_emergency_responder %}
                         <li class="nav-item">
-                            <a class="nav-link {% if 'admin' in request.path and 'mapping' in request.path %}active{% endif %}" href="{% url 'admin-map' %}">
-                                <i class="bi bi-exclamation-circle"></i> Zones
+                            <a class="nav-link {% if 'staff' in request.path and 'mapping' in request.path %}active{% endif %}" href="{% url 'staff-map' %}">
+                                <i class="bi bi-map"></i> Zones
                             </a>
                         </li>
                     {% endif %}
@@ -470,6 +470,14 @@
 </nav>
 
 <main class="container-fluid">
+    {% if system_settings and system_settings.is_announcement_active and system_settings.global_announcement %}
+        <div class="container">
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm text-center fw-bold" role="alert" style="border: 2px solid #dc3545; background-color: #fff3f3; color: #b02a37;">
+                <i class="bi bi-broadcast fs-5 me-2"></i> {{ system_settings.global_announcement }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
+    {% endif %}
     {% if messages %}
         {% for message in messages %}
             <div class="container">

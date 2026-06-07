@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Admin Map - EvacuaLink{% endblock %}
+{% block title %}Staff Map - EvacuaLink{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -62,7 +62,7 @@
 <div class="row mb-4">
     <div class="col-12">
         <h1 class="page-title">
-            <i class="bi bi-geo-alt"></i> Administrative Map
+            <i class="bi bi-geo-alt"></i> Staff Map
         </h1>
         <p class="text-muted">
             Manage all evacuation centers, hazard zones, and safe zones in Barangay Alicante
@@ -284,10 +284,10 @@
 {% endblock %}
 
 {% block extra_js %}
-{{ admin_map_payload|json_script:"admin-map-data" }}
+{{ staff_map_payload|json_script:"staff-map-data" }}
 <script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
 <script>
-    const adminMapData = JSON.parse(document.getElementById('admin-map-data').textContent);
+    const staffMapData = JSON.parse(document.getElementById('staff-map-data').textContent);
     const mapCenter = {
         lat: Number({{ map_center.latitude }}),
         lng: Number({{ map_center.longitude }})
@@ -328,7 +328,7 @@
             fullscreenControl: true,
             scaleControl: true
         });
-        EvacuaLinkMaps.addSafetyOverlays(map, adminMapData);
+        EvacuaLinkMaps.addSafetyOverlays(map, staffMapData);
         map.fitBounds(bounds, 36);
     }
 </script>

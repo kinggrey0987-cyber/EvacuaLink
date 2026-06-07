@@ -34,6 +34,14 @@ class SystemSettings(models.Model):
         default=14,
         help_text="Default map zoom level.",
     )
+    global_announcement = models.TextField(
+        blank=True,
+        help_text="A global message displayed at the top of the site.",
+    )
+    is_announcement_active = models.BooleanField(
+        default=False,
+        help_text="Toggle to show or hide the global announcement.",
+    )
 
     class Meta:
         verbose_name = "System Settings"
