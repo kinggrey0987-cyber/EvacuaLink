@@ -108,6 +108,7 @@ class CustomUserChangeForm(UserChangeForm):
         fields = ("username", "first_name", "last_name", "email", "phone_number", "address", "role")
 
     def __init__(self, *args, **kwargs):
+        current_user = kwargs.pop('current_user', None)
         super().__init__(*args, **kwargs)
         # Hide password field in change form
         if 'password' in self.fields:
@@ -115,6 +116,11 @@ class CustomUserChangeForm(UserChangeForm):
 
         # Add Bootstrap classes
         self.fields['username'].widget.attrs['class'] = 'form-control'
+        
+        # Security: Only Tech Admins can change roles
+        if current_user and not current_user.is_technical_admin:
+            if 'role' in self.fields:
+                self.fields['role'].disabled = True
 
     def clean_email(self):
         email = self.cleaned_data.get('email')

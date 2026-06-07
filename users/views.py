@@ -384,6 +384,11 @@ class UserUpdateView(LoginRequiredMixin, UpdateView):
             return queryset.get(pk=user_id)
         return self.request.user
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
 
 class DashboardView(OperationalDashboardView):
     """Alias for backward compatibility"""
