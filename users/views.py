@@ -194,9 +194,10 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
         # Mini Safety Map Data
         from mapping.models import HazardZone, SafeZone, MapLocation
+        from evacuation_centers.models import EvacuationCenter
         from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds
         
-        evacuation_centers = list(MapLocation.objects.filter(location_type="EVACUATION_CENTER", is_active=True).values("id", "name", "latitude", "longitude", "description"))
+        evacuation_centers = list(EvacuationCenter.objects.filter(status__in=["OPEN", "FULL"]).values("id", "name", "latitude", "longitude", "address"))
         hazard_zones = list(HazardZone.objects.all().values("id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"))
         safe_zones = list(SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description"))
         

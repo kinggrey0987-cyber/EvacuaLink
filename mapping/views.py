@@ -12,6 +12,7 @@ from django.views.generic import ListView, CreateView, UpdateView, DeleteView, T
 
 from mapping.models import MapLocation, HazardZone, SafeZone, BarangayBoundary, SystemSettings
 from mapping.forms import MapLocationForm, HazardZoneForm, SafeZoneForm, SystemSettingsForm
+from evacuation_centers.models import EvacuationCenter
 from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds, get_zoom_level_for_bounds
 
 
@@ -43,9 +44,9 @@ class PublicMapView(TemplateView):
 
         # Get all active locations
         evacuation_centers = list(
-            MapLocation.objects.filter(
-                location_type="EVACUATION_CENTER", is_active=True
-            ).values("id", "name", "latitude", "longitude",  "description")
+            EvacuationCenter.objects.filter(
+                status__in=["OPEN", "FULL"]
+            ).values("id", "name", "latitude", "longitude", "address")
         )
 
         hazard_zones = list(
@@ -97,9 +98,9 @@ class StaffMapView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
 
         # Get all active locations
         evacuation_centers = list(
-            MapLocation.objects.filter(
-                location_type="EVACUATION_CENTER", is_active=True
-            ).values("id", "name", "latitude", "longitude", "description")
+            EvacuationCenter.objects.filter(
+                status__in=["OPEN", "FULL"]
+            ).values("id", "name", "latitude", "longitude", "address")
         )
 
         hazard_zones = list(
@@ -168,7 +169,30 @@ class MapLocationUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView)
 
 
 
-class HazardZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class MapContextMixin:
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        evacuation_centers = list(EvacuationCenter.objects.filter(status__in=["OPEN", "FULL"]).values("id", "name", "latitude", "longitude", "address"))
+        hazard_zones = list(HazardZone.objects.all().values("id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"))
+        safe_zones = list(SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description"))
+        boundary_geojson = get_barangay_boundary_geojson()
+        location_data = get_barangay_center_and_bounds()
+        
+        context["map_center"] = location_data["center"]
+        context["map_bounds"] = location_data["bounds"]
+        context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = {
+            "center": location_data["center"],
+            "bounds": location_data["bounds"],
+            "boundary": boundary_geojson,
+            "evacuationCenters": evacuation_centers,
+            "hazardZones": hazard_zones,
+            "safeZones": safe_zones,
+        }
+        return context
+
+class HazardZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, MapContextMixin, CreateView):
     """Create a new hazard zone"""
 
     model = HazardZone
@@ -180,7 +204,7 @@ class HazardZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.is_emergency_responder
 
 
-class HazardZoneUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class HazardZoneUpdateView(LoginRequiredMixin, UserPassesTestMixin, MapContextMixin, UpdateView):
     """Update an existing hazard zone"""
 
     model = HazardZone
@@ -206,7 +230,7 @@ class HazardZoneDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
 
 
-class SafeZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
+class SafeZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, MapContextMixin, CreateView):
     """Create a new safe zone"""
 
     model = SafeZone
@@ -218,7 +242,7 @@ class SafeZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
         return self.request.user.is_emergency_responder
 
 
-class SafeZoneUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+class SafeZoneUpdateView(LoginRequiredMixin, UserPassesTestMixin, MapContextMixin, UpdateView):
     """Update an existing safe zone"""
 
     model = SafeZone
