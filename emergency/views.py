@@ -223,6 +223,9 @@ class HelpRequestUpdateStatusView(LoginRequiredMixin, UserPassesTestMixin, Succe
         return kwargs
 
     def form_valid(self, form):
+        if form.instance.status in ["IN_PROGRESS", "RESOLVED"] and not form.instance.assigned_to:
+            form.instance.assigned_to = self.request.user
+
         old_request = EmergencyHelpRequest.objects.get(pk=self.object.pk)
         response = super().form_valid(form)
         notes = form.cleaned_data.get("response_notes", "")

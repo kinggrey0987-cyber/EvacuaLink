@@ -137,7 +137,7 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
         
         # Auto-select the current user if no one is assigned yet
         if current_user and not self.instance.assigned_to_id:
-            self.fields["assigned_to"].initial = current_user
+            self.fields["assigned_to"].initial = current_user.pk
 
         self.fields["response_notes"].label = "Response Notes"
         self.fields["response_notes"].required = False
