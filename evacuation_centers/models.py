@@ -30,9 +30,15 @@ class EvacuationCenter(models.Model):
     def __str__(self):
         return f"{self.name} ({self.status})"
 
-    def clean(self):
-        if self.current_occupancy > self.capacity:
-            raise ValidationError({"current_occupancy": "Current occupancy cannot exceed capacity."})
+    def save(self, *args, **kwargs):
+        # Auto-update OPEN/FULL status based on real occupancy
+        # We don't override CLOSED or UNDER_MAINTENANCE manually set by staff
+        if self.status not in [self.Status.CLOSED, self.Status.UNDER_MAINTENANCE]:
+            if self.current_occupancy >= self.capacity:
+                self.status = self.Status.FULL
+            else:
+                self.status = self.Status.OPEN
+        super().save(*args, **kwargs)
 
     def available_space(self):
         return max(self.capacity - self.current_occupancy, 0)
