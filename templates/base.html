@@ -281,14 +281,15 @@
             border-color: var(--ev-border);
             border-radius: 12px;
             padding: 0.72rem 0.9rem;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .form-control:focus,
         .form-select:focus {
             border-color: var(--ev-accent);
             box-shadow: 0 0 0 0.22rem rgba(28, 126, 214, 0.12);
+            transform: translateY(-1px);
         }
-
         .role-badge {
             background: #eef6ff !important;
             color: var(--ev-primary) !important;
