@@ -131,7 +131,7 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
         self.fields["assigned_to"].label = "Assigned Staff"
         self.fields["assigned_to"].required = False
         self.fields["assigned_to"].queryset = self.fields["assigned_to"].queryset.filter(
-            role__in=["ADMIN", "STAFF"],
+            role="STAFF",
             is_active=True,
         ).order_by("first_name", "last_name", "username")
         
