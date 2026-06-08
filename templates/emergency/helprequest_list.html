@@ -121,7 +121,14 @@
                             {% endif %}
                         </td>
                         <td>
-                            <small class="text-muted">{{ request.created_at|date:"M d, H:i" }}</small>
+                            <small class="text-muted d-block" title="Submitted At">
+                                <i class="bi bi-clock"></i> {{ request.created_at|date:"M d, H:i" }}
+                            </small>
+                            {% if request.resolved_at %}
+                                <small class="text-success d-block mt-1" title="Resolved At">
+                                    <i class="bi bi-check-circle-fill"></i> {{ request.resolved_at|date:"M d, H:i" }}
+                                </small>
+                            {% endif %}
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
