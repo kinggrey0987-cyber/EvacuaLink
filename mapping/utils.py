@@ -3,7 +3,7 @@ Utility functions for mapping and geographic operations.
 """
 
 from django.core.exceptions import ValidationError
-from shapely.geometry import Point
+from shapely.geometry import Point, shape
 from mapping.models import BarangayBoundary
 
 

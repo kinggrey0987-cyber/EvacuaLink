@@ -1223,18 +1223,21 @@
             );
             quickMapBounds = bounds;
 
-            map = new google.maps.Map(document.getElementById('map'), {
+            const mapOptions = {
                 center: center,
                 zoom: {{ zoom_level }},
                 mapTypeId: 'roadmap',
-                restriction: {
-                    latLngBounds: bounds,
-                    strictBounds: false
-                },
                 mapTypeControl: false,
                 streetViewControl: false,
                 fullscreenControl: true
-            });
+            };
+            if (landingMapData.isGeofencingEnabled) {
+                mapOptions.restriction = {
+                    latLngBounds: bounds,
+                    strictBounds: false
+                };
+            }
+            map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
             const infoWindow = new google.maps.InfoWindow();
 
@@ -1496,19 +1499,23 @@
                 lng: Number(landingMapData.center.longitude)
             };
 
+            const quickMapOptions = {
+                center: center,
+                zoom: 15,
+                mapTypeId: 'roadmap',
+                mapTypeControl: false,
+                streetViewControl: false,
+                fullscreenControl: true
+            };
+            if (landingMapData.isGeofencingEnabled) {
+                quickMapOptions.restriction = {
+                    latLngBounds: quickMapBounds,
+                    strictBounds: false
+                };
+            }
+
             if (!quickMap) {
-                quickMap = new google.maps.Map(document.getElementById('quickMap'), {
-                    center: center,
-                    zoom: 15,
-                    mapTypeId: 'roadmap',
-                    restriction: {
-                        latLngBounds: quickMapBounds,
-                        strictBounds: false
-                    },
-                    mapTypeControl: false,
-                    streetViewControl: false,
-                    fullscreenControl: true
-                });
+                quickMap = new google.maps.Map(document.getElementById('quickMap'), quickMapOptions);
 
                 quickMap.addListener('click', function(event) {
                     setQuickLocation(
@@ -1654,6 +1661,7 @@
         }
     </script>
     {% if google_maps_api_key %}
+    <script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initLandingMap"></script>
     {% else %}
     <script>
