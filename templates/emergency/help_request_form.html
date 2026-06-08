@@ -617,19 +617,24 @@
             {lat: mapBounds.north, lng: mapBounds.east}
         );
 
-        helpMap = new google.maps.Map(document.getElementById('helpMap'), {
+        var mapOptions = {
             center: mapCenter,
             zoom: {{ zoom_level }},
             mapTypeId: 'roadmap',
-            restriction: {
-                latLngBounds: mapBounds,
-                strictBounds: false
-            },
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true,
             scaleControl: true
-        });
+        };
+
+        if (safetyMapData.isGeofencingEnabled !== false) {
+            mapOptions.restriction = {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            };
+        }
+
+        helpMap = new google.maps.Map(document.getElementById('helpMap'), mapOptions);
 
         const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(helpMap, safetyMapData, {
             showBoundaryMask: true

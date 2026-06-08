@@ -23,9 +23,13 @@
                     {{ form|crispy }}
 
                     <div class="mt-4 mb-3">
-                        <label class="form-label fw-bold">Select Default Map Center</label>
-                        <small class="text-muted d-block mb-2">Drag the map or click to set the default coordinates and zoom level for the public map.</small>
-                        <div id="settingsMap" style="height: 400px; width: 100%; border-radius: 8px; border: 1px solid #dee2e6;"></div>
+                        <label class="form-label fw-bold">Map Setup & Boundary Geofence</label>
+                        <small class="text-muted d-block mb-2">Drag the blue marker to set the default map center. Use the drawing tools below to define the primary barangay boundary.</small>
+                        <div class="mb-2">
+                            <button type="button" id="btnDrawBoundary" class="btn btn-sm btn-outline-primary"><i class="bi bi-pentagon"></i> Draw Boundary</button>
+                            <button type="button" id="btnClearBoundary" class="btn btn-sm btn-outline-danger ms-2"><i class="bi bi-trash"></i> Clear Boundary</button>
+                        </div>
+                        <div id="settingsMap" style="height: 450px; width: 100%; border-radius: 8px; border: 1px solid #dee2e6;"></div>
                     </div>
 
                     <div class="d-grid gap-2 mt-4">
@@ -41,12 +45,13 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places,drawing"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const latInput = document.getElementById('id_default_map_latitude');
         const lngInput = document.getElementById('id_default_map_longitude');
         const zoomInput = document.getElementById('id_default_map_zoom');
+        const polyInput = document.getElementById('id_boundary_polygon');
         
         let initialLat = parseFloat(latInput.value) || 10.886887;
         let initialLng = parseFloat(lngInput.value) || 123.021553;
@@ -73,6 +78,101 @@
             }
         });
 
+        let currentPolygon = null;
+
+        function loadExistingPolygon() {
+            if (polyInput && polyInput.value) {
+                try {
+                    const geojson = JSON.parse(polyInput.value);
+                    if (geojson.type === "Polygon" && geojson.coordinates && geojson.coordinates[0]) {
+                        const path = geojson.coordinates[0].map(coord => ({
+                            lat: coord[1], lng: coord[0]
+                        }));
+                        currentPolygon = new google.maps.Polygon({
+                            paths: path,
+                            map: map,
+                            strokeColor: "#0d6efd",
+                            strokeOpacity: 0.8,
+                            strokeWeight: 2,
+                            fillColor: "#0d6efd",
+                            fillOpacity: 0.15,
+                            editable: true
+                        });
+                        
+                        // Listen for edits to update the input
+                        google.maps.event.addListener(currentPolygon.getPath(), 'set_at', updatePolygonInput);
+                        google.maps.event.addListener(currentPolygon.getPath(), 'insert_at', updatePolygonInput);
+                    }
+                } catch (e) {
+                    console.error("Error parsing existing boundary polygon", e);
+                }
+            }
+        }
+        
+        loadExistingPolygon();
+
+        const drawingManager = new google.maps.drawing.DrawingManager({
+            drawingMode: null,
+            drawingControl: false,
+            polygonOptions: {
+                strokeColor: "#0d6efd",
+                strokeOpacity: 0.8,
+                strokeWeight: 2,
+                fillColor: "#0d6efd",
+                fillOpacity: 0.15,
+                editable: true
+            }
+        });
+        drawingManager.setMap(map);
+
+        function updatePolygonInput() {
+            if (!currentPolygon) return;
+            const path = currentPolygon.getPath();
+            const coordinates = [];
+            for (let i = 0; i < path.getLength(); i++) {
+                const pt = path.getAt(i);
+                coordinates.push([pt.lng(), pt.lat()]);
+            }
+            if (coordinates.length > 0) {
+                // GeoJSON polygons must be closed
+                const first = coordinates[0];
+                const last = coordinates[coordinates.length - 1];
+                if (first[0] !== last[0] || first[1] !== last[1]) {
+                    coordinates.push([first[0], first[1]]);
+                }
+                const geojson = {
+                    type: "Polygon",
+                    coordinates: [coordinates]
+                };
+                polyInput.value = JSON.stringify(geojson);
+            }
+        }
+
+        google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
+            if (currentPolygon) currentPolygon.setMap(null);
+            currentPolygon = polygon;
+            drawingManager.setDrawingMode(null);
+            updatePolygonInput();
+            
+            // Listen for edits on the new polygon
+            google.maps.event.addListener(currentPolygon.getPath(), 'set_at', updatePolygonInput);
+            google.maps.event.addListener(currentPolygon.getPath(), 'insert_at', updatePolygonInput);
+        });
+
+        document.getElementById('btnDrawBoundary').addEventListener('click', function() {
+            if (currentPolygon) currentPolygon.setMap(null);
+            currentPolygon = null;
+            polyInput.value = '';
+            drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+        });
+
+        document.getElementById('btnClearBoundary').addEventListener('click', function() {
+            if (currentPolygon) currentPolygon.setMap(null);
+            currentPolygon = null;
+            polyInput.value = '';
+            drawingManager.setDrawingMode(null);
+        });
+
         function updateInputs(lat, lng, zoom) {
             latInput.value = lat.toFixed(6);
             lngInput.value = lng.toFixed(6);
@@ -80,8 +180,11 @@
         }
 
         map.addListener('click', function(e) {
-            marker.setPosition(e.latLng);
-            updateInputs(e.latLng.lat(), e.latLng.lng(), map.getZoom());
+            // Only move center marker if we're not drawing
+            if (drawingManager.getDrawingMode() === null) {
+                marker.setPosition(e.latLng);
+                updateInputs(e.latLng.lat(), e.latLng.lng(), map.getZoom());
+            }
         });
 
         marker.addListener('dragend', function(e) {

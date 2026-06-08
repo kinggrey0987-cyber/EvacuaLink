@@ -371,11 +371,13 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 {% if request.user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
-                            <i class="bi bi-house-door"></i> Dashboard
-                        </a>
-                    </li>
+                    {% if not request.user.is_technical_admin %}
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' or request.resolver_match.url_name == 'admin-dashboard' or request.resolver_match.url_name == 'staff-dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
+                                <i class="bi bi-house-door"></i> Dashboard
+                            </a>
+                        </li>
+                    {% endif %}
 
                     <!-- Shared modules for ADMIN and STAFF -->
                     {% if not request.user.is_technical_admin %}

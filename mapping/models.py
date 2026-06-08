@@ -42,6 +42,11 @@ class SystemSettings(models.Model):
         default=False,
         help_text="Toggle to show or hide the global announcement.",
     )
+    boundary_polygon = models.JSONField(
+        blank=True,
+        null=True,
+        help_text="GeoJSON representation of the barangay boundary polygon.",
+    )
 
     class Meta:
         verbose_name = "System Settings"

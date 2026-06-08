@@ -149,10 +149,12 @@ class SystemSettingsForm(forms.ModelForm):
             "default_map_latitude",
             "default_map_longitude",
             "default_map_zoom",
+            "boundary_polygon",
         ]
         widgets = {
             "emergency_hotline": forms.TextInput(attrs={"class": "form-control"}),
             "default_map_latitude": forms.NumberInput(attrs={"class": "form-control", "step": "0.000001"}),
             "default_map_longitude": forms.NumberInput(attrs={"class": "form-control", "step": "0.000001"}),
             "default_map_zoom": forms.NumberInput(attrs={"class": "form-control"}),
+            "boundary_polygon": forms.HiddenInput(attrs={"id": "id_boundary_polygon"}),
         }

@@ -24,6 +24,10 @@ def is_within_barangay_boundary(latitude, longitude):
         if not settings.is_geofencing_enabled:
             return True
 
+        if settings.boundary_polygon:
+            polygon = shape(settings.boundary_polygon)
+            return Point(longitude, latitude).within(polygon)
+
         boundary = BarangayBoundary.objects.first()
         if not boundary:
             # If boundary doesn't exist, accept the coordinates
@@ -60,6 +64,11 @@ def get_barangay_boundary_geojson():
         dict: GeoJSON geometry object or None if boundary doesn't exist
     """
     try:
+        from mapping.models import SystemSettings, BarangayBoundary
+        settings = SystemSettings.get_settings()
+        if settings.boundary_polygon:
+            return settings.boundary_polygon
+
         boundary = BarangayBoundary.objects.first()
         if boundary and boundary.geometry:
             return boundary.geometry
@@ -92,6 +101,23 @@ def get_barangay_center_and_bounds():
                 "west": float(settings.default_map_longitude) - 0.015,
             },
         }
+
+        if settings.boundary_polygon:
+            polygon = shape(settings.boundary_polygon)
+            minx, miny, maxx, maxy = polygon.bounds
+            centroid = polygon.centroid
+            return {
+                "center": {
+                    "latitude": centroid.y,
+                    "longitude": centroid.x
+                },
+                "bounds": {
+                    "north": maxy,
+                    "south": miny,
+                    "east": maxx,
+                    "west": minx,
+                }
+            }
 
         boundary = BarangayBoundary.objects.first()
         if not boundary:
