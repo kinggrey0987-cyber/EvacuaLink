@@ -1661,7 +1661,6 @@
         }
     </script>
     {% if google_maps_api_key %}
-    <script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
     <script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key|urlencode }}&libraries=visualization&callback=initLandingMap"></script>
     {% else %}
     <script>

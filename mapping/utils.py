@@ -112,10 +112,10 @@ def get_barangay_center_and_bounds():
                     "longitude": centroid.x
                 },
                 "bounds": {
-                    "north": maxy,
-                    "south": miny,
-                    "east": maxx,
-                    "west": minx,
+                    "north": maxy + 0.02,
+                    "south": miny - 0.02,
+                    "east": maxx + 0.02,
+                    "west": minx - 0.02,
                 }
             }
 
