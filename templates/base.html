@@ -387,10 +387,15 @@
                                 <i class="bi bi-person-badge"></i> Evacuees
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if 'emergency' in request.path %}active{% endif %}" href="{% if request.user.is_operational_admin %}{% url 'emergency-dashboard' %}{% else %}{% url 'emergency-incident-list' %}{% endif %}">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle {% if 'emergency' in request.path %}active{% endif %}" href="#" id="emergencyDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="bi bi-exclamation-triangle"></i> Emergency
                             </a>
+                            <ul class="dropdown-menu" aria-labelledby="emergencyDropdown">
+                                <li><a class="dropdown-item" href="{% url 'emergency-dashboard' %}"><i class="bi bi-speedometer2"></i> Dashboard</a></li>
+                                <li><a class="dropdown-item" href="{% url 'help-request-list' %}"><i class="bi bi-person-raised-hand"></i> SOS Help Requests</a></li>
+                                <li><a class="dropdown-item" href="{% url 'emergency-incident-list' %}"><i class="bi bi-cone-striped"></i> Macro Incidents</a></li>
+                            </ul>
                         </li>
                     {% endif %}
 
