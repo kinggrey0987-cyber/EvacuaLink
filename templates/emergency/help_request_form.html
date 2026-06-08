@@ -362,7 +362,7 @@
 
 {% block extra_js %}
 {{ safety_map_payload|json_script:"safety-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260606-fix-overlays"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260607-clickable-fix"></script>
 <script>
     const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
     console.log('[EvacuaLink] safetyMapData loaded', {
