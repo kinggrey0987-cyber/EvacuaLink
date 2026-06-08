@@ -180,7 +180,12 @@
 <section class="map-hero mb-4">
     <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between gap-3">
         <div>
-            <span class="page-kicker">Safety Operations</span>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'home' %}" class="btn btn-sm btn-outline-secondary me-2">
+                    <i class="bi bi-arrow-left"></i> Back
+                </a>
+                <span class="page-kicker mb-0">Safety Operations</span>
+            </div>
             <h1 class="page-title mt-2"><i class="bi bi-geo-alt"></i> Evacuation Map</h1>
             <p class="text-muted mb-0">
                 View evacuation centers, hazard-prone areas, safe zones, and the Barangay Alicante service boundary.
@@ -199,7 +204,7 @@
     <div class="col-lg-8 mb-4">
         <div class="card h-100 ev-map-panel border-0 shadow-sm">
             <div class="card-body p-0 position-relative">
-                <div id="map" class="ev-map-frame" style="height: 100%; min-height: 750px; border-radius: var(--ev-radius);"></div>
+                <div id="map" class="ev-map-frame" style="height: 100%; min-height: 550px; border-radius: var(--ev-radius);"></div>
             </div>
         </div>
     </div>
