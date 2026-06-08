@@ -212,6 +212,16 @@ class HelpRequestUpdateStatusView(LoginRequiredMixin, UserPassesTestMixin, Succe
     def test_func(self):
         return self.request.user.is_emergency_responder
 
+    def dispatch(self, request, *args, **kwargs):
+        # Prevent editing if already resolved or cancelled
+        obj = self.get_object()
+        if obj.status in ["RESOLVED", "CANCELLED"]:
+            from django.contrib import messages
+            from django.shortcuts import redirect
+            messages.error(request, "This request is already resolved or cancelled and cannot be edited.")
+            return redirect("help-request-list")
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["help_request"] = self.get_object()

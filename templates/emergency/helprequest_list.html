@@ -135,7 +135,7 @@
                                 <a href="{% url 'help-request-detail' request.pk %}" class="btn btn-info" title="View Details">
                                     <i class="bi bi-eye"></i>
                                 </a>
-                                {% if user.is_emergency_responder %}
+                                {% if user.is_emergency_responder and request.status not in 'RESOLVED,CANCELLED' %}
                                     <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning" title="Update Status">
                                         <i class="bi bi-pencil"></i>
                                     </a>
