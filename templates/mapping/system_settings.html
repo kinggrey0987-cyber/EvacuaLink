@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load crispy_forms_tags %}
+{% load crispy_forms_tags static %}
 
 {% block title %}System Settings - EvacuaLink{% endblock %}
 
@@ -45,7 +45,9 @@
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places,drawing"></script>
+{{ staff_map_payload|json_script:"staff-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places,drawing,visualization"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const latInput = document.getElementById('id_default_map_latitude');
@@ -77,6 +79,14 @@
                 scale: 10
             }
         });
+
+        // Load existing safety overlays (POIs, safe zones, heatmaps) without boundary mask
+        try {
+            const staffMapData = JSON.parse(document.getElementById('staff-map-data').textContent);
+            EvacuaLinkMaps.addSafetyOverlays(map, staffMapData, { showBoundaryMask: false });
+        } catch (e) {
+            console.error("Could not load safety overlays", e);
+        }
 
         let currentPolygon = null;
 

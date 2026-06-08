@@ -765,6 +765,16 @@
         </div>
     </nav>
 
+    {% if system_settings and system_settings.is_announcement_active and system_settings.global_announcement %}
+    <div style="background-color: #fff3f3; border-bottom: 2px solid #dc3545; padding: 0.85rem 0;">
+        <div class="container-custom">
+            <div class="text-center fw-bold" style="color: #b02a37;">
+                <i class="bi bi-broadcast fs-5 me-2 align-middle"></i> <span class="align-middle">{{ system_settings.global_announcement }}</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="alert-band">
         <div class="container-custom">
             <span><i class="bi bi-broadcast-pin me-2"></i>For immediate danger, submit a help request or call the official emergency hotline.</span>

@@ -32,7 +32,37 @@ class SystemSettingsUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateVi
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        
+        # Get all active locations
+        evacuation_centers = list(
+            EvacuationCenter.objects.filter(status__in=["OPEN", "FULL"]).values(
+                "id", "name", "latitude", "longitude", "address"
+            )
+        )
+        hazard_zones = list(
+            HazardZone.objects.all().values(
+                "id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"
+            )
+        )
+        safe_zones = list(
+            SafeZone.objects.all().values(
+                "id", "name", "latitude", "longitude", "description"
+            )
+        )
+
+        boundary_geojson = get_barangay_boundary_geojson()
+        location_data = get_barangay_center_and_bounds()
+
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["staff_map_payload"] = {
+            "center": location_data["center"],
+            "bounds": location_data["bounds"],
+            "boundary": boundary_geojson,
+            "evacuationCenters": evacuation_centers,
+            "hazardZones": hazard_zones,
+            "safeZones": safe_zones,
+            "isGeofencingEnabled": False, # Prevent strict bounds for drawing
+        }
         return context
 class PublicMapView(TemplateView):
     """Public-facing map showing evacuation centers, hazard zones, and safe zones"""
