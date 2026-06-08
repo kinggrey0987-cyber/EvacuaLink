@@ -124,6 +124,7 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        current_user = kwargs.pop('current_user', None)
         super().__init__(*args, **kwargs)
         self.fields["status"].label = "Request Status"
         self.fields["priority"].label = "Priority"
@@ -133,12 +134,15 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
             role__in=["ADMIN", "STAFF"],
             is_active=True,
         ).order_by("first_name", "last_name", "username")
+        
+        # Auto-select the current user if no one is assigned yet
+        if current_user and not self.instance.assigned_to_id:
+            self.fields["assigned_to"].initial = current_user
+
         self.fields["response_notes"].label = "Response Notes"
         self.fields["response_notes"].required = False
         self.fields["resolved_at"].label = "Resolved At"
         self.fields["resolved_at"].required = False
-
-
 class EmergencyIncidentForm(forms.ModelForm):
     """Form for creating and updating emergency incidents (admin/responders only)"""
 

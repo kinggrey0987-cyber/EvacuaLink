@@ -217,6 +217,11 @@ class HelpRequestUpdateStatusView(LoginRequiredMixin, UserPassesTestMixin, Succe
         context["help_request"] = self.get_object()
         return context
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['current_user'] = self.request.user
+        return kwargs
+
     def form_valid(self, form):
         old_request = EmergencyHelpRequest.objects.get(pk=self.object.pk)
         response = super().form_valid(form)
