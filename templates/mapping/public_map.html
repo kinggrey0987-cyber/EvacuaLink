@@ -482,18 +482,21 @@
             { lat: bounds.north, lng: bounds.east }
         );
         const infoWindow = new google.maps.InfoWindow();
-        const map = new google.maps.Map(document.getElementById('map'), {
+        const mapOptions = {
             center: center,
             zoom: {{ zoom_level }},
             mapTypeId: 'roadmap',
-            restriction: {
-                latLngBounds: bounds,
-                strictBounds: false
-            },
             fullscreenControl: false,
             mapTypeControl: true,
             streetViewControl: false
-        });
+        };
+        if (publicMapData.isGeofencingEnabled) {
+            mapOptions.restriction = {
+                latLngBounds: bounds,
+                strictBounds: false
+            };
+        }
+        const map = new google.maps.Map(document.getElementById('map'), mapOptions);
 
         createFullscreenControl(map);
         EvacuaLinkMaps.addSafetyOverlays(map, publicMapData);

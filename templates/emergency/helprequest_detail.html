@@ -217,19 +217,24 @@
             {lat: mapBounds.north, lng: mapBounds.east}
         );
 
-        detailMap = new google.maps.Map(document.getElementById('helpRequestDetailMap'), {
+        const mapOptions = {
             center: mapCenter,
             zoom: {{ zoom_level }},
             mapTypeId: 'roadmap',
-            restriction: {
-                latLngBounds: mapBounds,
-                strictBounds: false
-            },
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true,
             scaleControl: true
-        });
+        };
+
+        if (safetyMapData.isGeofencingEnabled) {
+            mapOptions.restriction = {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            };
+        }
+
+        detailMap = new google.maps.Map(document.getElementById('helpRequestDetailMap'), mapOptions);
 
         // Add safety overlays (boundaries, zones, centers, heatmaps)
         const safetyOverlays = EvacuaLinkMaps.addSafetyOverlays(detailMap, safetyMapData, {

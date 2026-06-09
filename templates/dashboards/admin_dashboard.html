@@ -633,19 +633,22 @@ document.addEventListener('DOMContentLoaded', function() {
             { lat: bounds.south, lng: bounds.west },
             { lat: bounds.north, lng: bounds.east }
         );
-        const map = new google.maps.Map(document.getElementById('adminMiniMap'), {
+        const mapOptions = {
             center: center,
             zoom: 13,
             mapTypeId: 'roadmap',
-            restriction: {
-                latLngBounds: bounds,
-                strictBounds: false
-            },
-            fullscreenControl: false,
             mapTypeControl: false,
             streetViewControl: false,
-            zoomControl: true
-        });
+            fullscreenControl: true,
+            scaleControl: true
+        };
+        if (publicMapData.isGeofencingEnabled) {
+            mapOptions.restriction = {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            };
+        }
+        const map = new google.maps.Map(document.getElementById('adminMiniMap'), mapOptions);
 
         EvacuaLinkMaps.addSafetyOverlays(map, publicMapData);
         map.fitBounds(mapBounds, 20);

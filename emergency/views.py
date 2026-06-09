@@ -92,20 +92,21 @@ def get_safety_map_payload():
     )
     boundary = BarangayBoundary.objects.first()
 
-    def inside_boundary(item):
-        if not boundary:
-            return True
-        return boundary.contains_point(float(item["latitude"]), float(item["longitude"]))
+    from mapping.models import SystemSettings
+    is_geofencing_enabled = SystemSettings.get_settings().is_geofencing_enabled
 
-    evacuation_centers = [center for center in evacuation_centers if inside_boundary(center)]
-    hazard_zones = [zone for zone in hazard_zones if inside_boundary(zone)]
-    safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
+    if is_geofencing_enabled:
+        def inside_boundary(item):
+            if not boundary:
+                return True
+            return boundary.contains_point(float(item["latitude"]), float(item["longitude"]))
+
+        evacuation_centers = [center for center in evacuation_centers if inside_boundary(center)]
+        hazard_zones = [zone for zone in hazard_zones if inside_boundary(zone)]
+        safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
 
     # Convert all coordinates to plain Python floats for reliable JSON serialization.
     safe_location = _make_center_bounds_safe(location_data)
-    
-    from mapping.models import SystemSettings
-    is_geofencing_enabled = SystemSettings.get_settings().is_geofencing_enabled
 
     return {
         "center": safe_location["center"],

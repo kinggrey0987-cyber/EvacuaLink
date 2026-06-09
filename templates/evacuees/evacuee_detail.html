@@ -84,18 +84,21 @@
             lat: Number({{ evacuee.evacuation_center.latitude }}),
             lng: Number({{ evacuee.evacuation_center.longitude }})
         };
-        const map = new google.maps.Map(document.getElementById("evacueeCenterMap"), {
+        const mapOptions = {
             center: centerLocation,
             zoom: 16,
-            mapTypeId: "roadmap",
-            restriction: {
-                latLngBounds: mapBounds,
-                strictBounds: false
-            },
+            mapTypeId: 'roadmap',
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
-        });
+        };
+        if (safetyMapData.isGeofencingEnabled) {
+            mapOptions.restriction = {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            };
+        }
+        const map = new google.maps.Map(document.getElementById("evacueeCenterMap"), mapOptions);
         EvacuaLinkMaps.addSafetyOverlays(map, safetyMapData);
         map.fitBounds(new google.maps.LatLngBounds(
             {lat: mapBounds.south, lng: mapBounds.west},

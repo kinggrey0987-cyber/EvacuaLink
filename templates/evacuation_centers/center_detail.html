@@ -75,18 +75,21 @@
             lat: Number({{ center.latitude }}),
             lng: Number({{ center.longitude }})
         };
-        const map = new google.maps.Map(document.getElementById("centerLocationMap"), {
+        const mapOptions = {
             center: centerLocation,
             zoom: 16,
-            mapTypeId: "roadmap",
-            restriction: {
-                latLngBounds: mapBounds,
-                strictBounds: false
-            },
+            mapTypeId: 'roadmap',
             mapTypeControl: false,
             streetViewControl: false,
             fullscreenControl: true
-        });
+        };
+        if (safetyMapData.isGeofencingEnabled) {
+            mapOptions.restriction = {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            };
+        }
+        const map = new google.maps.Map(document.getElementById('centerLocationMap'), mapOptions);
         EvacuaLinkMaps.addSafetyOverlays(map, safetyMapData);
         map.fitBounds(new google.maps.LatLngBounds(
             {lat: mapBounds.south, lng: mapBounds.west},

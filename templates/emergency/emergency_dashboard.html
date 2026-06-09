@@ -244,23 +244,31 @@
         }
         if (status === 'IN_PROGRESS') {
             return '#ffc107';
+            return '#dc3545';
+        }
+        if (status === 'IN_PROGRESS') {
+            return '#ffc107';
         }
         return '#6c757d';
     }
 
     function initActiveHelpRequestsMap() {
-        const activeMap = new google.maps.Map(document.getElementById('activeHelpRequestsMap'), {
+        const mapOptions = {
             center: defaultCenter,
             zoom: 14,
             mapTypeId: 'roadmap',
-            restriction: {
-                latLngBounds: mapBounds,
-                strictBounds: false
-            },
             mapTypeControl: false,
             streetViewControl: false,
-            fullscreenControl: true
-        });
+            fullscreenControl: true,
+            scaleControl: true
+        };
+        if (safetyMapData.isGeofencingEnabled) {
+            mapOptions.restriction = {
+                latLngBounds: mapBounds,
+                strictBounds: false
+            };
+        }
+        const activeMap = new google.maps.Map(document.getElementById('activeHelpRequestsMap'), mapOptions);
         const infoWindow = new google.maps.InfoWindow();
         EvacuaLinkMaps.addSafetyOverlays(activeMap, safetyMapData);
 
