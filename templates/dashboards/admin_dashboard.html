@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 {% if google_maps_api_key %}
 {{ public_map_payload|json_script:"public-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260609-exact-poly"></script>
 <script>
     function initAdminMiniMap() {
         const publicMapData = JSON.parse(document.getElementById('public-map-data').textContent);

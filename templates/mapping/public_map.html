@@ -382,7 +382,7 @@
 
 {% block extra_js %}
 {{ public_map_payload|json_script:"public-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260609-exact-poly"></script>
 <script>
     const publicMapData = JSON.parse(document.getElementById('public-map-data').textContent);
 

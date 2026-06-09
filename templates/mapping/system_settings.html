@@ -46,7 +46,7 @@
 
 {% block extra_js %}
 {{ staff_map_payload|json_script:"staff-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260609-exact-poly"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&libraries=places,drawing,visualization"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {

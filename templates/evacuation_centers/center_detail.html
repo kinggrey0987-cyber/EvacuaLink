@@ -60,7 +60,7 @@
 
 {% block extra_js %}
 {{ safety_map_payload|json_script:"safety-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260609-exact-poly"></script>
 <script>
     const safetyMapData = JSON.parse(document.getElementById("safety-map-data").textContent);
     const mapBounds = {

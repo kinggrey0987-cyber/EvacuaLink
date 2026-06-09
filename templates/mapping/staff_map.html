@@ -285,7 +285,7 @@
 
 {% block extra_js %}
 {{ staff_map_payload|json_script:"staff-map-data" }}
-<script src="{% static 'js/google-map-safety-overlays.js' %}"></script>
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260609-exact-poly"></script>
 <script>
     const staffMapData = JSON.parse(document.getElementById('staff-map-data').textContent);
     const mapCenter = {
