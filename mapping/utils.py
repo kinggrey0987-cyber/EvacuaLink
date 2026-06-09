@@ -112,10 +112,10 @@ def get_barangay_center_and_bounds():
                     "longitude": centroid.x
                 },
                 "bounds": {
-                    "north": maxy + 0.02,
-                    "south": miny - 0.02,
-                    "east": maxx + 0.02,
-                    "west": minx - 0.02,
+                    "north": maxy,
+                    "south": miny,
+                    "east": maxx,
+                    "west": minx,
                 }
             }
 
@@ -146,13 +146,13 @@ def get_barangay_center_and_bounds():
             }
         except:
             return {
-                "center": {"latitude": 10.3233, "longitude": 122.8933},
+                "center": {"latitude": 10.8262, "longitude": 123.0379},
                 "bounds": {
-                    "north": 10.3550,
-                    "south": 10.3000,
-                    "east": 122.9100,
-                    "west": 122.8700,
-                },
+                    "north": 10.8262 + 0.02,
+                    "south": 10.8262 - 0.02,
+                    "east": 123.0379 + 0.02,
+                    "west": 123.0379 - 0.02
+                }
             }
 
 

@@ -424,8 +424,8 @@
         const point = new google.maps.LatLng(lat, lon);
 
         // Check geofencing only if enabled
-        if (safetyMapData.isGeofencingEnabled !== false && !bounds.contains(point)) {
-            alert('Location is outside Barangay Alicante. Please choose a location within the barangay.');
+        if (safetyMapData.isGeofencingEnabled !== false && !EvacuaLinkMaps.isPointInBoundary(lat, lon, safetyMapData)) {
+            alert('This location is outside Barangay Alicante. Please place the pin within the boundaries.');
             return false;
         }
 

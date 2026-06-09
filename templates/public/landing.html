@@ -1097,7 +1097,7 @@
 
         function pointInsideBounds(lat, lng) {
             if (landingMapData.isGeofencingEnabled === false) return true;
-            return mapBounds && mapBounds.contains(new google.maps.LatLng(lat, lng));
+            return EvacuaLinkMaps.isPointInBoundary(lat, lng, landingMapData);
         }
 
         function addHeatArea(points, position, radiusMeters, weight) {

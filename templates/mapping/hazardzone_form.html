@@ -173,7 +173,7 @@
     function setZoneLocation(lat, lon) {
         const point = new google.maps.LatLng(lat, lon);
 
-        if (safetyMapData.isGeofencingEnabled !== false && !bounds.contains(point)) {
+        if (safetyMapData.isGeofencingEnabled !== false && !EvacuaLinkMaps.isPointInBoundary(lat, lon, safetyMapData)) {
             alert('Location is outside Barangay Alicante. Please choose a location within the barangay.');
             return false;
         }

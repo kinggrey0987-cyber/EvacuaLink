@@ -385,12 +385,30 @@
         window.__evacuaLinkLastSafetyOverlays = overlays;
         return overlays;
     }
+    function isPointInBoundary(lat, lng, mapData) {
+        if (!mapData || !mapData.boundary || !mapData.boundary.coordinates) {
+            return true;
+        }
+        var x = lng, y = lat;
+        var inside = false;
+        var poly = mapData.boundary.coordinates[0];
+        if (!poly || poly.length === 0) return true;
+        for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+            var xi = poly[i][0], yi = poly[i][1];
+            var xj = poly[j][0], yj = poly[j][1];
+            var intersect = ((yi > y) != (yj > y))
+                && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+        return inside;
+    }
 
     window.EvacuaLinkMaps = {
         addSafetyOverlays: addSafetyOverlays,
         addOutsideBoundaryMask: addOutsideBoundaryMask,
         markerIcon: markerIcon,
         positionFrom: positionFrom,
-        riskStyles: riskStyles
+        riskStyles: riskStyles,
+        isPointInBoundary: isPointInBoundary
     };
 })(window);
