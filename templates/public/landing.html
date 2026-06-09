@@ -1096,6 +1096,7 @@
         }
 
         function pointInsideBounds(lat, lng) {
+            if (landingMapData.isGeofencingEnabled === false) return true;
             return mapBounds && mapBounds.contains(new google.maps.LatLng(lat, lng));
         }
 
