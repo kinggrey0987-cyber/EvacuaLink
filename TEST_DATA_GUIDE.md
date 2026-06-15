@@ -56,7 +56,7 @@ http://localhost:8000/login/
 ### Test Accounts
 1. **techadmin / techadmin123** - Manage admin and staff accounts
 2. **admin / admin123** - View the overall system, reports, maps, families, centers, incidents, and help requests
-3. **staff / staff123** - Manage families, evacuees, evacuation centers, safe/hazard areas, incidents, and citizen help requests
+3. ** / staff123** - Manage families, evacuees, evacuation centers, safe/hazard areas, incidents, and citizen help requests
 
 ### Dashboard Access
 ```
