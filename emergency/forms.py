@@ -33,10 +33,10 @@ class EmergencyHelpRequestForm(forms.ModelForm):
                     "required": True,
                 }
             ),
-            "contact_number": forms.TextInput(
+            "contact_number": forms.NumberInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "+63 9XX XXX XXXX",
+                    "placeholder": "09XX XXX XXXX",
                     "required": True,
                 }
             ),

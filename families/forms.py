@@ -28,10 +28,10 @@ class FamilyRegistrationForm(forms.ModelForm):
                     "required": True,
                 }
             ),
-            "contact_number": forms.TextInput(
+            "contact_number": forms.NumberInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "+63 9XX XXX XXXX",
+                    "placeholder": "09XX XXX XXXX",
                 }
             ),
         }
@@ -46,7 +46,7 @@ class FamilyUpdateForm(forms.ModelForm):
         widgets = {
             "family_name": forms.TextInput(attrs={"class": "form-control"}),
             "contact_person": forms.Select(attrs={"class": "form-select"}),
-            "contact_number": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_number": forms.NumberInput(attrs={"class": "form-control"}),
             "reunification_status": forms.Select(attrs={"class": "form-control"}),
         }
 
