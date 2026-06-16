@@ -84,6 +84,12 @@ class EvacueeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
         context["checked_in"] = Evacuee.objects.filter(status="CHECKED_IN").count()
         context["special_needs_count"] = Evacuee.objects.filter(special_needs=True).count()
 
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        query_string = query_params.urlencode()
+        context['query_string'] = f"&{query_string}" if query_string else ""
+
         return context
 
 

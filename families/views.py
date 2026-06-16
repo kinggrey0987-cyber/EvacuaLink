@@ -83,13 +83,19 @@ class FamilyListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
                 family_name__icontains=search
             ) | queryset.filter(family_code__icontains=search)
 
-        return queryset.order_by("family_name")
+        return queryset.order_by("-id")
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["statuses"] = Family.ReunificationStatus.choices
         context["current_status"] = self.request.GET.get("status", "")
         context["search_query"] = self.request.GET.get("search", "")
+
+        query_params = self.request.GET.copy()
+        if 'page' in query_params:
+            del query_params['page']
+        query_string = query_params.urlencode()
+        context['query_string'] = f"&{query_string}" if query_string else ""
 
         # Statistics
         all_families = Family.objects.all()
