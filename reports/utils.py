@@ -181,9 +181,9 @@ def generate_incident_report(date_from=None, date_to=None, evacuation_center=Non
     incidents = EmergencyIncident.objects.all()
 
     if date_from:
-        incidents = incidents.filter(reported_at__gte=date_from)
+        incidents = incidents.filter(reported_at__date__gte=date_from)
     if date_to:
-        incidents = incidents.filter(reported_at__lte=date_to)
+        incidents = incidents.filter(reported_at__date__lte=date_to)
     if evacuation_center:
         incidents = incidents.filter(evacuation_center=evacuation_center)
 

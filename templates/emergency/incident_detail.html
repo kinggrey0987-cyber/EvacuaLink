@@ -50,6 +50,26 @@
                 </div>
             </div>
         </div>
+
+        <div class="card mt-4 map-section">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-map"></i> Incident Location Map</h5>
+            </div>
+            <div class="card-body">
+                <div class="incident-marker-info">
+                    <i class="bi bi-geo-alt-fill"></i>
+                    <strong>Location:</strong> {{ incident.location }}
+                    {% if incident.latitude and incident.longitude %}
+                    <br>
+                    <small>Coordinates: {{ incident.latitude }}, {{ incident.longitude }}</small>
+                    {% else %}
+                    <br>
+                    <small class="text-danger">No exact coordinates provided.</small>
+                    {% endif %}
+                </div>
+                <div id="incidentDetailMap" class="ev-map-frame" style="height: 300px; width: 100%; border-radius: 4px; border: 1px solid #dee2e6;"></div>
+            </div>
+        </div>
     </div>
     <div class="col-lg-4">
         <div class="card">
@@ -75,4 +95,62 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if incident.latitude and incident.longitude %}
+{{ safety_map_payload|json_script:"safety-map-data" }}
+<script src="{% static 'js/google-map-safety-overlays.js' %}?v=20260609-exact-poly"></script>
+<script>
+    const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
+    const mapCenter = {
+        lat: Number({{ map_center.latitude|default:"10.3233" }}),
+        lng: Number({{ map_center.longitude|default:"122.8933" }})
+    };
+    
+    function initMap() {
+        const map = new google.maps.Map(document.getElementById('incidentDetailMap'), {
+            center: mapCenter,
+            zoom: 16,
+            mapTypeId: 'roadmap',
+            fullscreenControl: true,
+            mapTypeControl: false,
+            streetViewControl: false
+        });
+
+        // Add standard overlays
+        EvacuaLinkMaps.addSafetyOverlays(map, safetyMapData);
+
+        // Add marker for this incident
+        const markerLat = Number({{ incident.latitude }});
+        const markerLng = Number({{ incident.longitude }});
+        
+        if (!isNaN(markerLat) && !isNaN(markerLng)) {
+            // Pick color based on severity
+            let color = "#17a2b8"; // info (low/moderate)
+            if ("{{ incident.severity }}" === "CRITICAL") color = "#dc3545"; // danger
+            else if ("{{ incident.severity }}" === "HIGH") color = "#fd7e14"; // orange
+
+            new google.maps.Marker({
+                position: { lat: markerLat, lng: markerLng },
+                map: map,
+                title: 'Incident Location',
+                animation: google.maps.Animation.DROP,
+                icon: {
+                    path: "M-15,0 L0,-15 L15,0 L0,15 Z", // Diamond shape
+                    fillColor: color,
+                    fillOpacity: 1,
+                    strokeColor: "#ffffff",
+                    strokeWeight: 2,
+                    scale: 1.2
+                }
+            });
+            
+            // Re-center map
+            map.setCenter({ lat: markerLat, lng: markerLng });
+        }
+    }
+</script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ google_maps_api_key }}&callback=initMap&libraries=geometry"></script>
+{% endif %}
 {% endblock %}
