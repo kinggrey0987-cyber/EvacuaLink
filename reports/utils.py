@@ -86,7 +86,7 @@ def generate_family_reunification_report(date_from=None, date_to=None, evacuatio
         family_data.append({
             "code": family.family_code,
             "name": family.family_name,
-            "contact_person": family.contact_person,
+            "contact_person": family.contact_person.full_name if family.contact_person else "None",
             "contact_number": family.contact_number,
             "total_members": total_members,
             "reunited_members": reunited_members,
