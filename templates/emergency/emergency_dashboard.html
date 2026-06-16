@@ -286,7 +286,8 @@
                 position: position,
                 title: request.requester_name,
                 icon: iconUrl,
-                animation: google.maps.Animation.DROP
+                animation: google.maps.Animation.DROP,
+                zIndex: 99999
             });
 
             const accuracyText = request.location_accuracy ? `${request.location_accuracy}m` : 'Not provided';
@@ -322,7 +323,8 @@
                     strokeColor: '#ffffff',
                     strokeWeight: 2,
                     scale: 6
-                }
+                },
+                zIndex: 99999
             });
 
             marker.addListener('click', function() {
