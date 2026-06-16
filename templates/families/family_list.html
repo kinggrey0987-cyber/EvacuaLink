@@ -88,7 +88,7 @@
                             <small>{{ family.member_count }} total</small>
                         </td>
                         <td>
-                            <small>{{ family.contact_person }}</small>
+                            <small>{% if family.contact_person %}{{ family.contact_person.full_name }}{% else %}None{% endif %}</small>
                         </td>
                         <td>
                             {% if family.reunification_status == 'PENDING' %}
