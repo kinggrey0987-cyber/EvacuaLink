@@ -9,7 +9,7 @@ class Family(models.Model):
         REUNIFIED = "REUNIFIED", "Reunified"
         UNKNOWN = "UNKNOWN", "Unknown"
 
-    family_code = models.CharField(max_length=50, unique=True)
+    family_code = models.CharField(max_length=50, unique=True, blank=True)
     family_name = models.CharField(max_length=150, default="Unnamed Family")
     contact_person = models.CharField(max_length=150, default="Unknown")
     contact_number = models.CharField(max_length=30, blank=True)
@@ -23,6 +23,23 @@ class Family(models.Model):
 
     def __str__(self):
         return f"{self.family_code} - {self.family_name}"
+
+    def save(self, *args, **kwargs):
+        if not self.family_code:
+            import datetime
+            year = datetime.datetime.now().year
+            prefix = f"FAM-{year}-"
+            last_family = Family.objects.filter(family_code__startswith=prefix).order_by('id').last()
+            if last_family:
+                try:
+                    last_num = int(last_family.family_code.split('-')[-1])
+                    new_num = last_num + 1
+                except ValueError:
+                    new_num = 1
+            else:
+                new_num = 1
+            self.family_code = f"{prefix}{new_num:04d}"
+        super().save(*args, **kwargs)
 
     @property
     def member_count(self):
@@ -91,4 +108,3 @@ class FamilyReunificationLog(models.Model):
 
     def __str__(self):
         return f"{self.family.family_code}: {self.old_status or 'NEW'} to {self.new_status}"
-

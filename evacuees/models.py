@@ -46,6 +46,23 @@ class Evacuee(models.Model):
                 {"special_needs_description": "Describe the special needs when special_needs is selected."}
             )
 
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Auto-sync Family Reunification Status
+        family = self.family
+        centers = family.get_evacuation_centers()
+        if family.is_fully_reunified and len(centers) <= 1:
+            if family.reunification_status != family.ReunificationStatus.REUNIFIED:
+                family.reunification_status = family.ReunificationStatus.REUNIFIED
+                family.save()
+        else:
+            if family.reunification_status == family.ReunificationStatus.REUNIFIED:
+                if family.is_partially_reunified:
+                    family.reunification_status = family.ReunificationStatus.PARTIAL
+                else:
+                    family.reunification_status = family.ReunificationStatus.PENDING
+                family.save()
+
     @property
     def full_name(self):
         return f"{self.first_name} {self.last_name}"

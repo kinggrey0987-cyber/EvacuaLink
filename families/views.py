@@ -170,7 +170,8 @@ class FamilyReunificationUpdateView(LoginRequiredMixin, UserPassesTestMixin, Suc
     form_class = FamilyReunificationForm
     template_name = "families/family_reunification.html"
     success_url = reverse_lazy("family-list")
-    success_message = "Reunification status updated for %(family_name)s"
+    def get_success_message(self, cleaned_data):
+        return f"Reunification status updated for {self.object.family_name}"
 
     def test_func(self):
         return self.request.user.is_emergency_responder
