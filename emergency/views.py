@@ -153,7 +153,7 @@ class HelpRequestListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = EmergencyHelpRequest
     template_name = "emergency/helprequest_list.html"
     context_object_name = "help_requests"
-    paginate_by = 20
+    paginate_by = 5
 
     def test_func(self):
         return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
@@ -264,7 +264,7 @@ class EmergencyIncidentListView(LoginRequiredMixin, UserPassesTestMixin, ListVie
     model = EmergencyIncident
     template_name = "emergency/incident_list.html"
     context_object_name = "incidents"
-    paginate_by = 20
+    paginate_by = 5
 
     def test_func(self):
         return self.request.user.is_emergency_responder or self.request.user.is_operational_admin

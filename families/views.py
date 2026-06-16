@@ -66,10 +66,10 @@ class FamilyListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Family
     template_name = "families/family_list.html"
     context_object_name = "families"
-    paginate_by = 20
+    paginate_by = 5
 
     def get_queryset(self):
-        queryset = Family.objects.prefetch_related("evacuees")
+        queryset = Family.objects.prefetch_related("evacuees").order_by("-id")
 
         # Filter by reunification status
         status_filter = self.request.GET.get("status")

@@ -40,10 +40,10 @@ class EvacueeListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = Evacuee
     template_name = "evacuees/evacuee_list.html"
     context_object_name = "evacuees"
-    paginate_by = 20
+    paginate_by = 5
 
     def get_queryset(self):
-        queryset = Evacuee.objects.select_related("family", "evacuation_center")
+        queryset = Evacuee.objects.select_related("family", "evacuation_center").order_by("-id")
 
         # Filter by center if provided
         center_id = self.request.GET.get("evacuation_center")

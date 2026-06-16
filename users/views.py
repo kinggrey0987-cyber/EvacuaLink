@@ -338,14 +338,14 @@ class UserListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     model = User
     template_name = "users/user_list.html"
     context_object_name = "users"
-    paginate_by = 20
+    paginate_by = 5
 
     def test_func(self):
         """Only technical admins can view user list"""
         return self.request.user.is_technical_admin
 
     def get_queryset(self):
-        return User.objects.all().order_by("username")
+        return User.objects.all().order_by("-id")
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):

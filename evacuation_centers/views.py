@@ -12,9 +12,13 @@ class EvacuationCenterListView(LoginRequiredMixin, UserPassesTestMixin, ListView
     model = EvacuationCenter
     template_name = "evacuation_centers/center_list.html"
     context_object_name = "centers"
+    paginate_by = 5
 
     def test_func(self):
         return self.request.user.is_emergency_responder or self.request.user.is_operational_admin
+
+    def get_queryset(self):
+        return EvacuationCenter.objects.all().order_by("-id")
 
 
 class EvacuationCenterDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
