@@ -24,7 +24,7 @@ class Evacuee(models.Model):
     last_name = models.CharField(max_length=100)
     age = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(130)])
     gender = models.CharField(max_length=10, choices=Gender.choices)
-    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="evacuees")
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, null=True, blank=True, related_name="evacuees")
     evacuation_center = models.ForeignKey(
         EvacuationCenter, on_delete=models.SET_NULL, null=True, blank=True, related_name="evacuees"
     )
@@ -50,18 +50,19 @@ class Evacuee(models.Model):
         super().save(*args, **kwargs)
         # Auto-sync Family Reunification Status
         family = self.family
-        centers = family.get_evacuation_centers()
-        if family.is_fully_reunified and len(centers) <= 1:
-            if family.reunification_status != family.ReunificationStatus.REUNIFIED:
-                family.reunification_status = family.ReunificationStatus.REUNIFIED
-                family.save()
-        else:
-            if family.reunification_status == family.ReunificationStatus.REUNIFIED:
-                if family.is_partially_reunified:
-                    family.reunification_status = family.ReunificationStatus.PARTIAL
-                else:
-                    family.reunification_status = family.ReunificationStatus.PENDING
-                family.save()
+        if family:
+            centers = family.get_evacuation_centers()
+            if family.is_fully_reunified and len(centers) <= 1:
+                if family.reunification_status != family.ReunificationStatus.REUNIFIED:
+                    family.reunification_status = family.ReunificationStatus.REUNIFIED
+                    family.save()
+            else:
+                if family.reunification_status == family.ReunificationStatus.REUNIFIED:
+                    if family.is_partially_reunified:
+                        family.reunification_status = family.ReunificationStatus.PARTIAL
+                    else:
+                        family.reunification_status = family.ReunificationStatus.PENDING
+                    family.save()
 
     @property
     def full_name(self):

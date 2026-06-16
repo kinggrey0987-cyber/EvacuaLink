@@ -149,6 +149,14 @@ class FamilyRegistrationView(LoginRequiredMixin, UserPassesTestMixin, SuccessMes
     def test_func(self):
         return self.request.user.is_emergency_responder
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        contact_person = form.cleaned_data.get('contact_person')
+        if contact_person:
+            contact_person.family = self.object
+            contact_person.save()
+        return response
+
 
 class FamilyUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     """Update family information"""

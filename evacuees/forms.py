@@ -18,7 +18,7 @@ class EvacueeRegistrationForm(forms.ModelForm):
         queryset=Family.objects.all().order_by("family_name"),
         widget=forms.Select(attrs={"class": "form-select"}),
         label="Family",
-        required=True,
+        required=False,
     )
 
     class Meta:

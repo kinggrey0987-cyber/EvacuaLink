@@ -11,7 +11,13 @@ class Family(models.Model):
 
     family_code = models.CharField(max_length=50, unique=True, blank=True)
     family_name = models.CharField(max_length=150, default="Unnamed Family")
-    contact_person = models.CharField(max_length=150, default="Unknown")
+    contact_person = models.ForeignKey(
+        'evacuees.Evacuee', 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name="primary_contact_for"
+    )
     contact_number = models.CharField(max_length=30, blank=True)
     reunification_status = models.CharField(
         max_length=30, choices=ReunificationStatus.choices, default=ReunificationStatus.PENDING

@@ -4,10 +4,18 @@ Forms for family management and reunification tracking.
 
 from django import forms
 from families.models import Family
+from evacuees.models import Evacuee
 
 
 class FamilyRegistrationForm(forms.ModelForm):
     """Form for creating a new family"""
+
+    contact_person = forms.ModelChoiceField(
+        queryset=Evacuee.objects.filter(family__isnull=True).order_by("last_name", "first_name"),
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Contact Person (Independent Evacuee)",
+        required=False,
+    )
 
     class Meta:
         model = Family
@@ -17,13 +25,6 @@ class FamilyRegistrationForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Family surname",
-                    "required": True,
-                }
-            ),
-            "contact_person": forms.TextInput(
-                attrs={
-                    "class": "form-control",
-                    "placeholder": "Name of contact person",
                     "required": True,
                 }
             ),
@@ -44,7 +45,7 @@ class FamilyUpdateForm(forms.ModelForm):
         fields = ["family_name", "contact_person", "contact_number", "reunification_status"]
         widgets = {
             "family_name": forms.TextInput(attrs={"class": "form-control"}),
-            "contact_person": forms.TextInput(attrs={"class": "form-control"}),
+            "contact_person": forms.Select(attrs={"class": "form-select"}),
             "contact_number": forms.TextInput(attrs={"class": "form-control"}),
             "reunification_status": forms.Select(attrs={"class": "form-control"}),
         }
