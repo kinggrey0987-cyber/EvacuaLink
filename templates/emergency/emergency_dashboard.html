@@ -227,6 +227,7 @@
 <script>
     const safetyMapData = JSON.parse(document.getElementById('safety-map-data').textContent);
     const activeHelpRequests = {{ active_help_request_markers|safe }};
+    const activeIncidents = {{ active_incident_markers|default:"[]"|safe }};
     const defaultCenter = {
         lat: Number(safetyMapData.center.latitude),
         lng: Number(safetyMapData.center.longitude)
@@ -250,6 +251,12 @@
             return '#ffc107';
         }
         return '#6c757d';
+    }
+
+    function getIncidentColor(severity) {
+        if (severity === 'CRITICAL') return '#dc3545';
+        if (severity === 'HIGH') return '#fd7e14';
+        return '#0dcaf0';
     }
 
     function initActiveHelpRequestsMap() {
@@ -302,6 +309,38 @@
                     <span>Source: ${request.location_source.replace('_', ' ')}</span><br>
                     <span>Accuracy: ${accuracyText}</span><br>
                     <a href="/emergency/help-requests/${request.id}/" class="btn btn-sm btn-primary mt-2">View Details</a>
+                `);
+                infoWindow.open(activeMap, marker);
+            });
+        });
+
+        activeIncidents.forEach(function(incident) {
+            if (!incident.latitude || !incident.longitude) return;
+            const position = {
+                lat: Number(incident.latitude),
+                lng: Number(incident.longitude)
+            };
+            const color = getIncidentColor(incident.severity);
+            const marker = new google.maps.Marker({
+                map: activeMap,
+                position: position,
+                title: incident.title,
+                icon: {
+                    path: 'M -2,0 0,-2 2,0 0,2 z', // Diamond shape for incidents
+                    fillColor: color,
+                    fillOpacity: 0.95,
+                    strokeColor: '#ffffff',
+                    strokeWeight: 2,
+                    scale: 6
+                }
+            });
+
+            marker.addListener('click', function() {
+                infoWindow.setContent(`
+                    <strong><i class="bi bi-exclamation-triangle"></i> ${incident.title}</strong><br>
+                    <span>Severity: ${incident.severity}</span><br>
+                    <span>Location: ${incident.location}</span><br>
+                    <a href="/emergency/incidents/${incident.id}/" class="btn btn-sm btn-warning mt-2 text-dark">View Details</a>
                 `);
                 infoWindow.open(activeMap, marker);
             });

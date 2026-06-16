@@ -148,7 +148,7 @@ class EmergencyIncidentForm(forms.ModelForm):
 
     class Meta:
         model = EmergencyIncident
-        fields = ["title", "description", "location", "severity", "status", "evacuation_center", "resolved_at"]
+        fields = ["title", "description", "location", "latitude", "longitude", "severity", "status", "evacuation_center", "resolved_at"]
         widgets = {
             "title": forms.TextInput(attrs={"class": "form-control"}),
             "description": forms.Textarea(
@@ -158,6 +158,8 @@ class EmergencyIncidentForm(forms.ModelForm):
                 }
             ),
             "location": forms.TextInput(attrs={"class": "form-control"}),
+            "latitude": forms.HiddenInput(),
+            "longitude": forms.HiddenInput(),
             "severity": forms.Select(attrs={"class": "form-select"}),
             "status": forms.Select(attrs={"class": "form-select"}),
             "evacuation_center": forms.Select(attrs={"class": "form-select"}),
@@ -173,3 +175,18 @@ class EmergencyIncidentForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields["resolved_at"].required = False
         self.fields["evacuation_center"].required = False
+        self.fields["latitude"].required = False
+        self.fields["longitude"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        latitude = cleaned_data.get("latitude")
+        longitude = cleaned_data.get("longitude")
+
+        if latitude and longitude:
+            try:
+                validate_barangay_coordinates(float(latitude), float(longitude))
+            except ValidationError as e:
+                self.add_error(None, e.message)
+
+        return cleaned_data

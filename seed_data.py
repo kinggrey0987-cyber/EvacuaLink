@@ -130,6 +130,8 @@ def run():
         severity="HIGH",
         status="OPEN",
         location="Alicante River Bank",
+        latitude=10.3300,
+        longitude=122.8980,
         reported_by=staff_user,
         reported_at=timezone.now() - timedelta(hours=2)
     )
@@ -139,6 +141,8 @@ def run():
         severity="MODERATE",
         status="OPEN",
         location="Highway crossing",
+        latitude=10.3150,
+        longitude=122.8850,
         reported_by=staff_user,
         reported_at=timezone.now() - timedelta(minutes=30)
     )
@@ -148,8 +152,8 @@ def run():
         contact_number="+639112223333",
         location_description="Zone 3, Near Chapel",
         message="Trapped on the second floor due to flood.",
-        latitude=10.7588,
-        longitude=122.9801,
+        latitude=10.3200,
+        longitude=122.8950,
         status="PENDING",
         priority="HIGH"
     )
@@ -158,8 +162,8 @@ def run():
         contact_number="+639554443333",
         location_description="Zone 1",
         message="Elderly woman needs insulin and high blood meds.",
-        latitude=10.7600,
-        longitude=122.9810,
+        latitude=10.3280,
+        longitude=122.8900,
         status="IN_PROGRESS",
         priority="HIGH",
         assigned_to=staff_user

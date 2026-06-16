@@ -322,6 +322,19 @@ class EmergencyIncidentCreateView(LoginRequiredMixin, UserPassesTestMixin, Succe
         form.instance.reported_by = self.request.user
         return super().form_valid(form)
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from mapping.utils import get_barangay_center_and_bounds, get_zoom_level_for_bounds
+
+        location_data = get_barangay_center_and_bounds()
+        safe_location = _make_center_bounds_safe(location_data)
+        context["map_center"] = safe_location["center"]
+        context["map_bounds"] = safe_location["bounds"]
+        context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = get_safety_map_payload()
+        return context
+
 
 class EmergencyIncidentUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageMixin, UpdateView):
     """Update an existing emergency incident"""
@@ -334,6 +347,19 @@ class EmergencyIncidentUpdateView(LoginRequiredMixin, UserPassesTestMixin, Succe
 
     def test_func(self):
         return self.request.user.is_emergency_responder
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        from mapping.utils import get_barangay_center_and_bounds, get_zoom_level_for_bounds
+
+        location_data = get_barangay_center_and_bounds()
+        safe_location = _make_center_bounds_safe(location_data)
+        context["map_center"] = safe_location["center"]
+        context["map_bounds"] = safe_location["bounds"]
+        context["zoom_level"] = get_zoom_level_for_bounds()
+        context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
+        context["safety_map_payload"] = get_safety_map_payload()
+        return context
 
 
 class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
@@ -377,6 +403,20 @@ class EmergencyDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateVi
         context["open_incidents"] = incidents.filter(status="OPEN").count()
         context["critical_incidents"] = incidents.filter(severity="CRITICAL").count()
         context["recent_incidents"] = incidents[:5]
+        context["active_incident_markers"] = json.dumps(
+            list(
+                incidents.filter(status="OPEN").values(
+                    "id",
+                    "title",
+                    "location",
+                    "latitude",
+                    "longitude",
+                    "severity",
+                    "reported_at",
+                )
+            ),
+            cls=DjangoJSONEncoder,
+        )
 
         # High severity/priority alerts
         context["alerts"] = incidents.filter(
@@ -401,6 +441,8 @@ class EmergencyIncidentJSONListView(LoginRequiredMixin, UserPassesTestMixin, Vie
                 "id",
                 "title",
                 "location",
+                "latitude",
+                "longitude",
                 "severity",
                 "status",
                 "reported_at",
