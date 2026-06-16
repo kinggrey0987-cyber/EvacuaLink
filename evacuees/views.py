@@ -204,7 +204,7 @@ class EvacueeUpdateView(LoginRequiredMixin, UserPassesTestMixin, SuccessMessageM
 
     model = Evacuee
     form_class = EvacueeUpdateForm
-    template_name = "evacuees/evacuee_update.html"
+    template_name = "evacuees/evacuee_form.html"
     success_url = reverse_lazy("evacuee-list")
     success_message = "Evacuee information updated for %(first_name)s %(last_name)s"
 
