@@ -182,7 +182,7 @@ class HelpRequestDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView)
 
     model = EmergencyHelpRequest
     template_name = "emergency/helprequest_detail.html"
-    context_object_name = "request"
+    context_object_name = "help_request"
 
     def test_func(self):
         return self.request.user.is_emergency_responder or self.request.user.is_operational_admin

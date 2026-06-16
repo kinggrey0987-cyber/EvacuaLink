@@ -33,11 +33,11 @@
         <h1 class="page-title">
             <i class="bi bi-exclamation-circle"></i> Help Request Details
         </h1>
-        <p class="text-muted mb-0">Submitted {{ request.created_at|date:"M d, Y H:i" }}</p>
+        <p class="text-muted mb-0">Submitted {{ help_request.created_at|date:"M d, Y H:i" }}</p>
     </div>
     <div class="col-md-4 text-md-end mt-3 mt-md-0">
         {% if user.is_emergency_responder %}
-            <a href="{% url 'help-request-update-status' request.pk %}" class="btn btn-warning">
+            <a href="{% url 'help-request-update-status' help_request.pk %}" class="btn btn-warning">
                 <i class="bi bi-pencil"></i> Update Status
             </a>
         {% endif %}
@@ -56,56 +56,56 @@
             <div class="card-body">
                 <dl class="row mb-0">
                     <dt class="col-sm-4">Requester</dt>
-                    <dd class="col-sm-8">{{ request.requester_name }}</dd>
+                    <dd class="col-sm-8">{{ help_request.requester_name }}</dd>
 
                     <dt class="col-sm-4">Contact</dt>
                     <dd class="col-sm-8">
-                        <a href="tel:{{ request.contact_number }}">{{ request.contact_number }}</a>
+                        <a href="tel:{{ help_request.contact_number }}">{{ help_request.contact_number }}</a>
                     </dd>
 
                     <dt class="col-sm-4">Status</dt>
                     <dd class="col-sm-8">
-                        {% if request.status == 'PENDING' %}
-                            <span class="badge bg-danger">{{ request.get_status_display }}</span>
-                        {% elif request.status == 'IN_PROGRESS' %}
-                            <span class="badge bg-warning">{{ request.get_status_display }}</span>
-                        {% elif request.status == 'RESOLVED' %}
-                            <span class="badge bg-success">{{ request.get_status_display }}</span>
+                        {% if help_request.status == 'PENDING' %}
+                            <span class="badge bg-danger">{{ help_request.get_status_display }}</span>
+                        {% elif help_request.status == 'IN_PROGRESS' %}
+                            <span class="badge bg-warning">{{ help_request.get_status_display }}</span>
+                        {% elif help_request.status == 'RESOLVED' %}
+                            <span class="badge bg-success">{{ help_request.get_status_display }}</span>
                         {% else %}
-                            <span class="badge bg-secondary">{{ request.get_status_display }}</span>
+                            <span class="badge bg-secondary">{{ help_request.get_status_display }}</span>
                         {% endif %}
                     </dd>
 
                     <dt class="col-sm-4">Priority</dt>
                     <dd class="col-sm-8">
-                        {% if request.priority == 'CRITICAL' %}
-                            <span class="badge bg-danger">{{ request.get_priority_display }}</span>
-                        {% elif request.priority == 'HIGH' %}
-                            <span class="badge bg-warning text-dark">{{ request.get_priority_display }}</span>
+                        {% if help_request.priority == 'CRITICAL' %}
+                            <span class="badge bg-danger">{{ help_request.get_priority_display }}</span>
+                        {% elif help_request.priority == 'HIGH' %}
+                            <span class="badge bg-warning text-dark">{{ help_request.get_priority_display }}</span>
                         {% else %}
-                            <span class="badge bg-primary">{{ request.get_priority_display }}</span>
+                            <span class="badge bg-primary">{{ help_request.get_priority_display }}</span>
                         {% endif %}
                     </dd>
 
                     <dt class="col-sm-4">Assigned To</dt>
-                    <dd class="col-sm-8">{{ request.assigned_to|default:"Unassigned" }}</dd>
+                    <dd class="col-sm-8">{{ help_request.assigned_to|default:"Unassigned" }}</dd>
 
                     <dt class="col-sm-4">Location</dt>
-                    <dd class="col-sm-8">{{ request.location_description }}</dd>
+                    <dd class="col-sm-8">{{ help_request.location_description }}</dd>
 
                     <dt class="col-sm-4">Coordinates</dt>
                     <dd class="col-sm-8">
-                        {{ request.latitude }}, {{ request.longitude }}
-                        <a class="ms-2" href="https://www.google.com/maps?q={{ request.latitude }},{{ request.longitude }}" target="_blank" rel="noopener">
+                        {{ help_request.latitude }}, {{ help_request.longitude }}
+                        <a class="ms-2" href="https://www.google.com/maps?q={{ help_request.latitude }},{{ help_request.longitude }}" target="_blank" rel="noopener">
                             Open map
                         </a>
                     </dd>
 
                     <dt class="col-sm-4">Location Source</dt>
                     <dd class="col-sm-8">
-                        {{ request.get_location_source_display }}
-                        {% if request.location_accuracy %}
-                            <span class="text-muted">({{ request.location_accuracy }} meters accuracy)</span>
+                        {{ help_request.get_location_source_display }}
+                        {% if help_request.location_accuracy %}
+                            <span class="text-muted">({{ help_request.location_accuracy }} meters accuracy)</span>
                         {% endif %}
                     </dd>
                 </dl>
@@ -117,7 +117,7 @@
                 <h5 class="mb-0"><i class="bi bi-chat-dots"></i> Emergency Details</h5>
             </div>
             <div class="card-body">
-                <p class="mb-0">{{ request.message|linebreaksbr }}</p>
+                <p class="mb-0">{{ help_request.message|linebreaksbr }}</p>
             </div>
         </div>
 
@@ -128,9 +128,9 @@
             <div class="card-body">
                 <div class="incident-marker-info">
                     <i class="bi bi-exclamation-triangle-fill"></i>
-                    <strong>Help Request Location:</strong> {{ request.location_description }}
+                    <strong>Help Request Location:</strong> {{ help_request.location_description }}
                     <br>
-                    <small>Coordinates: {{ request.latitude }}, {{ request.longitude }}</small>
+                    <small>Coordinates: {{ help_request.latitude }}, {{ help_request.longitude }}</small>
                 </div>
                 <div id="helpRequestDetailMap" class="ev-map-frame"></div>
             </div>
@@ -141,8 +141,8 @@
                 <h5 class="mb-0"><i class="bi bi-journal-text"></i> Response Notes</h5>
             </div>
             <div class="card-body">
-                {% if request.response_notes %}
-                    <p class="mb-0">{{ request.response_notes|linebreaksbr }}</p>
+                {% if help_request.response_notes %}
+                    <p class="mb-0">{{ help_request.response_notes|linebreaksbr }}</p>
                 {% else %}
                     <p class="text-muted mb-0">No response notes recorded yet.</p>
                 {% endif %}
@@ -154,7 +154,7 @@
                 <h5 class="mb-0"><i class="bi bi-clock-history"></i> Status History</h5>
             </div>
             <div class="card-body">
-                {% for log in request.status_logs.all %}
+                {% for log in help_request.status_logs.all %}
                     <div class="border-bottom pb-2 mb-2">
                         <div class="fw-semibold">{{ log.get_old_status_display|default:"New" }} to {{ log.get_new_status_display }}</div>
                         <div class="small text-muted">
@@ -177,12 +177,12 @@
                 <h5 class="mb-0"><i class="bi bi-camera"></i> Situation Photo</h5>
             </div>
             <div class="card-body">
-                {% if request.photo %}
-                    <a href="{{ request.photo.url }}" target="_blank" rel="noopener">
-                        <img src="{{ request.photo.url }}" class="img-fluid rounded border" alt="Situation photo uploaded with help request">
+                {% if help_request.photo %}
+                    <a href="{{ help_request.photo.url }}" target="_blank" rel="noopener">
+                        <img src="{{ help_request.photo.url }}" class="img-fluid rounded border" alt="Situation photo uploaded with help request">
                     </a>
                 {% else %}
-                    <p class="text-muted mb-0">No photo was attached to this request.</p>
+                    <p class="text-muted mb-0">No photo was attached to this help_request.</p>
                 {% endif %}
             </div>
         </div>
@@ -205,8 +205,8 @@
         east: Number({{ map_bounds.east }}),
         west: Number({{ map_bounds.west }})
     };
-    const requestLat = Number('{{ request.latitude }}');
-    const requestLng = Number('{{ request.longitude }}');
+    const requestLat = Number('{{ help_request.latitude }}');
+    const requestLng = Number('{{ help_request.longitude }}');
     let detailMap = null;
     let bounds = null;
     let incidentMarker = null;
