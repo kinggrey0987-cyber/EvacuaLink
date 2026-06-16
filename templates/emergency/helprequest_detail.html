@@ -247,15 +247,8 @@
                 map: detailMap,
                 position: {lat: requestLat, lng: requestLng},
                 title: 'Help Request Location',
-                zIndex: 2000,
-                icon: {
-                    path: google.maps.SymbolPath.CIRCLE,
-                    fillColor: '#dc3545',
-                    fillOpacity: 0.95,
-                    strokeColor: '#ffffff',
-                    strokeWeight: 3,
-                    scale: 12
-                }
+                zIndex: 9999,
+                animation: google.maps.Animation.BOUNCE
             });
 
             const infoWindow = new google.maps.InfoWindow({
