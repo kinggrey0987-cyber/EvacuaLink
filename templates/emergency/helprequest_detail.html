@@ -242,15 +242,28 @@
         });
 
         // Add a marker for the incident location
-        if (requestLat && requestLng) {
-            incidentMarker = new google.maps.Marker({
-                map: detailMap,
-                position: {lat: requestLat, lng: requestLng},
-                title: 'Help Request Location',
-                zIndex: 9999,
-                animation: google.maps.Animation.BOUNCE
-            });
+        if (requestLat && requestLng && !isNaN(requestLat) && !isNaN(requestLng)) {
+            let iconUrl = 'https://maps.google.com/mapfiles/ms/icons/red-dot.png';
+            if ("{{ help_request.status }}" === "IN_PROGRESS") {
+                iconUrl = 'https://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
+            } else if ("{{ help_request.status }}" === "RESOLVED") {
+                iconUrl = 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png';
+            }
 
+            incidentMarker = new google.maps.Marker({
+                position: { lat: requestLat, lng: requestLng },
+                map: detailMap,
+                title: 'Help Request Location',
+                animation: google.maps.Animation.DROP,
+                icon: {
+                    url: iconUrl,
+                    scaledSize: new google.maps.Size(40, 40)
+                }
+            });
+            
+            // Re-center map to the marker
+            detailMap.setCenter({ lat: requestLat, lng: requestLng });
+            
             const infoWindow = new google.maps.InfoWindow({
                 content: '<strong>Help Request Location</strong><br>Click to expand'
             });
