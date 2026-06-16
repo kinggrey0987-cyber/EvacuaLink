@@ -32,6 +32,7 @@ class FamilyRegistrationForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "09XX XXX XXXX",
+                    "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
                 }
             ),
         }
@@ -46,7 +47,7 @@ class FamilyUpdateForm(forms.ModelForm):
         widgets = {
             "family_name": forms.TextInput(attrs={"class": "form-control"}),
             "contact_person": forms.Select(attrs={"class": "form-select"}),
-            "contact_number": forms.NumberInput(attrs={"class": "form-control"}),
+            "contact_number": forms.NumberInput(attrs={"class": "form-control", "oninput": "this.value = this.value.replace(/[^0-9]/g, '')"}),
             "reunification_status": forms.Select(attrs={"class": "form-control"}),
         }
 

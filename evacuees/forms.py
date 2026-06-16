@@ -54,6 +54,7 @@ class EvacueeRegistrationForm(forms.ModelForm):
                     "min": "0",
                     "max": "130",
                     "required": True,
+                    "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
                 }
             ),
             "gender": forms.Select(attrs={"class": "form-select", "required": True}),
@@ -139,6 +140,7 @@ class EvacueeUpdateForm(forms.ModelForm):
                     "class": "form-control",
                     "min": "0",
                     "max": "130",
+                    "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
                 }
             ),
             "gender": forms.Select(attrs={"class": "form-select"}),

@@ -38,6 +38,7 @@ class EmergencyHelpRequestForm(forms.ModelForm):
                     "class": "form-control",
                     "placeholder": "09XX XXX XXXX",
                     "required": True,
+                    "oninput": "this.value = this.value.replace(/[^0-9]/g, '')",
                 }
             ),
             "location_description": forms.Textarea(

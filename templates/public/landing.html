@@ -970,7 +970,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="helpForm" method="post" action="{% url 'help-request' %}" enctype="multipart/form-data">
+                    <form id="helpForm" method="post" action="{% url 'help-request' %}" enctype="multipart/form-data" onsubmit="event.preventDefault(); submitHelpRequest();">
                         {% csrf_token %}
                         <div class="mb-3">
                             <label class="form-label">Your Name</label>
@@ -978,7 +978,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contact Number</label>
-                            <input type="tel" class="form-control" id="contactNumber" name="contact_number" autocomplete="tel" required>
+                            <input type="tel" class="form-control" id="contactNumber" name="contact_number" autocomplete="tel" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Location Description <span class="text-danger">*</span></label>

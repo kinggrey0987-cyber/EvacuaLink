@@ -9,6 +9,8 @@ class EvacuationCenterForm(forms.ModelForm):
         fields = ["name", "address", "latitude", "longitude", "capacity", "current_occupancy", "status"]
         widgets = {
             "address": forms.Textarea(attrs={"rows": 3}),
+            "capacity": forms.NumberInput(attrs={"oninput": "this.value = this.value.replace(/[^0-9]/g, '')"}),
+            "current_occupancy": forms.NumberInput(attrs={"oninput": "this.value = this.value.replace(/[^0-9]/g, '')"}),
         }
 
     def __init__(self, *args, **kwargs):
