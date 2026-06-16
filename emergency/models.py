@@ -79,6 +79,7 @@ class EmergencyHelpRequest(models.Model):
     class Meta:
         ordering = ["-created_at"]
 
+    # OOP_PRESENTATION: POLYMORPHISM (Method Overriding - different output for requests)
     def __str__(self):
         return f"{self.requester_name} - {self.status}"
 

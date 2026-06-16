@@ -56,6 +56,7 @@ class PublicLandingPageView(TemplateView):
         safe_zones = [zone for zone in safe_zones if inside_boundary(zone)]
 
         from mapping.models import SystemSettings
+        # OOP_PRESENTATION: ENCAPSULATION (Calling the encapsulated method without needing to know the database query)
         settings_obj = SystemSettings.get_settings()
 
         context["emergency_hotline"] = settings_obj.emergency_hotline
@@ -197,6 +198,7 @@ class AdminDashboardView(LoginRequiredMixin, UserPassesTestMixin, TemplateView):
         from evacuation_centers.models import EvacuationCenter
         from mapping.utils import get_barangay_boundary_geojson, get_barangay_center_and_bounds
         
+        # OOP_PRESENTATION: ABSTRACTION (Django ORM abstracts away complex SQL queries)
         evacuation_centers = list(EvacuationCenter.objects.filter(status__in=["OPEN", "FULL"]).values("id", "name", "latitude", "longitude", "address"))
         hazard_zones = list(HazardZone.objects.all().values("id", "name", "latitude", "longitude", "hazard_type", "risk_level", "description"))
         safe_zones = list(SafeZone.objects.all().values("id", "name", "latitude", "longitude", "description"))

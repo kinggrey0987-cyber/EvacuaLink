@@ -60,6 +60,7 @@ class SystemSettings(models.Model):
         super().save(*args, **kwargs)
 
     @classmethod
+    # OOP_PRESENTATION: ENCAPSULATION (Settings Logic hidden safely inside the class)
     def get_settings(cls):
         settings, created = cls.objects.get_or_create(pk=1)
         return settings
@@ -93,6 +94,7 @@ class MapLocation(models.Model):
         return {"latitude": float(self.latitude), "longitude": float(self.longitude)}
 
 
+# OOP_PRESENTATION: INHERITANCE (Gains database powers from models.Model)
 class HazardZone(models.Model):
     class HazardType(models.TextChoices):
         FLOOD = "FLOOD", "Flood"

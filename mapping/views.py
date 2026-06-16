@@ -230,6 +230,7 @@ class MapContextMixin:
         }
         return context
 
+# OOP_PRESENTATION: MULTIPLE INHERITANCE (Gains security and form handling simultaneously)
 class HazardZoneCreateView(LoginRequiredMixin, UserPassesTestMixin, MapContextMixin, CreateView):
     """Create a new hazard zone"""
 

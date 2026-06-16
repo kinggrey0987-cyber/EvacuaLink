@@ -27,6 +27,7 @@ class EvacuationCenter(models.Model):
     class Meta:
         ordering = ["name"]
 
+    # OOP_PRESENTATION: POLYMORPHISM (Method Overriding - different output for centers)
     def __str__(self):
         return f"{self.name} ({self.status})"
 
