@@ -144,6 +144,13 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
         self.fields["response_notes"].required = False
         self.fields["resolved_at"].label = "Resolved At"
         self.fields["resolved_at"].required = False
+
+    def clean_resolved_at(self):
+        resolved_at = self.cleaned_data.get("resolved_at")
+        if resolved_at and self.instance and self.instance.created_at:
+            if resolved_at < self.instance.created_at:
+                raise ValidationError("Resolution date cannot be before the emergency was reported.")
+        return resolved_at
 class EmergencyIncidentForm(forms.ModelForm):
     """Form for creating and updating emergency incidents (admin/responders only)"""
 
@@ -183,6 +190,11 @@ class EmergencyIncidentForm(forms.ModelForm):
         cleaned_data = super().clean()
         latitude = cleaned_data.get("latitude")
         longitude = cleaned_data.get("longitude")
+        resolved_at = cleaned_data.get("resolved_at")
+
+        if resolved_at and self.instance and self.instance.reported_at:
+            if resolved_at < self.instance.reported_at:
+                self.add_error("resolved_at", "Resolution date cannot be before the incident was reported.")
 
         if latitude and longitude:
             try:

@@ -130,8 +130,8 @@ def run():
         severity="HIGH",
         status="OPEN",
         location="Alicante River Bank",
-        latitude=10.3300,
-        longitude=122.8980,
+        latitude=10.3233,
+        longitude=122.8933,
         reported_by=staff_user,
         reported_at=timezone.now() - timedelta(hours=2)
     )
@@ -141,8 +141,8 @@ def run():
         severity="MODERATE",
         status="OPEN",
         location="Highway crossing",
-        latitude=10.3150,
-        longitude=122.8850,
+        latitude=10.3240,
+        longitude=122.8950,
         reported_by=staff_user,
         reported_at=timezone.now() - timedelta(minutes=30)
     )

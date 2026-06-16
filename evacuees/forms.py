@@ -235,6 +235,8 @@ class EvacueeTransferForm(forms.ModelForm):
         from_center = cleaned_data.get("from_center")
         to_center = cleaned_data.get("to_center")
 
+        transfer_date = cleaned_data.get("transfer_date")
+
         if from_center and to_center and from_center.id == to_center.id:
             raise ValidationError(
                 "The destination center must be different from the origin center."
@@ -242,6 +244,10 @@ class EvacueeTransferForm(forms.ModelForm):
 
         if to_center and to_center.is_full():
             raise ValidationError("The destination center is already full.")
+
+        if transfer_date and self.evacuee and self.evacuee.registration_date:
+            if transfer_date < self.evacuee.registration_date:
+                self.add_error("transfer_date", "Transfer date cannot be before the evacuee was registered.")
 
         return cleaned_data
 
