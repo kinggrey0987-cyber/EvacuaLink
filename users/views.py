@@ -136,12 +136,37 @@ class LoginView(View):
 
                 # Send email
                 try:
+                    html_message = f"""
+                    <html>
+                        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7f6; padding: 40px 20px; color: #333; margin: 0;">
+                            <div style="max-width: 500px; margin: 0 auto; background-color: #ffffff; padding: 40px 30px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.05); text-align: center;">
+                                <h2 style="color: #0d6efd; margin-top: 0; font-size: 24px; font-weight: 600;">EvacuaLink Security</h2>
+                                <p style="font-size: 16px; color: #555; line-height: 1.5; margin-bottom: 30px;">
+                                    Please use the verification code below to sign in to your EvacuaLink dashboard.
+                                </p>
+                                
+                                <div style="margin: 0 0 30px 0; padding: 25px; background-color: #f8f9fa; border-radius: 8px; border: 2px dashed #0d6efd;">
+                                    <h1 style="font-size: 54px; margin: 0; letter-spacing: 8px; color: #212529; font-weight: 700;">{otp_code}</h1>
+                                </div>
+                                
+                                <p style="font-size: 14px; color: #777;">This code will securely expire in <strong>10 minutes</strong>.</p>
+                                
+                                <hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;" />
+                                <p style="font-size: 12px; color: #999; line-height: 1.4;">
+                                    If you didn't request this code, your password might be compromised. You can safely ignore this email if you aren't trying to log in.
+                                </p>
+                            </div>
+                        </body>
+                    </html>
+                    """
+                    
                     send_mail(
                         "EvacuaLink Dashboard - Your Login Verification Code",
                         f"Your login verification code is: {otp_code}\n\nThis code will expire in 10 minutes.",
                         settings.EMAIL_HOST_USER,
                         [user.email],
                         fail_silently=False,
+                        html_message=html_message,
                     )
                 except Exception as e:
                     print(f"Error sending email: {e}")
