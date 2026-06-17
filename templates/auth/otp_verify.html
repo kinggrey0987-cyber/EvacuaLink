@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Login - EvacuaLink{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-primary text-white text-center py-3">
+                <h4 class="mb-0"><i class="bi bi-shield-lock"></i> Two-Factor Verification</h4>
+            </div>
+            <div class="card-body p-4">
+                <div class="text-center mb-4">
+                    <div class="display-1 text-primary mb-3">
+                        <i class="bi bi-envelope-check"></i>
+                    </div>
+                    <h5>Check your email!</h5>
+                    <p class="text-muted">We've sent a 6-digit verification code to your registered email address. The code will expire in 10 minutes.</p>
+                </div>
+
+                {% if error %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> {{ error }}
+                    </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'otp_verify' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label for="otp_code" class="form-label text-center d-block fw-bold">Enter 6-Digit Code</label>
+                        <input type="text" name="otp_code" id="otp_code" class="form-control form-control-lg text-center fw-bold fs-3 tracking-wide" placeholder="------" maxlength="6" pattern="\d{6}" title="Please enter a 6-digit number" required autofocus autocomplete="off">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-check-circle"></i> Verify & Login
+                        </button>
+                        <a href="{% url 'login' %}" class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="text-center mt-3">
+            <small class="text-muted">
+                Didn't receive the code? Check your spam folder or 
+                <a href="{% url 'login' %}" class="text-decoration-none">log in again</a> to resend.
+            </small>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tracking-wide {
+        letter-spacing: 0.5rem;
+    }
+</style>
+{% endblock %}

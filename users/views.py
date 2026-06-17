@@ -1,3 +1,5 @@
+import random
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
@@ -9,6 +11,7 @@ from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
 from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DetailView, FormView
+from django.utils import timezone
 
 from users.forms import CustomUserCreationForm, CustomUserChangeForm, UserLoginForm
 
@@ -112,19 +115,85 @@ class LoginView(View):
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
-                login(request, user)
-                next_url = request.GET.get("next", "dashboard")
-                if not url_has_allowed_host_and_scheme(
-                    next_url,
-                    allowed_hosts={request.get_host()},
-                    require_https=request.is_secure(),
-                ):
-                    next_url = "dashboard"
-                return redirect(next_url)
+                if not user.email:
+                    # Fallback for old accounts without email
+                    login(request, user)
+                    next_url = request.GET.get("next", "dashboard")
+                    if not url_has_allowed_host_and_scheme(
+                        next_url,
+                        allowed_hosts={request.get_host()},
+                        require_https=request.is_secure(),
+                    ):
+                        next_url = "dashboard"
+                    return redirect(next_url)
+
+                # Generate 6-digit OTP
+                otp_code = str(random.randint(100000, 999999))
+                request.session['pending_user_id'] = user.id
+                request.session['otp_code'] = otp_code
+                request.session['otp_timestamp'] = timezone.now().timestamp()
+                request.session['next_url'] = request.GET.get("next", "dashboard")
+
+                # Send email
+                send_mail(
+                    "EvacuaLink Dashboard - Your Login Verification Code",
+                    f"Your login verification code is: {otp_code}\n\nThis code will expire in 10 minutes.",
+                    settings.EMAIL_HOST_USER,
+                    [user.email],
+                    fail_silently=True,
+                )
+
+                return redirect("otp_verify")
             else:
                 form.add_error(None, "Invalid username or password.")
 
         return render(request, self.template_name, {"form": form})
+
+
+class OTPVerificationView(View):
+    """Handle OTP verification after initial login"""
+
+    template_name = "auth/otp_verify.html"
+
+    def get(self, request):
+        if 'pending_user_id' not in request.session:
+            return redirect("login")
+        return render(request, self.template_name)
+
+    def post(self, request):
+        if 'pending_user_id' not in request.session:
+            return redirect("login")
+
+        submitted_otp = request.POST.get("otp_code", "").strip()
+        stored_otp = request.session.get("otp_code")
+        timestamp = request.session.get("otp_timestamp", 0)
+
+        # Check expiration (10 minutes)
+        if timezone.now().timestamp() - timestamp > 600:
+            return render(request, self.template_name, {"error": "OTP has expired. Please log in again."})
+
+        if submitted_otp == stored_otp:
+            user_id = request.session.get('pending_user_id')
+            user = User.objects.get(id=user_id)
+            login(request, user)
+            
+            next_url = request.session.get("next_url", "dashboard")
+            if not url_has_allowed_host_and_scheme(
+                next_url,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                next_url = "dashboard"
+            
+            # Clean up session
+            del request.session['pending_user_id']
+            del request.session['otp_code']
+            del request.session['otp_timestamp']
+            del request.session['next_url']
+            
+            return redirect(next_url)
+        else:
+            return render(request, self.template_name, {"error": "Invalid OTP code. Please try again."})
 
 
 class LogoutView(LoginRequiredMixin, View):
