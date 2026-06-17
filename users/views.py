@@ -135,13 +135,17 @@ class LoginView(View):
                 request.session['next_url'] = request.GET.get("next", "dashboard")
 
                 # Send email
-                send_mail(
-                    "EvacuaLink Dashboard - Your Login Verification Code",
-                    f"Your login verification code is: {otp_code}\n\nThis code will expire in 10 minutes.",
-                    settings.EMAIL_HOST_USER,
-                    [user.email],
-                    fail_silently=True,
-                )
+                try:
+                    send_mail(
+                        "EvacuaLink Dashboard - Your Login Verification Code",
+                        f"Your login verification code is: {otp_code}\n\nThis code will expire in 10 minutes.",
+                        settings.EMAIL_HOST_USER,
+                        [user.email],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Error sending email: {e}")
+                    # You could render an error or redirect back with error here
 
                 return redirect("otp_verify")
             else:
