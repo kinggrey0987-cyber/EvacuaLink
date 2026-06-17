@@ -1,13 +1,14 @@
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import PasswordChangeForm, AdminPasswordChangeForm
 from django.conf import settings
 from django.http import JsonResponse, HttpResponseForbidden
-from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.shortcuts import redirect, render, get_object_or_404
+from django.urls import reverse_lazy, reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.views import View
-from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DetailView
+from django.views.generic import TemplateView, CreateView, UpdateView, ListView, DetailView, FormView
 
 from users.forms import CustomUserCreationForm, CustomUserChangeForm, UserLoginForm
 
@@ -403,3 +404,43 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = "users/profile.html"
 
 
+class UserPasswordChangeView(LoginRequiredMixin, FormView):
+    """Change user password"""
+    template_name = "users/password_change.html"
+
+    def get_form_class(self):
+        user_id = self.kwargs.get("pk")
+        if self.request.user.is_technical_admin and user_id and user_id != self.request.user.pk:
+            return AdminPasswordChangeForm
+        return PasswordChangeForm
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        user_id = self.kwargs.get("pk")
+        if user_id:
+            kwargs['user'] = get_object_or_404(User, pk=user_id)
+        else:
+            kwargs['user'] = self.request.user
+        return kwargs
+
+    def form_valid(self, form):
+        user = form.save()
+        # Keep user logged in if they changed their own password
+        if user == self.request.user:
+            update_session_auth_hash(self.request, user)
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        user_id = self.kwargs.get("pk")
+        if user_id:
+            return reverse("user_edit", kwargs={"pk": user_id})
+        return reverse("dashboard")
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user_id = self.kwargs.get("pk")
+        if user_id:
+            context['target_user'] = get_object_or_404(User, pk=user_id)
+        else:
+            context['target_user'] = self.request.user
+        return context

@@ -11,6 +11,7 @@ from .views import (
     UserListView,
     UserDetailView,
     UserUpdateView,
+    UserPasswordChangeView,
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path("list/", UserListView.as_view(), name="user_list"),
     path("<int:pk>/", UserDetailView.as_view(), name="user_detail"),
     path("<int:pk>/edit/", UserUpdateView.as_view(), name="user_edit"),
+    path("<int:pk>/password/", UserPasswordChangeView.as_view(), name="user_password_change"),
 ]
