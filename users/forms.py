@@ -152,12 +152,12 @@ class UserLoginForm(forms.Form):
     """Form for user login"""
 
     username = forms.CharField(
-        label="Username",
+        label="Username or Email",
         max_length=150,
         widget=forms.TextInput(
             attrs={
                 "class": "form-control form-control-lg",
-                "placeholder": "Enter your username",
+                "placeholder": "Enter your username or email",
                 "autofocus": True,
             }
         ),
