@@ -37,10 +37,13 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-auto">
+            <div class="col-auto d-flex gap-2">
                 <button type="submit" class="btn btn-primary">
                     <i class="bi bi-search"></i> Filter
                 </button>
+                <a href="{{ request.path }}" class="btn btn-outline-secondary">
+                    Clear
+                </a>
             </div>
         </form>
     </div>
