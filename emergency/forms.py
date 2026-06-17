@@ -4,6 +4,7 @@ Forms for emergency management system.
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from emergency.models import EmergencyHelpRequest, EmergencyIncident
 from mapping.utils import validate_barangay_coordinates
@@ -140,10 +141,12 @@ class EmergencyHelpRequestStatusForm(forms.ModelForm):
         if current_user and not self.instance.assigned_to_id:
             self.fields["assigned_to"].initial = current_user.pk
 
-        self.fields["response_notes"].label = "Response Notes"
         self.fields["response_notes"].required = False
         self.fields["resolved_at"].label = "Resolved At"
         self.fields["resolved_at"].required = False
+        
+        # Prevent future date selection
+        self.fields["resolved_at"].widget.attrs["max"] = timezone.now().strftime('%Y-%m-%dT%H:%M')
 
     def clean_resolved_at(self):
         resolved_at = self.cleaned_data.get("resolved_at")
@@ -185,6 +188,9 @@ class EmergencyIncidentForm(forms.ModelForm):
         self.fields["evacuation_center"].required = False
         self.fields["latitude"].required = False
         self.fields["longitude"].required = False
+        
+        # Prevent future date selection
+        self.fields["resolved_at"].widget.attrs["max"] = timezone.now().strftime('%Y-%m-%dT%H:%M')
 
     def clean(self):
         cleaned_data = super().clean()

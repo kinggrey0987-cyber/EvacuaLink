@@ -229,6 +229,9 @@ class EvacueeTransferForm(forms.ModelForm):
             ).order_by("name")
         else:
             self.fields["to_center"].queryset = EvacuationCenter.objects.filter(status="OPEN").order_by("name")
+            
+        # Prevent future date selection
+        self.fields["transfer_date"].widget.attrs["max"] = timezone.now().strftime('%Y-%m-%dT%H:%M')
 
     def clean(self):
         cleaned_data = super().clean()

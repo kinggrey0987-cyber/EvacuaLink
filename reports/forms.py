@@ -70,3 +70,7 @@ class ReportFilterForm(forms.Form):
         super().__init__(*args, **kwargs)
         # Order centers by name
         self.fields["evacuation_center"].queryset = EvacuationCenter.objects.all().order_by("name")
+        # Set max date to today
+        today = timezone.now().date().isoformat()
+        self.fields["date_from"].widget.attrs["max"] = today
+        self.fields["date_to"].widget.attrs["max"] = today
