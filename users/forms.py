@@ -51,7 +51,7 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['password2'].widget.attrs['class'] = 'form-control'
 
         # Add help text
-        self.fields['username'].help_text = 'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'
+        self.fields['username'].help_text = 'Required. 4 to 20 characters. Letters, digits and @/./+/-/_ only.'
         self.fields['phone_number'].help_text = 'Optional. Contact phone number'
         self.fields['address'].help_text = 'Optional. Physical address'
 
@@ -63,10 +63,13 @@ class CustomUserCreationForm(UserCreationForm):
         return email
 
     def clean_username(self):
-        """Validate that username is unique"""
+        """Validate that username is unique and valid length"""
         username = self.cleaned_data.get('username')
-        if username and User.objects.filter(username=username).exists():
-            raise ValidationError("This username is already taken.")
+        if username:
+            if len(username) < 4 or len(username) > 20:
+                raise ValidationError("Username must be between 4 and 20 characters long.")
+            if User.objects.filter(username=username).exists():
+                raise ValidationError("This username is already taken.")
         return username
 
 
@@ -116,6 +119,7 @@ class CustomUserChangeForm(UserChangeForm):
 
         # Add Bootstrap classes
         self.fields['username'].widget.attrs['class'] = 'form-control'
+        self.fields['username'].help_text = 'Required. 4 to 20 characters. Letters, digits and @/./+/-/_ only.'
         
         # Security: Only Tech Admins can change roles
         if current_user and not current_user.is_technical_admin:
@@ -133,11 +137,14 @@ class CustomUserChangeForm(UserChangeForm):
 
     def clean_username(self):
         username = self.cleaned_data.get('username')
-        queryset = User.objects.filter(username=username)
-        if self.instance.pk:
-            queryset = queryset.exclude(pk=self.instance.pk)
-        if username and queryset.exists():
-            raise ValidationError("This username is already taken.")
+        if username:
+            if len(username) < 4 or len(username) > 20:
+                raise ValidationError("Username must be between 4 and 20 characters long.")
+            queryset = User.objects.filter(username=username)
+            if self.instance.pk:
+                queryset = queryset.exclude(pk=self.instance.pk)
+            if queryset.exists():
+                raise ValidationError("This username is already taken.")
         return username
 
 

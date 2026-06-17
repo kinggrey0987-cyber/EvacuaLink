@@ -18,6 +18,7 @@ class ReportFilterForm(forms.Form):
         ("FAMILY_REUNIFICATION", "Family Reunification Report - Family status and progress"),
         ("SPECIAL_NEEDS", "Special Needs Report - Evacuees with special requirements"),
         ("INCIDENT", "Incident Report - Emergency incidents and responses"),
+        ("HELP_REQUEST", "Help Request Report - Citizen SOS Help Requests"),
     ]
 
     report_type = forms.ChoiceField(

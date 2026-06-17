@@ -95,35 +95,57 @@ def build_pdf(pdf_filename, report_title, prepared_by, report_type, table_data, 
         alignment=TA_CENTER
     )))
 
+    # Define styles for table cells
+    header_cell_style = ParagraphStyle(
+        'HeaderCell',
+        parent=styles['Normal'],
+        fontSize=9,
+        textColor=colors.whitesmoke,
+        alignment=TA_CENTER,
+        fontName='Helvetica-Bold'
+    )
+    
+    body_cell_style = ParagraphStyle(
+        'BodyCell',
+        parent=styles['Normal'],
+        fontSize=8,
+        textColor=colors.black,
+        alignment=TA_CENTER,
+        fontName='Helvetica'
+    )
+
     # Main data table
     if table_data and len(table_data) > 0:
-        col_widths = [1.2*inch] * len(table_data[0])
-        # Adjust column widths to fit page
+        # Wrap string content in Paragraphs for text wrapping
+        formatted_table_data = []
+        for i, row in enumerate(table_data):
+            formatted_row = []
+            for cell in row:
+                if isinstance(cell, str):
+                    style = header_cell_style if i == 0 else body_cell_style
+                    formatted_row.append(Paragraph(cell, style))
+                else:
+                    formatted_row.append(cell)
+            formatted_table_data.append(formatted_row)
+
         total_width = 7.5*inch  # Letter width minus margins
         col_width = total_width / len(table_data[0])
         col_widths = [col_width] * len(table_data[0])
 
-        table = Table(table_data, colWidths=col_widths)
+        table = Table(formatted_table_data, colWidths=col_widths)
 
         # Style the table
         table.setStyle(TableStyle([
             # Header row styling
             ('BACKGROUND', (0, 0), (-1, 0), EV_PRIMARY),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
-            ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 9),
-            ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-            ('TOPPADDING', (0, 0), (-1, 0), 8),
-
-            # Data rows styling
-            ('ALIGN', (0, 1), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 1), (-1, -1), 'Helvetica'),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
+            
+            # General alignment and padding
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
             ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f9f9f9')]),
             ('GRID', (0, 0), (-1, -1), 0.5, EV_BORDER),
-            ('TOPPADDING', (0, 1), (-1, -1), 6),
-            ('BOTTOMPADDING', (0, 1), (-1, -1), 6),
+            ('TOPPADDING', (0, 0), (-1, -1), 8),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
             ('LEFTPADDING', (0, 0), (-1, -1), 8),
             ('RIGHTPADDING', (0, 0), (-1, -1), 8),
         ]))
@@ -290,8 +312,6 @@ def generate_special_needs_report_pdf(report_data):
         description = evacuee.get('special_needs_description', '') or ''
         medical = evacuee.get('medical_condition', '') or ''
         detail = description or medical or 'N/A'
-        if len(detail) > 30:
-            detail = detail[:30] + '...'
 
         table_data.append([
             evacuee.get('full_name', 'N/A'),
@@ -339,9 +359,7 @@ def generate_incident_report_pdf(report_data):
     ]
 
     for incident in report_data.get('incidents', []):
-        # Truncate description for table
-        desc = incident.get('description', '')
-        description = desc[:40] + '...' if len(desc) > 40 else desc
+        description = incident.get('description', '')
 
         reported_at = incident.get('reported_at', '')
         if hasattr(reported_at, 'strftime'):
@@ -375,6 +393,58 @@ def generate_incident_report_pdf(report_data):
         'Emergency Incidents Report',
         report_data.get('generated_by', 'System'),
         'Incident Report',
+        table_data,
+        summary_data
+    )
+
+
+def generate_help_request_report_pdf(report_data):
+    """
+    Generate Help Request Report PDF using ReportLab.
+
+    Args:
+        report_data: Dictionary with report data from utils.generate_help_request_report()
+
+    Returns:
+        BytesIO object containing PDF data
+    """
+    # Build table data
+    table_data = [
+        ['Date/Time', 'Requester Name', 'Contact', 'Location', 'Priority', 'Status', 'Message']
+    ]
+
+    for req in report_data.get('requests', []):
+        created_at = req.get('created_at', '')
+        if hasattr(created_at, 'strftime'):
+            created_at = created_at.strftime('%m/%d %H:%M')
+        else:
+            created_at = str(created_at)
+
+        table_data.append([
+            created_at,
+            req.get('requester_name', 'N/A'),
+            req.get('contact_number', 'N/A'),
+            req.get('location_description', 'N/A'),
+            req.get('priority', 'N/A'),
+            req.get('status', 'N/A'),
+            req.get('message', '')
+        ])
+
+    # Build summary
+    summary = report_data.get('summary', {})
+    summary_data = {
+        'Total Requests': summary.get('total_requests', 0),
+        'High Priority': summary.get('high_priority', 0),
+        'Pending': summary.get('pending_requests', 0),
+        'In Progress': summary.get('in_progress', 0),
+        'Resolved': summary.get('resolved_requests', 0),
+    }
+
+    return build_pdf(
+        'help_request_report.pdf',
+        'Citizen SOS Help Requests Report',
+        report_data.get('generated_by', 'System'),
+        'Help Request Report',
         table_data,
         summary_data
     )

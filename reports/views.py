@@ -22,12 +22,14 @@ from .utils import (
     generate_family_reunification_report,
     generate_special_needs_report,
     generate_incident_report,
+    generate_help_request_report,
 )
 from .pdf_builders import (
     generate_occupancy_report_pdf,
     generate_family_reunification_report_pdf,
     generate_special_needs_report_pdf,
     generate_incident_report_pdf,
+    generate_help_request_report_pdf,
 )
 
 
@@ -80,6 +82,7 @@ def export_report_pdf(report_type, report_data):
         "FAMILY_REUNIFICATION": generate_family_reunification_report_pdf,
         "SPECIAL_NEEDS": generate_special_needs_report_pdf,
         "INCIDENT": generate_incident_report_pdf,
+        "HELP_REQUEST": generate_help_request_report_pdf,
     }
 
     builder = builder_map.get(report_type)
@@ -126,6 +129,7 @@ class ReportGeneratorView(LoginRequiredMixin, UserPassesTestMixin, View):
         "FAMILY_REUNIFICATION": "reports/family_reunification_report.html",
         "SPECIAL_NEEDS": "reports/special_needs_report.html",
         "INCIDENT": "reports/incident_report.html",
+        "HELP_REQUEST": "reports/help_request_report.html",
     }
 
     def post(self, request):
@@ -147,6 +151,8 @@ class ReportGeneratorView(LoginRequiredMixin, UserPassesTestMixin, View):
                 report_data = generate_special_needs_report(date_from, date_to, evacuation_center)
             elif report_type == "INCIDENT":
                 report_data = generate_incident_report(date_from, date_to, evacuation_center)
+            elif report_type == "HELP_REQUEST":
+                report_data = generate_help_request_report(date_from, date_to)
             else:
                 return render(request, "reports/dashboard.html", {
                     "form": form,
@@ -216,6 +222,7 @@ class ReportDetailView(LoginRequiredMixin, UserPassesTestMixin, View):
         "FAMILY_REUNIFICATION": "reports/family_reunification_report.html",
         "SPECIAL_NEEDS": "reports/special_needs_report.html",
         "INCIDENT": "reports/incident_report.html",
+        "HELP_REQUEST": "reports/help_request_report.html",
     }
 
     def get(self, request, pk):

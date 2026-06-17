@@ -21,6 +21,11 @@ class EvacuationCenterForm(forms.ModelForm):
         self.fields["status"].help_text = "Note: 'Open' and 'Full' are automatically managed based on current occupancy vs capacity."
         self.fields["current_occupancy"].help_text = "Usually automatically updated when evacuees are checked in or out."
 
+        # If adding a new center, force status to OPEN and disable the field
+        if not self.instance.pk:
+            self.initial["status"] = "OPEN"
+            self.fields["status"].disabled = True
+
     def clean(self):
         cleaned_data = super().clean()
         status = cleaned_data.get("status")

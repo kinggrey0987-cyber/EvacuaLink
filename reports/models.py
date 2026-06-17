@@ -12,6 +12,7 @@ class Report(models.Model):
         EVACUEE_SUMMARY = "EVACUEE_SUMMARY", "Evacuee Summary"
         FAMILY_REUNIFICATION = "FAMILY_REUNIFICATION", "Family Reunification"
         SPECIAL_NEEDS = "SPECIAL_NEEDS", "Special Needs"
+        HELP_REQUEST = "HELP_REQUEST", "Help Requests"
 
     title = models.CharField(max_length=150)
     report_type = models.CharField(max_length=30, choices=ReportType.choices)

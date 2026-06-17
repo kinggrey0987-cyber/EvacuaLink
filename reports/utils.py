@@ -8,7 +8,7 @@ from datetime import datetime
 from evacuees.models import Evacuee
 from families.models import Family
 from evacuation_centers.models import EvacuationCenter
-from emergency.models import EmergencyIncident
+from emergency.models import EmergencyIncident, EmergencyHelpRequest
 
 
 def generate_occupancy_report(date_from=None, date_to=None, evacuation_center=None):
@@ -222,5 +222,53 @@ def generate_incident_report(date_from=None, date_to=None, evacuation_center=Non
             "high_incidents": high_incidents,
             "open_incidents": open_incidents,
             "resolved_incidents": resolved_incidents,
+        },
+    }
+
+
+def generate_help_request_report(date_from=None, date_to=None):
+    """Generate citizen SOS help requests report"""
+
+    requests = EmergencyHelpRequest.objects.all()
+
+    if date_from:
+        requests = requests.filter(created_at__date__gte=date_from)
+    if date_to:
+        requests = requests.filter(created_at__date__lte=date_to)
+
+    requests = requests.order_by("-created_at")
+
+    request_data = []
+
+    for req in requests:
+        request_data.append({
+            "requester_name": req.requester_name,
+            "contact_number": req.contact_number,
+            "location_description": req.location_description,
+            "message": req.message,
+            "priority": req.get_priority_display(),
+            "status": req.get_status_display(),
+            "created_at": req.created_at,
+            "resolved_at": req.resolved_at,
+        })
+
+    # Summary statistics
+    high_priority = sum(1 for r in request_data if r["priority"] == "High")
+    pending_requests = sum(1 for r in request_data if r["status"] == "Pending")
+    in_progress = sum(1 for r in request_data if r["status"] == "In Progress")
+    resolved_requests = sum(1 for r in request_data if r["status"] == "Resolved")
+
+    return {
+        "report_type": "Help Request Report",
+        "generated_at": timezone.now(),
+        "date_from": date_from or "All time",
+        "date_to": date_to or "All time",
+        "requests": request_data,
+        "summary": {
+            "total_requests": len(request_data),
+            "high_priority": high_priority,
+            "pending_requests": pending_requests,
+            "in_progress": in_progress,
+            "resolved_requests": resolved_requests,
         },
     }
