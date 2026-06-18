@@ -1677,9 +1677,17 @@
                     quickSubmitBtn.disabled = false;
                     quickSubmitBtn.innerHTML = '<i class="bi bi-send"></i> Submit Help Request';
                     
-                    let errorMsg = "There was an error with your submission:\\n";
-                    if (data.errors && data.errors.__all__) {
-                        errorMsg += data.errors.__all__[0];
+                    let errorMsg = "<strong>Submission Error:</strong><br>";
+                    if (data.errors && Object.keys(data.errors).length > 0) {
+                        for (const [key, value] of Object.entries(data.errors)) {
+                            if (key === '__all__') {
+                                errorMsg += value.join('<br>') + "<br>";
+                            } else {
+                                let friendlyKey = key.replace('_', ' ');
+                                friendlyKey = friendlyKey.charAt(0).toUpperCase() + friendlyKey.slice(1);
+                                errorMsg += `<strong>${friendlyKey}:</strong> ${value.join('<br>')}<br>`;
+                            }
+                        }
                     } else {
                         errorMsg += "Please check your inputs and try again.";
                     }
