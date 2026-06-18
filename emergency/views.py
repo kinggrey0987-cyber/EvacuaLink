@@ -127,6 +127,19 @@ class PublicHelpRequestView(CreateView):
     template_name = "emergency/help_request_form.html"
     success_url = reverse_lazy("help-request-success")
 
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            from django.http import JsonResponse
+            return JsonResponse({"success": False, "errors": form.errors}, status=400)
+        return super().form_invalid(form)
+
+    def form_valid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            self.object = form.save()
+            from django.http import JsonResponse
+            return JsonResponse({"success": True, "redirect_url": str(self.get_success_url())})
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         from mapping.utils import get_barangay_center_and_bounds, get_zoom_level_for_bounds
