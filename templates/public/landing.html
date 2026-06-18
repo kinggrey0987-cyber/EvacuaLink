@@ -1523,7 +1523,7 @@
                         event.latLng.lat(),
                         event.latLng.lng(),
                         null,
-                        'MANUAL_MAP'
+                        'MAP_PIN'
                     );
                 });
                 const quickOverlays = EvacuaLinkMaps.addSafetyOverlays(quickMap, landingMapData, {
@@ -1562,7 +1562,7 @@
 
             showQuickLocationOnMap(lat, lon, accuracy);
 
-            if (source === 'MANUAL_MAP') {
+            if (source === 'MAP_PIN') {
                 setQuickLocationStatus(
                     '<i class="bi bi-check-circle"></i> Map pin placed. This location will be sent with your help request.',
                     'success'
