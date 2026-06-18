@@ -230,12 +230,8 @@ class EvacueeTransferForm(forms.ModelForm):
         else:
             self.fields["to_center"].queryset = EvacuationCenter.objects.filter(status="OPEN").order_by("name")
             
-        # Restrict date to today
-        today = timezone.now()
-        today_start = today.replace(hour=0, minute=0, second=0).strftime('%Y-%m-%dT%H:%M')
-        today_end = today.replace(hour=23, minute=59, second=59).strftime('%Y-%m-%dT%H:%M')
-        self.fields["transfer_date"].widget.attrs["min"] = today_start
-        self.fields["transfer_date"].widget.attrs["max"] = today_end
+        # Lock the field completely to current exact time
+        self.fields["transfer_date"].widget.attrs["readonly"] = True
     def clean(self):
         cleaned_data = super().clean()
         from_center = cleaned_data.get("from_center")
