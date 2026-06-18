@@ -111,7 +111,7 @@ class EvacueeDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         # Get transfer history
         context["transfers"] = evacuee.transfer_records.all()
         # Get family members
-        context["family_members"] = evacuee.family.evacuees.exclude(id=evacuee.id)
+        context["family_members"] = evacuee.family.evacuees.exclude(id=evacuee.id) if evacuee.family else []
         context["google_maps_api_key"] = settings.GOOGLE_MAPS_API_KEY
         context["safety_map_payload"] = get_safety_map_payload()
 

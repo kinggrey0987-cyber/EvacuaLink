@@ -230,9 +230,12 @@ class EvacueeTransferForm(forms.ModelForm):
         else:
             self.fields["to_center"].queryset = EvacuationCenter.objects.filter(status="OPEN").order_by("name")
             
-        # Prevent future date selection
-        self.fields["transfer_date"].widget.attrs["max"] = timezone.now().strftime('%Y-%m-%dT%H:%M')
-
+        # Restrict date to today
+        today = timezone.now()
+        today_start = today.replace(hour=0, minute=0, second=0).strftime('%Y-%m-%dT%H:%M')
+        today_end = today.replace(hour=23, minute=59, second=59).strftime('%Y-%m-%dT%H:%M')
+        self.fields["transfer_date"].widget.attrs["min"] = today_start
+        self.fields["transfer_date"].widget.attrs["max"] = today_end
     def clean(self):
         cleaned_data = super().clean()
         from_center = cleaned_data.get("from_center")
@@ -248,8 +251,8 @@ class EvacueeTransferForm(forms.ModelForm):
         if to_center and to_center.is_full():
             raise ValidationError("The destination center is already full.")
 
-        if transfer_date and self.evacuee and self.evacuee.registration_date:
-            if transfer_date < self.evacuee.registration_date:
+        if transfer_date and self.evacuee and self.evacuee.registered_at:
+            if transfer_date < self.evacuee.registered_at:
                 self.add_error("transfer_date", "Transfer date cannot be before the evacuee was registered.")
 
         return cleaned_data
