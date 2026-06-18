@@ -204,7 +204,7 @@ class OTPVerificationView(View):
         if submitted_otp == stored_otp:
             user_id = request.session.get('pending_user_id')
             user = User.objects.get(id=user_id)
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
             
             next_url = request.session.get("next_url", "dashboard")
             if not url_has_allowed_host_and_scheme(
