@@ -6,6 +6,7 @@
 # Dependencies
 node_modules/
 venv/
+.venv/
 env/
 my_env/
 __pycache__/
