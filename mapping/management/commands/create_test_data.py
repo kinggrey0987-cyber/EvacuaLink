@@ -5,7 +5,9 @@ Generates realistic sample data for testing all features.
 Usage: python manage.py create_test_data
 """
 
-from django.core.management.base import BaseCommand
+import os
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from datetime import timedelta
@@ -26,7 +28,24 @@ User = get_user_model()
 class Command(BaseCommand):
     help = 'Create test data for EvacuaLink system'
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            '--force-insecure',
+            action='store_true',
+            help='Allow running in production / non-debug mode (NOT recommended)',
+        )
+
     def handle(self, *args, **options):
+        if not settings.DEBUG and not options.get('force_insecure'):
+            raise CommandError(
+                "Creating test data with default sample credentials is blocked when DEBUG=False. "
+                "Do not run this command on production servers."
+            )
+
+        self.stdout.write(self.style.WARNING(
+            "⚠️  SECURITY NOTICE: Generating sample users for local development only. "
+            "Never use default passwords in production!"
+        ))
         self.stdout.write(self.style.SUCCESS('Starting test data creation...'))
 
         # Create users

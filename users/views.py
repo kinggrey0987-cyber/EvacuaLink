@@ -1,4 +1,6 @@
+import hmac
 import random
+import secrets
 from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -14,6 +16,13 @@ from django.views.generic import TemplateView, CreateView, UpdateView, ListView,
 from django.utils import timezone
 
 from users.forms import CustomUserCreationForm, CustomUserChangeForm, UserLoginForm
+from users.security import (
+    get_client_ip,
+    get_rate_limit_key,
+    is_rate_limited,
+    record_failed_attempt,
+    reset_failed_attempts,
+)
 
 User = get_user_model()
 
@@ -96,7 +105,7 @@ class PublicLandingPageView(TemplateView):
 
 
 class LoginView(View):
-    """Handle user login"""
+    """Handle user login with brute force protection and rate limiting"""
 
     template_name = "auth/login.html"
     form_class = UserLoginForm
@@ -108,6 +117,20 @@ class LoginView(View):
         return render(request, self.template_name, {"form": form})
 
     def post(self, request):
+        ip = get_client_ip(request)
+        raw_username = request.POST.get("username", "").strip()
+        ip_key = get_rate_limit_key("login_ip", ip)
+        user_key = get_rate_limit_key("login_user", raw_username)
+
+        # Brute force protection: check rate limits (10 attempts per IP, 5 attempts per user / 5 minutes)
+        if is_rate_limited(ip_key, max_attempts=10) or is_rate_limited(user_key, max_attempts=5):
+            form = self.form_class(request.POST)
+            form.add_error(
+                None,
+                "Too many failed login attempts. For security, please wait 5 minutes before trying again.",
+            )
+            return render(request, self.template_name, {"form": form}, status=429)
+
         form = self.form_class(request.POST)
         if form.is_valid():
             username = form.cleaned_data.get("username")
@@ -115,6 +138,10 @@ class LoginView(View):
             user = authenticate(request, username=username, password=password)
 
             if user is not None:
+                # Reset rate limits on successful password verification
+                reset_failed_attempts(ip_key)
+                reset_failed_attempts(user_key)
+
                 if not user.email:
                     # Fallback for old accounts without email
                     login(request, user)
@@ -127,12 +154,13 @@ class LoginView(View):
                         next_url = "dashboard"
                     return redirect(next_url)
 
-                # Generate 6-digit OTP
-                otp_code = str(random.randint(100000, 999999))
-                request.session['pending_user_id'] = user.id
-                request.session['otp_code'] = otp_code
-                request.session['otp_timestamp'] = timezone.now().timestamp()
-                request.session['next_url'] = request.GET.get("next", "dashboard")
+                # Generate cryptographically secure 6-digit OTP
+                otp_code = f"{secrets.randbelow(1000000):06d}"
+                request.session["pending_user_id"] = user.id
+                request.session["otp_code"] = otp_code
+                request.session["otp_timestamp"] = timezone.now().timestamp()
+                request.session["otp_attempts"] = 0
+                request.session["next_url"] = request.GET.get("next", "dashboard")
 
                 # Send email
                 try:
@@ -170,28 +198,48 @@ class LoginView(View):
                     )
                 except Exception as e:
                     print(f"Error sending email: {e}")
-                    # You could render an error or redirect back with error here
 
                 return redirect("otp_verify")
             else:
+                record_failed_attempt(ip_key, timeout=300)
+                record_failed_attempt(user_key, timeout=300)
                 form.add_error(None, "Invalid username or password.")
+        else:
+            record_failed_attempt(ip_key, timeout=300)
 
         return render(request, self.template_name, {"form": form})
 
 
 class OTPVerificationView(View):
-    """Handle OTP verification after initial login"""
+    """Handle OTP verification after initial login with attempt limiting and timing-attack resistance"""
 
     template_name = "auth/otp_verify.html"
 
     def get(self, request):
-        if 'pending_user_id' not in request.session:
+        if "pending_user_id" not in request.session:
             return redirect("login")
         return render(request, self.template_name)
 
     def post(self, request):
-        if 'pending_user_id' not in request.session:
+        if "pending_user_id" not in request.session:
             return redirect("login")
+
+        # Track and limit OTP attempts to prevent brute force attack on 6-digit codes
+        attempts = request.session.get("otp_attempts", 0) + 1
+        request.session["otp_attempts"] = attempts
+
+        if attempts > 5:
+            # Revoke OTP and purge session on exceeding maximum attempts
+            for key in ["pending_user_id", "otp_code", "otp_timestamp", "otp_attempts", "next_url"]:
+                request.session.pop(key, None)
+            return render(
+                request,
+                self.template_name,
+                {
+                    "error": "Too many invalid OTP attempts. For security, this verification code has been revoked. Please log in again."
+                },
+                status=429,
+            )
 
         submitted_otp = request.POST.get("otp_code", "").strip()
         stored_otp = request.session.get("otp_code")
@@ -199,13 +247,16 @@ class OTPVerificationView(View):
 
         # Check expiration (10 minutes)
         if timezone.now().timestamp() - timestamp > 600:
+            for key in ["pending_user_id", "otp_code", "otp_timestamp", "otp_attempts", "next_url"]:
+                request.session.pop(key, None)
             return render(request, self.template_name, {"error": "OTP has expired. Please log in again."})
 
-        if submitted_otp == stored_otp:
-            user_id = request.session.get('pending_user_id')
+        # Constant-time comparison to prevent timing attacks
+        if stored_otp and hmac.compare_digest(submitted_otp, stored_otp):
+            user_id = request.session.get("pending_user_id")
             user = User.objects.get(id=user_id)
-            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
-            
+            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+
             next_url = request.session.get("next_url", "dashboard")
             if not url_has_allowed_host_and_scheme(
                 next_url,
@@ -213,16 +264,19 @@ class OTPVerificationView(View):
                 require_https=request.is_secure(),
             ):
                 next_url = "dashboard"
-            
+
             # Clean up session
-            del request.session['pending_user_id']
-            del request.session['otp_code']
-            del request.session['otp_timestamp']
-            del request.session['next_url']
-            
+            for key in ["pending_user_id", "otp_code", "otp_timestamp", "otp_attempts", "next_url"]:
+                request.session.pop(key, None)
+
             return redirect(next_url)
         else:
-            return render(request, self.template_name, {"error": "Invalid OTP code. Please try again."})
+            remaining = max(0, 5 - attempts)
+            return render(
+                request,
+                self.template_name,
+                {"error": f"Invalid OTP code. {remaining} attempt(s) remaining."},
+            )
 
 
 class LogoutView(LoginRequiredMixin, View):
@@ -502,9 +556,18 @@ class ProfileView(LoginRequiredMixin, TemplateView):
     template_name = "users/profile.html"
 
 
-class UserPasswordChangeView(LoginRequiredMixin, FormView):
-    """Change user password"""
+class UserPasswordChangeView(LoginRequiredMixin, UserPassesTestMixin, FormView):
+    """Change user password with strict ownership and technical admin authorization checks"""
     template_name = "users/password_change.html"
+
+    def test_func(self):
+        user_id = self.kwargs.get("pk")
+        if not user_id:
+            return True
+        return self.request.user.is_technical_admin or self.request.user.pk == user_id
+
+    def handle_no_permission(self):
+        return HttpResponseForbidden("You do not have permission to change this user's password.")
 
     def get_form_class(self):
         user_id = self.kwargs.get("pk")

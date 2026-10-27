@@ -120,12 +120,49 @@ def get_safety_map_payload():
 
 
 class PublicHelpRequestView(CreateView):
-    """Public form for submitting emergency help requests"""
+    """Public form for submitting emergency help requests with rate-limiting protection"""
 
     model = EmergencyHelpRequest
     form_class = EmergencyHelpRequestForm
     template_name = "emergency/help_request_form.html"
     success_url = reverse_lazy("help-request-success")
+
+    def post(self, request, *args, **kwargs):
+        from users.security import (
+            get_client_ip,
+            get_rate_limit_key,
+            is_rate_limited,
+            record_failed_attempt,
+        )
+
+        ip = get_client_ip(request)
+        rate_key = get_rate_limit_key("help_request_ip", ip)
+
+        if is_rate_limited(rate_key, max_attempts=5):
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                from django.http import JsonResponse
+
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "errors": {
+                            "__all__": [
+                                "Too many emergency requests submitted from your network. Please wait a few minutes before trying again."
+                            ]
+                        },
+                    },
+                    status=429,
+                )
+            from django.contrib import messages
+
+            messages.error(
+                request,
+                "Too many emergency requests submitted. Please wait a few minutes before trying again.",
+            )
+            return redirect("help-request")
+
+        record_failed_attempt(rate_key, timeout=180)
+        return super().post(request, *args, **kwargs)
 
     def form_invalid(self, form):
         if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':

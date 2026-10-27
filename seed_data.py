@@ -14,6 +14,11 @@ from emergency.models import EmergencyHelpRequest, EmergencyIncident
 from users.models import User
 
 def run():
+    from django.conf import settings
+    if not settings.DEBUG:
+        print("ERROR: seed_data.py cannot be executed in production (DEBUG=False) to prevent accidental database wiping.")
+        return
+
     print("Clearing old data...")
     EmergencyHelpRequest.objects.all().delete()
     EmergencyIncident.objects.all().delete()

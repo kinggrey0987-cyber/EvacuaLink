@@ -176,15 +176,20 @@ User.save() automatically sets:
 
 ## 🚀 READY FOR TESTING
 
-### Test User Credentials
+### Test User Credentials (LOCAL DEVELOPMENT ONLY)
 
-**Technical Admin:**
+> ⚠️ **SECURITY WARNING**:
+> The test accounts and passwords below are strictly for local development and unit testing.
+> **DO NOT** use or deploy these accounts in production or publicly accessible environments.
+> For production deployments, create administrators using `python manage.py createsuperuser` with unique, strong credentials.
+
+**Technical Admin (Development):**
 - Username: `tech_admin`
 - Password: `TechAdmin123!`
 - Role: TECHNICAL_ADMIN
 - Access: `/admin/` only
 
-**Operational Admin:**
+**Operational Admin (Development):**
 - Username: `emergency_admin`
 - Password: `Admin123!`
 - Role: ADMIN

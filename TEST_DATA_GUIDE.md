@@ -9,7 +9,11 @@ python manage.py create_test_data
 
 ## What Gets Created
 
-### Test Users (3 accounts)
+> ⚠️ **SECURITY WARNING**:
+> The mock credentials below are intended strictly for local development and unit tests.
+> **DO NOT** execute `create_test_data` or use these default passwords in production.
+
+### Test Users (3 development accounts)
 - **techadmin** / techadmin123 → TECHNICAL_ADMIN (adds and manages admin/staff accounts)
 - **admin** / admin123 → ADMIN (overall system visibility)
 - **staff** / staff123 → STAFF (manages families, centers, maps, evacuees, and help requests)
