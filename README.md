@@ -7,10 +7,10 @@ EvacuaLink is a modular Django project for evacuation management using PostgreSQ
 - Python 3.10+
 - PostgreSQL running locally on port `5432`
 - pgAdmin4 or another PostgreSQL administration tool
-- Database credentials:
+- Database configuration (via `.env`):
   - Database: `evacualink_db`
-  - User: `postgres`
-  - Password: `052805`
+  - User: `postgres` (or your local PostgreSQL role)
+  - Password: `<your_postgres_password>`
   - Host: `localhost`
   - Port: `5432`
 
@@ -124,7 +124,7 @@ pip install python-decouple
    - Port: `5432`
    - Maintenance database: `postgres`
    - Username: `postgres`
-4. Verify or set the password for the `postgres` user to `052805`.
+4. Set a strong password for your PostgreSQL user and save it to your local `.env` file.
 5. Create the database:
    - Right-click `Databases`.
    - Select `Create` > `Database`.
@@ -140,22 +140,22 @@ Create the PostgreSQL database before running migrations:
 CREATE DATABASE evacualink_db;
 ```
 
-If the local `postgres` role does not currently use the required password, update it before migrating:
+If you need to set or update your PostgreSQL role password:
 
 ```sql
-ALTER USER postgres WITH PASSWORD '052805';
+ALTER USER postgres WITH PASSWORD 'your_secure_password';
 ```
 
 ## Environment variables
 
 Database credentials are stored in `.env` and loaded by `python-decouple` in `evacualink/settings.py`.
 
-Required `.env` format:
+Required `.env` format (see `.env.example`):
 
 ```env
 DB_NAME=evacualink_db
 DB_USER=postgres
-DB_PASSWORD=052805
+DB_PASSWORD=your_secure_password_here
 DB_HOST=localhost
 DB_PORT=5432
 ```
@@ -244,17 +244,17 @@ FATAL: password authentication failed for user "postgres"
 
 Fixes:
 
-1. Confirm the PostgreSQL password is `052805`.
+1. Confirm the PostgreSQL password matches the `DB_PASSWORD` set in your `.env` file.
 2. Reset the password if needed:
 
 ```sql
-ALTER USER postgres WITH PASSWORD '052805';
+ALTER USER postgres WITH PASSWORD 'your_secure_password';
 ```
 
 3. Confirm `pg_hba.conf` allows password authentication for local connections.
 4. Restart PostgreSQL after changing `pg_hba.conf` or authentication settings.
-5. Confirm `.env` contains `DB_PASSWORD=052805`.
-6. The current code configuration is correct for the requested credentials; this error means the local PostgreSQL server rejected those credentials.
+5. Confirm `.env` contains your correct `DB_PASSWORD`.
+6. This error indicates that PostgreSQL rejected the credentials specified in your `.env` file.
 
 ### Database does not exist
 
